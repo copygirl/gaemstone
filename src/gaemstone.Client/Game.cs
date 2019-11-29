@@ -1,7 +1,8 @@
-using System.Linq;
-using System.Numerics;
+using System.Diagnostics;
 using System;
 using System.Drawing;
+using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using gaemstone.Common.ECS;
 using Silk.NET.OpenGL;
@@ -58,11 +59,25 @@ namespace gaemstone.Client
 				Components.Set<Vector3>(entity.ID, true);
 				Positions.Set(entity.ID, new Vector3(x * 4, 0, z * 4));
 			}
+			Trace.Assert(25 == Entities.Count);
 
-			var entityID = 11u;
-			// TODO: Add code to remove entity.
-			Components.Set<Vector3>(entityID, false);
-			Positions.Remove(entityID);
+			{
+				// Destroy one of the entities.
+				var entity = Entities.GetByID(11)!.Value;
+				Entities.Destroy(entity);
+				// TODO: Automatically remove entity's components.
+				Components.Set<Vector3>(entity.ID, false);
+				Positions.Remove(entity.ID);
+			}
+			Trace.Assert(24 == Entities.Count);
+
+			{
+				var entity = Entities.New();
+				Trace.Assert(11 == entity.ID);
+				Trace.Assert(1 == entity.Generation);
+			}
+
+			// TODO: Move tests into separate gaemstone.Test project.
 		}
 
 		public void Run()
