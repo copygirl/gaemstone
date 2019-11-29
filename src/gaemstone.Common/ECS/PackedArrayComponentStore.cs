@@ -27,7 +27,7 @@ namespace gaemstone.Common.ECS
 		public ref T GetComponentByIndex(int index)
 			=> ref _components[index];
 
-		public uint GetEntityByIndex(int index)
+		public uint GetEntityIDByIndex(int index)
 			=> _entities[index];
 
 		public void RemoveByIndex(int index)
@@ -45,8 +45,12 @@ namespace gaemstone.Common.ECS
 		public int? FindIndex(uint entityID)
 			=> TryFindIndex(entityID, out var index) ? index : (int?)null;
 
-		public T? Get(uint entityID)
-			=> TryFindIndex(entityID, out var index) ? _components[index] : (T?)null;
+
+		public ref T Get(uint entityID)
+		{
+			if (!TryFindIndex(entityID, out var index)) throw new InvalidOperationException();
+			return ref _components[index];
+		}
 
 		public void Set(uint entityID, T component)
 		{
@@ -54,6 +58,7 @@ namespace gaemstone.Common.ECS
 				index = Count++;
 				if (Count > Capacity)
 					Resize(Capacity << 1);
+				_entities[index] = entityID;
 			}
 			_components[index] = component;
 			_indices[entityID] = index;

@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System;
 using System.Drawing;
 using System.Linq;
@@ -22,12 +21,13 @@ namespace gaemstone.Client
 		public IWindow Window { get; }
 		public GL GL { get; private set; }
 
-		public Matrix4x4 Projection { get; private set; }
-		public Matrix4x4 View { get; private set; }
-
 		public EntityManager Entities { get; }
 		public ComponentManager Components { get; }
-		public PackedArrayComponentStore<Vector3> Positions { get; }
+		public PackedArrayComponentStore<Transform> Transforms { get; }
+		public PackedArrayComponentStore<Camera> Cameras { get; }
+		// TODO: Camera is uncommon. Handle uncommon components differently.
+
+		public Entity MainCamera { get; }
 
 
 		private Game(string[] args)
@@ -50,34 +50,34 @@ namespace gaemstone.Client
 
 			Entities   = new EntityManager();
 			Components = new ComponentManager(Entities);
-			Positions  = new PackedArrayComponentStore<Vector3>();
-			Components.AddStore(Positions);
+			Transforms = new PackedArrayComponentStore<Transform>();
+			Cameras    = new PackedArrayComponentStore<Camera>();
+			Components.AddStore(Transforms);
+			Components.AddStore(Cameras);
+
+			MainCamera = Entities.New();
+			Components.Set<Transform>(MainCamera.ID, true);
+			Components.Set<Camera>(MainCamera.ID, true);
+			Transforms.Set(MainCamera.ID, Matrix4x4.CreateLookAt(
+				cameraPosition : new Vector3(4, 3, 3),
+				cameraTarget   : new Vector3(0, 0, 0),
+				cameraUpVector : new Vector3(0, 1, 0)));
 
 			for (var x = -2; x <= 2; x++)
 			for (var z = -2; z <= 2; z++) {
 				var entity = Entities.New();
-				Components.Set<Vector3>(entity.ID, true);
-				Positions.Set(entity.ID, new Vector3(x * 4, 0, z * 4));
+				Components.Set<Transform>(entity.ID, true);
+				Transforms.Set(entity.ID, Matrix4x4.CreateTranslation(x * 4, 0, z * 4));
 			}
-			Trace.Assert(25 == Entities.Count);
 
 			{
 				// Destroy one of the entities.
-				var entity = Entities.GetByID(11)!.Value;
+				var entity = Entities.GetByID(12)!.Value;
 				Entities.Destroy(entity);
 				// TODO: Automatically remove entity's components.
-				Components.Set<Vector3>(entity.ID, false);
-				Positions.Remove(entity.ID);
+				Components.Set<Transform>(entity.ID, false);
+				Transforms.Remove(entity.ID);
 			}
-			Trace.Assert(24 == Entities.Count);
-
-			{
-				var entity = Entities.New();
-				Trace.Assert(11 == entity.ID);
-				Trace.Assert(1 == entity.Generation);
-			}
-
-			// TODO: Move tests into separate gaemstone.Test project.
 		}
 
 		public void Run()
@@ -179,10 +179,6 @@ namespace gaemstone.Client
 				              colors, BufferUsageARB.StaticDraw);
 
 			OnResize(Window.Size);
-			View = Matrix4x4.CreateLookAt(
-				new Vector3(4, 3, 3),
-				new Vector3(0, 0, 0),
-				new Vector3(0, 1, 0));
 		}
 
 		private void OnClosing()
@@ -192,11 +188,12 @@ namespace gaemstone.Client
 
 		private void OnResize(Size size)
 		{
-			GL.Viewport(size);
-
 			var aspectRatio = (float)Window.Size.Width / Window.Size.Height;
-			Projection = Matrix4x4.CreatePerspectiveFieldOfView(
-				60.0F * DEGREES_TO_RADIANS, aspectRatio, 0.1F, 100.0F);
+			Cameras.Set(MainCamera.ID, new Camera {
+				Viewport   = new Rectangle(Point.Empty, size),
+				Projection = Matrix4x4.CreatePerspectiveFieldOfView(
+					60.0F * DEGREES_TO_RADIANS, aspectRatio, 0.1F, 100.0F),
+			});
 		}
 
 		private void OnUpdate(double delta)
@@ -219,12 +216,25 @@ namespace gaemstone.Client
 			GL.BindBuffer(BufferTargetARB.ArrayBuffer, _colorBuffer);
 			GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, null);
 
-			for (var i = 0; i < Positions.Count; i++) {
-				var position = Positions.GetComponentByIndex(i);
-				var model    = Matrix4x4.CreateTranslation(position);
-				var modelViewProjection = model * View * Projection;
-				GL.UniformMatrix4(_matrixUniform, 1, false, in modelViewProjection.M11);
-				GL.DrawArrays(PrimitiveType.Triangles, 0, (uint)_vertexBufferData.Length);
+			for (var cameraIndex = 0; cameraIndex < Cameras.Count; cameraIndex++) {
+				var cameraID       = Cameras.GetEntityIDByIndex(cameraIndex);
+				ref var camera     = ref Cameras.GetComponentByIndex(cameraIndex);
+				ref var view       = ref Transforms.Get(cameraID).Value;
+				ref var projection = ref camera.Projection;
+				GL.Viewport(camera.Viewport);
+
+				for (var transformIndex = 0; transformIndex < Transforms.Count; transformIndex++) {
+					// Right now we render a mesh on every entity that has
+					// a Transform component, so skip the camera itself.
+					// TODO: Implement Mesh component.
+					var entityID = Transforms.GetEntityIDByIndex(transformIndex);
+					if (cameraID == entityID) continue;
+
+					ref var modelView = ref Transforms.GetComponentByIndex(transformIndex);
+					var modelViewProjection = modelView * view * projection;
+					GL.UniformMatrix4(_matrixUniform, 1, false, in modelViewProjection.M11);
+					GL.DrawArrays(PrimitiveType.Triangles, 0, (uint)_vertexBufferData.Length);
+				}
 			}
 
 			GL.DisableVertexAttribArray(0);
