@@ -56,8 +56,6 @@ namespace gaemstone.Client
 			Components.AddStore(Cameras);
 
 			MainCamera = Entities.New();
-			Components.Set<Transform>(MainCamera.ID, true);
-			Components.Set<Camera>(MainCamera.ID, true);
 			Transforms.Set(MainCamera.ID, Matrix4x4.CreateLookAt(
 				cameraPosition : new Vector3(4, 3, 3),
 				cameraTarget   : new Vector3(0, 0, 0),
@@ -66,18 +64,11 @@ namespace gaemstone.Client
 			for (var x = -2; x <= 2; x++)
 			for (var z = -2; z <= 2; z++) {
 				var entity = Entities.New();
-				Components.Set<Transform>(entity.ID, true);
 				Transforms.Set(entity.ID, Matrix4x4.CreateTranslation(x * 4, 0, z * 4));
 			}
 
-			{
-				// Destroy one of the entities.
-				var entity = Entities.GetByID(12)!.Value;
-				Entities.Destroy(entity);
-				// TODO: Automatically remove entity's components.
-				Components.Set<Transform>(entity.ID, false);
-				Transforms.Remove(entity.ID);
-			}
+			// Destroy one of the entities.
+			Entities.Destroy(Entities.GetByID(12)!.Value);
 		}
 
 		public void Run()

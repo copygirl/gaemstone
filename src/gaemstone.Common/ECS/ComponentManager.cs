@@ -20,8 +20,8 @@ namespace gaemstone.Common.ECS
 		{
 			_components = new int[entities.Capacity];
 			entities.OnCapacityChanged += Resize;
+			entities.OnEntityDestroyed += Clear;
 		}
-
 
 		public int AddStore(IComponentStore store)
 		{
@@ -30,14 +30,18 @@ namespace gaemstone.Common.ECS
 			if (Count == MAX_COMPONENT_TYPES) throw new InvalidOperationException(
 				$"Current component type count is already at maximum ({MAX_COMPONENT_TYPES})");
 
-			var index = Count;
+			var storeIndex = Count;
 			_stores.Add(store);
-			_byType.Add(store.ComponentType, index);
-			return index;
+			_byType.Add(store.ComponentType, storeIndex);
+
+			store.OnComponentAdded   += entityID => Set(entityID, storeIndex);
+			store.OnComponentRemoved += entityID => Unset(entityID, storeIndex);
+
+			return storeIndex;
 		}
 
-		public IComponentStore GetStore(int index)
-			=> _stores[index];
+		public IComponentStore GetStore(int storeIndex)
+			=> _stores[storeIndex];
 		public IComponentStore<T> GetStore<T>()
 			=> (IComponentStore<T>)GetStore(_byType[typeof(T)]);
 
@@ -45,18 +49,20 @@ namespace gaemstone.Common.ECS
 		public int GetFlags(uint entityID)
 			=> _components[entityID];
 
-		public bool Has(uint entityID, int index)
-			=> (GetFlags(entityID) & (1 << index)) != 0;
+		public bool Has(uint entityID, int storeIndex)
+			=> (GetFlags(entityID) & (1 << storeIndex)) != 0;
 		public bool Has<T>(uint entityID)
 			=> Has(entityID, _byType[typeof(T)]);
 
-		public void Set(uint entityID, int index, bool value)
-		{
-			if (value) _components[entityID] |= (1 << index);
-			else _components[entityID] &= ~(1 << index);
-		}
-		public void Set<T>(uint entityID, bool value)
-			=> Set(entityID, _byType[typeof(T)], value);
+		public void Set(uint entityID, int storeIndex)
+			=> _components[entityID] |= (1 << storeIndex);
+		public void Set<T>(uint entityID)
+			=> Set(entityID, _byType[typeof(T)]);
+
+		public void Unset(uint entityID, int storeIndex)
+			=> _components[entityID] &= ~(1 << storeIndex);
+		public void Unset<T>(uint entityID)
+			=> Unset(entityID, _byType[typeof(T)]);
 
 
 		private void Resize(int newCapacity)
@@ -67,6 +73,18 @@ namespace gaemstone.Common.ECS
 			var newComponents = new int[newCapacity];
 			Buffer.BlockCopy(_components, 0, newComponents, 0, _components.Length);
 			_components = newComponents;
+		}
+
+		private void Clear(Entity entity)
+		{
+			var flags = GetFlags(entity.ID);
+			for (var i = 0; i < _stores.Count; i++) {
+				if ((flags & 1) != 0)
+					_stores[i].Remove(entity.ID);
+				// TODO: Remove fires OnComponentRemoved, which we don't need to process.
+				flags >>= 1;
+			}
+			_components[entity.ID] = 0;
 		}
 	}
 }

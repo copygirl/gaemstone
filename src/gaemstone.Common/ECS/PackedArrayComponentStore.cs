@@ -16,6 +16,9 @@ namespace gaemstone.Common.ECS
 
 		public Type ComponentType { get; } = typeof(T);
 
+		public event Action<uint>? OnComponentAdded;
+		public event Action<uint>? OnComponentRemoved;
+
 		public int Count { get; private set; }
 
 		public int Capacity {
@@ -34,10 +37,15 @@ namespace gaemstone.Common.ECS
 		{
 			if ((index < 0) || (index >= Count)) throw new ArgumentOutOfRangeException(nameof(index));
 			if (!_indices.Remove(_entities[index])) throw new Exception($"{_entities[index]} not found in _indices");
-			if (index == --Count) return;
-			_entities[index] = _entities[Count];
-			_components[index] = _components[Count];
-			_indices[_entities[index]] = index;
+
+			var entityID = _entities[index];
+			if (index != --Count) {
+				_entities[index]   = _entities[Count];
+				_components[index] = _components[Count];
+				_indices[_entities[index]] = index;
+			}
+			_indices.Remove(entityID);
+			OnComponentRemoved?.Invoke(entityID);
 		}
 
 		public bool TryFindIndex(uint entityID, out int index)
@@ -54,14 +62,18 @@ namespace gaemstone.Common.ECS
 
 		public void Set(uint entityID, T component)
 		{
+			var added = false;
 			if (!TryFindIndex(entityID, out var index)) {
+				added = true;
 				index = Count++;
-				if (Count > Capacity)
-					Resize(Capacity << 1);
+				// Ensure we have the capacity to add another entry.
+				if (Count > Capacity) Resize(Capacity << 1);
+				// Associate the entry at the new index with this entity ID.
 				_entities[index] = entityID;
 			}
 			_components[index] = component;
 			_indices[entityID] = index;
+			if (added) OnComponentAdded?.Invoke(entityID);
 		}
 
 		public void Remove(uint entityID)
