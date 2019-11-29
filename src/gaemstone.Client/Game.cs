@@ -138,6 +138,9 @@ namespace gaemstone.Client
 					type.ToString().Substring(9), id,
 					Marshal.PtrToStringAnsi(message)), null);
 
+			GL.Enable(GLEnum.DepthTest);
+			GL.DepthFunc(GLEnum.Less);
+
 			var vertexShader   = CompileShaderFromSource("vertex", VERTEX_SHADER_SOURCE, ShaderType.VertexShader);
 			var fragmentShader = CompileShaderFromSource("fragment", FRAGMENT_SHADER_SOURCE, ShaderType.FragmentShader);
 			_program = LinkProgram("main", vertexShader, fragmentShader);
