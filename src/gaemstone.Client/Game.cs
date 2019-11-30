@@ -2,7 +2,7 @@ using System;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
+using gaemstone.Client.Graphics;
 using gaemstone.Common.ECS;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
@@ -19,7 +19,6 @@ namespace gaemstone.Client
 
 
 		public IWindow Window { get; }
-		public GL GL { get; private set; }
 
 		public EntityManager Entities { get; }
 		public ComponentManager Components { get; }
@@ -44,9 +43,6 @@ namespace gaemstone.Client
 			Window.Update  += OnUpdate;
 			Window.Render  += OnRender;
 			Window.Closing += OnClosing;
-
-			// TODO: Only set in Run. Fix by extracting into separate "Graphics" class?
-			GL = null!;
 
 			Entities   = new EntityManager();
 			Components = new ComponentManager(Entities);
@@ -100,11 +96,11 @@ namespace gaemstone.Client
 			}
 		";
 
-		private uint _program;
-		private uint _vertexArray;
-		private uint _vertexBuffer;
-		private uint _colorBuffer;
-		private int _matrixUniform;
+		private Program _program;
+		private UniformMatrix4x4 _mvpUniform;
+		private VertexArray _vertexArray;
+		private Buffer<Vector3> _vertexBuffer;
+		private Buffer<Vector3> _colorBuffer;
 
 		private readonly Vector3[] _vertexBufferData = {
 			// -X
@@ -133,41 +129,29 @@ namespace gaemstone.Client
 				.Select(i => new Vector3((float)_rnd.NextDouble(), (float)_rnd.NextDouble(), (float)_rnd.NextDouble()))
 				.ToArray();
 
-		private unsafe void OnLoad()
+		private void OnLoad()
 		{
-			GL = Silk.NET.OpenGL.GL.GetApi();
+			GFX.Initialize();
+			GFX.OnDebugOutput += (source, type, id, severity, message) =>
+				Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");
 
-			GL.Enable(GLEnum.DebugOutput);
-			GL.DebugMessageCallback((source, type, id, severity, length, message, userParam)
-				=> Console.WriteLine("[GLDebug] [{0}] {1}/{2}: {3}",
-					severity.ToString().Substring(13),
-					type.ToString().Substring(9), id,
-					Marshal.PtrToStringAnsi(message)), null);
+			_program = Program.LinkFromShaders("main",
+				Shader.CompileFromSource("vertex", ShaderType.VertexShader, VERTEX_SHADER_SOURCE),
+				Shader.CompileFromSource("fragment", ShaderType.FragmentShader, FRAGMENT_SHADER_SOURCE));
+			_program.DetachAndDeleteShaders();
 
-			GL.Enable(GLEnum.DepthTest);
-			GL.DepthFunc(GLEnum.Less);
+			var uniforms = _program.GetActiveUniforms();
+			var attribs  = _program.GetActiveAttributes();
+			_mvpUniform  = uniforms["modelViewProjection"].Matrix4x4;
 
-			var vertexShader   = CompileShaderFromSource("vertex", VERTEX_SHADER_SOURCE, ShaderType.VertexShader);
-			var fragmentShader = CompileShaderFromSource("fragment", FRAGMENT_SHADER_SOURCE, ShaderType.FragmentShader);
-			_program = LinkProgram("main", vertexShader, fragmentShader);
-			_matrixUniform = GL.GetUniformLocation(_program, "modelViewProjection");
+			_vertexArray = VertexArray.Gen();
+			_vertexArray.Bind();
 
-			GL.GenVertexArrays(1, out _vertexArray);
-			GL.BindVertexArray(_vertexArray);
+			_vertexBuffer = Buffer<Vector3>.CreateFromData(_vertexBufferData);
+			attribs["position"].Pointer(3, VertexAttribPointerType.Float);
 
-			GL.GenBuffers(1, out _vertexBuffer);
-			GL.BindBuffer(BufferTargetARB.ArrayBuffer, _vertexBuffer);
-			fixed (Vector3* vertices = _vertexBufferData)
-				GL.BufferData(BufferTargetARB.ArrayBuffer,
-				              (uint)(_vertexBufferData.Length * sizeof(Vector3)),
-				              vertices, BufferUsageARB.StaticDraw);
-
-			GL.GenBuffers(1, out _colorBuffer);
-			GL.BindBuffer(BufferTargetARB.ArrayBuffer, _colorBuffer);
-			fixed (Vector3* colors = _colorBufferData)
-				GL.BufferData(BufferTargetARB.ArrayBuffer,
-				              (uint)(_colorBufferData.Length * sizeof(Vector3)),
-				              colors, BufferUsageARB.StaticDraw);
+			_colorBuffer = Buffer<Vector3>.CreateFromData(_colorBufferData);
+			attribs["color"].Pointer(3, VertexAttribPointerType.Float);
 
 			OnResize(Window.Size);
 		}
@@ -192,27 +176,19 @@ namespace gaemstone.Client
 
 		}
 
-		private unsafe void OnRender(double delta)
+		private void OnRender(double delta)
 		{
-			GL.ClearColor(0.0F, 0.4F, 0.2F, 1.0F);
-			GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
-
-			GL.UseProgram(_program);
-
-			GL.EnableVertexAttribArray(0);
-			GL.BindBuffer(BufferTargetARB.ArrayBuffer, _vertexBuffer);
-			GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, 0, null);
-
-			GL.EnableVertexAttribArray(1);
-			GL.BindBuffer(BufferTargetARB.ArrayBuffer, _colorBuffer);
-			GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, 0, null);
+			GFX.Clear(Color.Indigo);
+			_program.Use();
 
 			for (var cameraIndex = 0; cameraIndex < Cameras.Count; cameraIndex++) {
 				var cameraID       = Cameras.GetEntityIDByIndex(cameraIndex);
 				ref var camera     = ref Cameras.GetComponentByIndex(cameraIndex);
 				ref var view       = ref Transforms.Get(cameraID).Value;
 				ref var projection = ref camera.Projection;
-				GL.Viewport(camera.Viewport);
+				// TODO: view probably needs to be inverted once the transform represents a normal
+				//       entity transform instead of being manually created from Matrix4x4.LookAt.
+				GFX.Viewport(camera.Viewport);
 
 				for (var transformIndex = 0; transformIndex < Transforms.Count; transformIndex++) {
 					// Right now we render a mesh on every entity that has
@@ -222,53 +198,12 @@ namespace gaemstone.Client
 					if (cameraID == entityID) continue;
 
 					ref var modelView = ref Transforms.GetComponentByIndex(transformIndex);
-					var modelViewProjection = modelView * view * projection;
-					GL.UniformMatrix4(_matrixUniform, 1, false, in modelViewProjection.M11);
-					GL.DrawArrays(PrimitiveType.Triangles, 0, (uint)_vertexBufferData.Length);
+					_mvpUniform.Set(modelView * view * projection);
+					GFX.GL.DrawArrays(PrimitiveType.Triangles, 0, (uint)_vertexBufferData.Length);
 				}
 			}
 
-			GL.DisableVertexAttribArray(0);
-			GL.DisableVertexAttribArray(1);
-
 			Window.SwapBuffers();
-		}
-
-
-		private uint CompileShaderFromSource(string name, string source, ShaderType type)
-		{
-			var shader = GL.CreateShader(type);
-			GL.ObjectLabel(ObjectIdentifier.Shader, shader, (uint)name.Length, name);
-
-			GL.ShaderSource(shader, source);
-			GL.CompileShader(shader);
-
-			GL.GetShader(shader, ShaderParameterName.CompileStatus, out var result);
-			if (result != (int)GLEnum.True) throw new Exception(
-				$"Failed compiling shader '{name}':\n{GL.GetShaderInfoLog(shader)}");
-
-			return shader;
-		}
-
-		private uint LinkProgram(string name, params uint[] shaders)
-		{
-			var program = GL.CreateProgram();
-			GL.ObjectLabel(ObjectIdentifier.Program, program, (uint)name.Length, name);
-
-			foreach (var shader in shaders)
-				GL.AttachShader(program, shader);
-			GL.LinkProgram(program);
-
-			GL.GetProgram(program, ProgramPropertyARB.LinkStatus, out var result);
-			if (result != (int)GLEnum.True) throw new Exception(
-				$"Failed linking program '{name}':\n{GL.GetProgramInfoLog(program)}");
-
-			foreach (var shader in shaders)
-				GL.DetachShader(program, shader);
-			foreach (var shader in shaders)
-				GL.DeleteShader(shader);
-
-			return program;
 		}
 	}
 }
