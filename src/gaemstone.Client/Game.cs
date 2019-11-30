@@ -1,5 +1,6 @@
 using System;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using gaemstone.Client.Components;
@@ -74,29 +75,6 @@ namespace gaemstone.Client
 		}
 
 
-		private static readonly string VERTEX_SHADER_SOURCE = @"
-			#version 330 core
-			layout(location = 0) in vec3 position;
-			layout(location = 1) in vec3 color;
-			uniform mat4 modelViewProjection;
-			out vec4 fragmentColor;
-			void main(void)
-			{
-				gl_Position   = modelViewProjection * vec4(position, 1.0);
-				fragmentColor = vec4(color, 1.0);
-			}
-		";
-
-		private static readonly string FRAGMENT_SHADER_SOURCE = @"
-			#version 330
-			in vec4 fragmentColor;
-			out vec4 outputColor;
-			void main()
-			{
-				outputColor = fragmentColor;
-			}
-		";
-
 		private Program _program;
 		private UniformMatrix4x4 _mvpUniform;
 		private VertexArray _vertexArray;
@@ -136,9 +114,20 @@ namespace gaemstone.Client
 			GFX.OnDebugOutput += (source, type, id, severity, message) =>
 				Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");
 
+			string GetResourceAsString(string name)
+			{
+				name = "gaemstone.Client.Resources." + name;
+				using (var stream = typeof(Game).Assembly.GetManifestResourceStream(name)!)
+				using (var reader = new StreamReader(stream))
+					return reader.ReadToEnd();
+			}
+
+			var vertexShaderSource   = GetResourceAsString("default.vs.glsl");
+			var fragmentShaderSource = GetResourceAsString("default.fs.glsl");
+
 			_program = Program.LinkFromShaders("main",
-				Shader.CompileFromSource("vertex", ShaderType.VertexShader, VERTEX_SHADER_SOURCE),
-				Shader.CompileFromSource("fragment", ShaderType.FragmentShader, FRAGMENT_SHADER_SOURCE));
+				Shader.CompileFromSource("vertex", ShaderType.VertexShader, vertexShaderSource),
+				Shader.CompileFromSource("fragment", ShaderType.FragmentShader, fragmentShaderSource));
 			_program.DetachAndDeleteShaders();
 
 			var uniforms = _program.GetActiveUniforms();

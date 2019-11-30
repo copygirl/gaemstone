@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Resources/*" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="../gaemstone.Common/gaemstone.Common.csproj" />
   </ItemGroup>
 
