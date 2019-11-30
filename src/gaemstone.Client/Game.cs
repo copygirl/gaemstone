@@ -13,9 +13,6 @@ namespace gaemstone.Client
 {
 	public class Game
 	{
-		private const float DEGREES_TO_RADIANS = MathF.PI / 180;
-		private const float RADIANS_TO_DEGREES = 180 / MathF.PI;
-
 		private static void Main(string[] args)
 			=> new Game(args).Run();
 
@@ -153,6 +150,7 @@ namespace gaemstone.Client
 
 		private void OnResize(Size size)
 		{
+			const float DEGREES_TO_RADIANS = MathF.PI / 180;
 			var aspectRatio = (float)Window.Size.Width / Window.Size.Height;
 			Cameras.Set(MainCamera.ID, new Camera {
 				Viewport   = new Rectangle(Point.Empty, size),
