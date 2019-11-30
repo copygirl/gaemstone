@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Linq;
 using System.Numerics;
+using gaemstone.Client.Components;
 using gaemstone.Client.Graphics;
 using gaemstone.Common.ECS;
 using Silk.NET.OpenGL;

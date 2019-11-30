@@ -1,7 +1,7 @@
 using System.Drawing;
 using System.Numerics;
 
-namespace gaemstone.Client
+namespace gaemstone.Client.Components
 {
 	public struct Camera
 	{

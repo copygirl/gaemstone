@@ -1,6 +1,6 @@
 using System.Numerics;
 
-namespace gaemstone.Client
+namespace gaemstone.Client.Components
 {
 	public struct Transform
 	{
