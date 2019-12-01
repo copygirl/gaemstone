@@ -13,6 +13,8 @@ namespace gaemstone.Client
 {
 	public class Game
 	{
+		private static readonly Random _rnd = new Random();
+
 		private static void Main(string[] args)
 			=> new Game(args).Run();
 
@@ -58,11 +60,15 @@ namespace gaemstone.Client
 
 			for (var x = -2; x <= 2; x++)
 			for (var z = -2; z <= 2; z++) {
-				var entity = Entities.New();
-				Transforms.Set(entity.ID, Matrix4x4.CreateTranslation(x * 4, 0, z * 4));
+				var entity   = Entities.New();
+				var position = Matrix4x4.CreateTranslation(x * 4, 0, z * 4);
+				var rotation = Matrix4x4.CreateRotationY((float)(_rnd.NextDouble() * Math.PI));
+				Transforms.Set(entity.ID, rotation * position);
 			}
 
-			// Destroy one of the entities.
+			// Destroy some of the entities, because we can.
+			Entities.Destroy(Entities.GetByID(1)!.Value);
+			Entities.Destroy(Entities.GetByID(2)!.Value);
 			Entities.Destroy(Entities.GetByID(12)!.Value);
 		}
 
@@ -99,7 +105,6 @@ namespace gaemstone.Client
 			new Vector3(-1,-1, 1), new Vector3( 1,-1, 1), new Vector3(-1, 1, 1),
 		};
 
-		private static readonly Random _rnd = new Random();
 		private readonly Vector3[] _colorBufferData
 			= Enumerable.Range(0, 6 * 2 * 3) // Sides * TrianglesPerSide * VerticesPerTriangle
 				.Select(i => new Vector3((float)_rnd.NextDouble(), (float)_rnd.NextDouble(), (float)_rnd.NextDouble()))
