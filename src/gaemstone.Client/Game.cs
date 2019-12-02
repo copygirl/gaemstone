@@ -6,6 +6,7 @@ using System.Numerics;
 using gaemstone.Client.Components;
 using gaemstone.Client.Graphics;
 using gaemstone.Common.ECS;
+using gaemstone.Common.Utility;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
 
@@ -13,7 +14,7 @@ namespace gaemstone.Client
 {
 	public class Game
 	{
-		private static readonly Random _rnd = new Random();
+		public static Random RND { get; } = new Random();
 
 		private static void Main(string[] args)
 			=> new Game(args).Run();
@@ -62,7 +63,7 @@ namespace gaemstone.Client
 			for (var z = -2; z <= 2; z++) {
 				var entity   = Entities.New();
 				var position = Matrix4x4.CreateTranslation(x * 4, 0, z * 4);
-				var rotation = Matrix4x4.CreateRotationY((float)(_rnd.NextDouble() * Math.PI));
+				var rotation = Matrix4x4.CreateRotationY(RND.NextFloat(MathF.PI * 2));
 				Transforms.Set(entity.ID, rotation * position);
 			}
 
@@ -80,6 +81,7 @@ namespace gaemstone.Client
 
 		private Program _program;
 		private UniformMatrix4x4 _mvpUniform;
+
 		private VertexArray _vertexArray;
 		private Buffer<Vector3> _vertexBuffer;
 		private Buffer<Vector3> _colorBuffer;
@@ -107,7 +109,7 @@ namespace gaemstone.Client
 
 		private readonly Vector3[] _colorBufferData
 			= Enumerable.Range(0, 6 * 2 * 3) // Sides * TrianglesPerSide * VerticesPerTriangle
-				.Select(i => new Vector3((float)_rnd.NextDouble(), (float)_rnd.NextDouble(), (float)_rnd.NextDouble()))
+				.Select(i => new Vector3(RND.NextFloat(), RND.NextFloat(), RND.NextFloat()))
 				.ToArray();
 
 		private void OnLoad()
