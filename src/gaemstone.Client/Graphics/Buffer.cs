@@ -1,21 +1,29 @@
+using System;
 using System.Runtime.CompilerServices;
 using Silk.NET.OpenGL;
 
 namespace gaemstone.Client.Graphics
 {
-	public readonly struct Buffer<T>
-		where T : struct
+	public readonly struct Buffer
 	{
-		public static Buffer<T> Gen(BufferTargetARB target)
-			=> new Buffer<T>(GFX.GL.GenBuffer(), target);
+		public static Buffer Gen(BufferTargetARB target)
+			=> new Buffer(GFX.GL.GenBuffer(), target);
 
-		public static Buffer<T> CreateFromData(T[] data,
+		public static Buffer CreateFromData<T>(T[] data,
+				BufferTargetARB target = BufferTargetARB.ArrayBuffer,
+				BufferUsageARB usage   = BufferUsageARB.StaticDraw)
+			=> CreateFromData<T>((Span<T>)data, target, usage);
+		public static Buffer CreateFromData<T>(ArraySegment<T> data,
+				BufferTargetARB target = BufferTargetARB.ArrayBuffer,
+				BufferUsageARB usage   = BufferUsageARB.StaticDraw)
+			=> CreateFromData<T>((Span<T>)data, target, usage);
+		public static Buffer CreateFromData<T>(Span<T> data,
 			BufferTargetARB target = BufferTargetARB.ArrayBuffer,
 			BufferUsageARB usage   = BufferUsageARB.StaticDraw)
 		{
 			var buffer = Gen(target);
 			buffer.Bind();
-			buffer.Data(usage, data);
+			buffer.Data(data, usage);
 			return buffer;
 		}
 
@@ -29,7 +37,11 @@ namespace gaemstone.Client.Graphics
 		public void Bind()
 			=> GFX.GL.BindBuffer(Target, Handle);
 
-		public void Data(BufferUsageARB usage, T[] data)
+		public void Data<T>(T[] data, BufferUsageARB usage)
+			=> Data<T>((Span<T>)data, usage);
+		public void Data<T>(ArraySegment<T> data, BufferUsageARB usage)
+			=> Data<T>((Span<T>)data, usage);
+		public void Data<T>(Span<T> data, BufferUsageARB usage)
 		{ unsafe {
 			GFX.GL.BufferData(Target, (uint)(data.Length * Unsafe.SizeOf<T>()),
 			                  Unsafe.AsPointer(ref data[0]), usage);

@@ -9,6 +9,7 @@ using gaemstone.Common.ECS;
 using gaemstone.Common.Utility;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
+using Buffer = gaemstone.Client.Graphics.Buffer;
 using ModelRoot = SharpGLTF.Schema2.ModelRoot;
 
 namespace gaemstone.Client
@@ -78,10 +79,10 @@ namespace gaemstone.Client
 		private UniformMatrix4x4 _mvpUniform;
 
 		private VertexArray _vertexArray;
-		private Buffer<ushort> _indexBuffer;
-		private Buffer<Vector3> _vertexBuffer;
-		private Buffer<Vector3> _colorBuffer;
-		private int _vertexCount;
+		private int _indicesCount;
+		private Buffer _indexBuffer;
+		private Buffer _vertexBuffer;
+		private Buffer _colorBuffer;
 
 		private void OnLoad()
 		{
@@ -111,25 +112,25 @@ namespace gaemstone.Client
 			var attribs  = _program.GetActiveAttributes();
 			_mvpUniform  = uniforms["modelViewProjection"].Matrix4x4;
 
-			_vertexArray = VertexArray.Gen();
-			_vertexArray.Bind();
-
 
 			ModelRoot root;
 			using (var stream = GetResourceStream("sword.glb"))
 				root = ModelRoot.ReadGLB(stream, new SharpGLTF.Schema2.ReadSettings());
 			var primitive = root.LogicalMeshes[0].Primitives[0];
 
-			var indicesBufferData = primitive.GetIndices().Select(i => (ushort)i).ToArray();
-			var verticesBufferData = primitive.VertexAccessors["POSITION"].AsVector3Array().ToArray();
-			var colorsBufferData = verticesBufferData.Select(_ =>
-				new Vector3(RND.NextFloat(), RND.NextFloat(), RND.NextFloat())).ToArray();
-			_vertexCount = indicesBufferData.Length;
+			_indicesCount = primitive.IndexAccessor.Count;
+			var indicesBufferData  = primitive.IndexAccessor.SourceBufferView.Content;
+			var verticesBufferData = primitive.VertexAccessors["POSITION"].SourceBufferView.Content;
+			var colorsBufferData   = primitive.VertexAccessors["NORMAL"].AsVector3Array().ToArray();
 
-			_indexBuffer = Buffer<ushort>.CreateFromData(indicesBufferData, BufferTargetARB.ElementArrayBuffer);
-			_vertexBuffer = Buffer<Vector3>.CreateFromData(verticesBufferData);
+
+			_vertexArray = VertexArray.Gen();
+			_vertexArray.Bind();
+
+			_indexBuffer = Buffer.CreateFromData(indicesBufferData, BufferTargetARB.ElementArrayBuffer);
+			_vertexBuffer = Buffer.CreateFromData(verticesBufferData);
 			attribs["position"].Pointer(3, VertexAttribPointerType.Float);
-			_colorBuffer = Buffer<Vector3>.CreateFromData(colorsBufferData);
+			_colorBuffer = Buffer.CreateFromData(colorsBufferData);
 			attribs["color"].Pointer(3, VertexAttribPointerType.Float);
 
 			OnResize(Window.Size);
@@ -179,7 +180,7 @@ namespace gaemstone.Client
 
 					ref var modelView = ref Transforms.GetComponentByIndex(transformIndex);
 					_mvpUniform.Set(modelView * view * projection);
-					GFX.GL.DrawElements((GLEnum)PrimitiveType.Triangles, (uint)_vertexCount,
+					GFX.GL.DrawElements((GLEnum)PrimitiveType.Triangles, (uint)_indicesCount,
 					                    (GLEnum)DrawElementsType.UnsignedShort, 0);
 				}
 			}
