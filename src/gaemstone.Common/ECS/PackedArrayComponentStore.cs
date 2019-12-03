@@ -36,15 +36,18 @@ namespace gaemstone.Common.ECS
 		public void RemoveByIndex(int index)
 		{
 			if ((index < 0) || (index >= Count)) throw new ArgumentOutOfRangeException(nameof(index));
-			if (!_indices.Remove(_entities[index])) throw new Exception($"{_entities[index]} not found in _indices");
 
 			var entityID = _entities[index];
-			if (index != --Count) {
+			if (!_indices.Remove(entityID)) throw new Exception($"{_entities[index]} not found in _indices");
+
+			if (index == --Count) {
+				_entities[index]   = default;
+				_components[index] = default;
+			} else {
 				_entities[index]   = _entities[Count];
 				_components[index] = _components[Count];
 				_indices[_entities[index]] = index;
 			}
-			_indices.Remove(entityID);
 			OnComponentRemoved?.Invoke(entityID);
 		}
 
@@ -90,19 +93,23 @@ namespace gaemstone.Common.ECS
 				nameof(newCapacity), newCapacity, "Capacity must be 0 or positive");
 
 			if (newCapacity < Count) {
-				for (int i = newCapacity; i < Count; i++)
+				for (int i = newCapacity; i < Count; i++) {
 					_indices.Remove(_entities[i]);
+					OnComponentRemoved?.Invoke(_entities[i]);
+				}
 				Count = newCapacity;
 			}
 
-			var newEntities = new uint[newCapacity];
+			var newEntities   = new uint[newCapacity];
 			var newComponents = new T[newCapacity];
 
 			var copyCount = Math.Min(Capacity, newCapacity);
-			Buffer.BlockCopy(_entities, 0, newEntities, 0, copyCount);
-			Buffer.BlockCopy(_components, 0, newComponents, 0, copyCount);
+			Buffer.BlockCopy(_entities, 0, newEntities, 0, copyCount * sizeof(uint));
+			// FIXME: "Object must be an array of primitives." - Find another way to do fast copy.
+			// Buffer.BlockCopy(_components, 0, newComponents, 0, copyCount);
+			Array.Copy(_components, newComponents, copyCount);
 
-			_entities = newEntities;
+			_entities   = newEntities;
 			_components = newComponents;
 		}
 	}

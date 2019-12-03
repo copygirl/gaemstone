@@ -43,7 +43,7 @@ namespace gaemstone.Common.ECS
 		public void Destroy(in Entity entity)
 		{
 			if (entity.ID >= _nextUnusedID) throw new InvalidOperationException(
-				$"Invalid (not yet used) entity ID {entity.ID}");
+				$"Entity {entity} is not alive (ID not yet assigned)");
 			ref var entry = ref _entities[entity.ID];
 			if (!entry.Occupied || (entry.Generation != entity.Generation))
 				throw new InvalidOperationException($"Entity {entity} is not alive");
@@ -79,7 +79,9 @@ namespace gaemstone.Common.ECS
 				nameof(newCapacity), newCapacity, "New capacity must be larger than previous");
 
 			var newEntities = new Entry[newCapacity];
-			Buffer.BlockCopy(_entities, 0, newEntities, 0, Capacity);
+			// FIXME: "Object must be an array of primitives." - Find another way to do fast copy.
+			// Buffer.BlockCopy(_entities, 0, newEntities, 0, Capacity);
+			Array.Copy(_entities, newEntities, Capacity);
 			_entities = newEntities;
 
 			OnCapacityChanged?.Invoke(Capacity);
