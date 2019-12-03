@@ -6,6 +6,13 @@ namespace gaemstone.Client.Graphics
 		public static VertexArray Gen()
 			=> new VertexArray(GFX.GL.GenVertexArray());
 
+		public static VertexArray GenAndBind()
+		{
+			var vertexArray = Gen();
+			vertexArray.Bind();
+			return vertexArray;
+		}
+
 
 		public uint Handle { get; }
 

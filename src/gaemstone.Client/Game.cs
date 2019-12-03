@@ -1,7 +1,6 @@
 using System;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Numerics;
 using gaemstone.Client.Components;
 using gaemstone.Client.Graphics;
@@ -9,8 +8,6 @@ using gaemstone.Common.ECS;
 using gaemstone.Common.Utility;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
-using Buffer = gaemstone.Client.Graphics.Buffer;
-using ModelRoot = SharpGLTF.Schema2.ModelRoot;
 
 namespace gaemstone.Client
 {
@@ -23,13 +20,16 @@ namespace gaemstone.Client
 		public IWindow Window { get; }
 		public Random RND { get; } = new Random();
 
+		public MeshManager MeshManager { get; }
+
 		public EntityManager Entities { get; }
 		public ComponentManager Components { get; }
 		public PackedArrayComponentStore<Transform> Transforms { get; }
+		public PackedArrayComponentStore<Mesh> Meshes { get; }
 		public PackedArrayComponentStore<Camera> Cameras { get; }
 		// TODO: Camera is uncommon. Handle uncommon components differently.
 
-		public Entity MainCamera { get; }
+		public Entity MainCamera { get; private set; }
 
 
 		private Game(string[] args)
@@ -47,26 +47,16 @@ namespace gaemstone.Client
 			Window.Render  += OnRender;
 			Window.Closing += OnClosing;
 
+			MeshManager = new MeshManager(this);
+
 			Entities   = new EntityManager();
 			Components = new ComponentManager(Entities);
 			Transforms = new PackedArrayComponentStore<Transform>();
+			Meshes     = new PackedArrayComponentStore<Mesh>();
 			Cameras    = new PackedArrayComponentStore<Camera>();
 			Components.AddStore(Transforms);
+			Components.AddStore(Meshes);
 			Components.AddStore(Cameras);
-
-			MainCamera = Entities.New();
-			Transforms.Set(MainCamera.ID, Matrix4x4.CreateLookAt(
-				cameraPosition : new Vector3(3, 2, 2),
-				cameraTarget   : new Vector3(0, 0, 0),
-				cameraUpVector : new Vector3(0, 1, 0)));
-
-			for (var x = -8; x <= 8; x++)
-			for (var z = -8; z <= 8; z++) {
-				var entity   = Entities.New();
-				var position = Matrix4x4.CreateTranslation(x * 0.5F, 0, z * 0.5F);
-				var rotation = Matrix4x4.CreateRotationY(RND.NextFloat(MathF.PI * 2));
-				Transforms.Set(entity.ID, rotation * position);
-			}
 		}
 
 		public void Run()
@@ -75,30 +65,25 @@ namespace gaemstone.Client
 		}
 
 
+		public Stream GetResourceStream(string name)
+			=> typeof(Game).Assembly.GetManifestResourceStream("gaemstone.Client.Resources." + name)!;
+
+		public string GetResourceAsString(string name)
+		{
+			using (var stream = GetResourceStream(name))
+			using (var reader = new StreamReader(stream))
+				return reader.ReadToEnd();
+		}
+
+
 		private Program _program;
 		private UniformMatrix4x4 _mvpUniform;
-
-		private VertexArray _vertexArray;
-		private int _indicesCount;
-		private Buffer _indexBuffer;
-		private Buffer _vertexBuffer;
-		private Buffer _colorBuffer;
 
 		private void OnLoad()
 		{
 			GFX.Initialize();
 			GFX.OnDebugOutput += (source, type, id, severity, message) =>
 				Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");
-
-			Stream GetResourceStream(string name)
-				=> typeof(Game).Assembly.GetManifestResourceStream("gaemstone.Client.Resources." + name)!;
-
-			string GetResourceAsString(string name)
-			{
-				using (var stream = GetResourceStream(name))
-				using (var reader = new StreamReader(stream))
-					return reader.ReadToEnd();
-			}
 
 			var vertexShaderSource   = GetResourceAsString("default.vs.glsl");
 			var fragmentShaderSource = GetResourceAsString("default.fs.glsl");
@@ -112,26 +97,23 @@ namespace gaemstone.Client
 			var attribs  = _program.GetActiveAttributes();
 			_mvpUniform  = uniforms["modelViewProjection"].Matrix4x4;
 
+			var heartMesh = MeshManager.Load("heart.glb", attribs).ID;
+			var swordMesh = MeshManager.Load("sword.glb", attribs).ID;
 
-			ModelRoot root;
-			using (var stream = GetResourceStream("sword.glb"))
-				root = ModelRoot.ReadGLB(stream, new SharpGLTF.Schema2.ReadSettings());
-			var primitive = root.LogicalMeshes[0].Primitives[0];
+			MainCamera = Entities.New();
+			Transforms.Set(MainCamera.ID, Matrix4x4.CreateLookAt(
+				cameraPosition : new Vector3(3, 2, 2),
+				cameraTarget   : new Vector3(0, 0, 0),
+				cameraUpVector : new Vector3(0, 1, 0)));
 
-			_indicesCount = primitive.IndexAccessor.Count;
-			var indicesBufferData  = primitive.IndexAccessor.SourceBufferView.Content;
-			var verticesBufferData = primitive.VertexAccessors["POSITION"].SourceBufferView.Content;
-			var colorsBufferData   = primitive.VertexAccessors["NORMAL"].AsVector3Array().ToArray();
-
-
-			_vertexArray = VertexArray.Gen();
-			_vertexArray.Bind();
-
-			_indexBuffer = Buffer.CreateFromData(indicesBufferData, BufferTargetARB.ElementArrayBuffer);
-			_vertexBuffer = Buffer.CreateFromData(verticesBufferData);
-			attribs["position"].Pointer(3, VertexAttribPointerType.Float);
-			_colorBuffer = Buffer.CreateFromData(colorsBufferData);
-			attribs["color"].Pointer(3, VertexAttribPointerType.Float);
+			for (var x = -6; x <= 6; x++)
+			for (var z = -6; z <= 6; z++) {
+				var entity   = Entities.New();
+				var position = Matrix4x4.CreateTranslation(x, 0, z);
+				var rotation = Matrix4x4.CreateRotationY(RND.NextFloat(MathF.PI * 2));
+				Transforms.Set(entity.ID, rotation * position);
+				Meshes.Set(entity.ID, RND.Pick(heartMesh, swordMesh));
+			}
 
 			OnResize(Window.Size);
 		}
@@ -171,17 +153,13 @@ namespace gaemstone.Client
 				//       entity transform instead of being manually created from Matrix4x4.LookAt.
 				GFX.Viewport(camera.Viewport);
 
-				for (var transformIndex = 0; transformIndex < Transforms.Count; transformIndex++) {
-					// Right now we render a mesh on every entity that has
-					// a Transform component, so skip the camera itself.
-					// TODO: Implement Mesh component.
-					var entityID = Transforms.GetEntityIDByIndex(transformIndex);
-					if (cameraID == entityID) continue;
-
-					ref var modelView = ref Transforms.GetComponentByIndex(transformIndex);
+				for (var meshIndex = 0; meshIndex < Meshes.Count; meshIndex++) {
+					var entityID      = Meshes.GetEntityIDByIndex(meshIndex);
+					ref var mesh      = ref Meshes.GetComponentByIndex(meshIndex);
+					ref var modelView = ref Transforms.Get(entityID).Value;
+					var meshInfo      = MeshManager.Find(mesh);
 					_mvpUniform.Set(modelView * view * projection);
-					GFX.GL.DrawElements((GLEnum)PrimitiveType.Triangles, (uint)_indicesCount,
-					                    (GLEnum)DrawElementsType.UnsignedShort, 0);
+					meshInfo.Draw();
 				}
 			}
 
