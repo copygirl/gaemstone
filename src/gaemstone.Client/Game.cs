@@ -9,18 +9,18 @@ using gaemstone.Common.ECS;
 using gaemstone.Common.Utility;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
+using ModelRoot = SharpGLTF.Schema2.ModelRoot;
 
 namespace gaemstone.Client
 {
 	public class Game
 	{
-		public static Random RND { get; } = new Random();
-
 		private static void Main(string[] args)
 			=> new Game(args).Run();
 
 
 		public IWindow Window { get; }
+		public Random RND { get; } = new Random();
 
 		public EntityManager Entities { get; }
 		public ComponentManager Components { get; }
@@ -55,22 +55,17 @@ namespace gaemstone.Client
 
 			MainCamera = Entities.New();
 			Transforms.Set(MainCamera.ID, Matrix4x4.CreateLookAt(
-				cameraPosition : new Vector3(4, 3, 3),
+				cameraPosition : new Vector3(3, 2, 2),
 				cameraTarget   : new Vector3(0, 0, 0),
 				cameraUpVector : new Vector3(0, 1, 0)));
 
-			for (var x = -2; x <= 2; x++)
-			for (var z = -2; z <= 2; z++) {
+			for (var x = -8; x <= 8; x++)
+			for (var z = -8; z <= 8; z++) {
 				var entity   = Entities.New();
-				var position = Matrix4x4.CreateTranslation(x * 4, 0, z * 4);
+				var position = Matrix4x4.CreateTranslation(x * 0.5F, 0, z * 0.5F);
 				var rotation = Matrix4x4.CreateRotationY(RND.NextFloat(MathF.PI * 2));
 				Transforms.Set(entity.ID, rotation * position);
 			}
-
-			// Destroy some of the entities, because we can.
-			Entities.Destroy(Entities.GetByID(1)!.Value);
-			Entities.Destroy(Entities.GetByID(2)!.Value);
-			Entities.Destroy(Entities.GetByID(12)!.Value);
 		}
 
 		public void Run()
@@ -83,34 +78,10 @@ namespace gaemstone.Client
 		private UniformMatrix4x4 _mvpUniform;
 
 		private VertexArray _vertexArray;
+		private Buffer<ushort> _indexBuffer;
 		private Buffer<Vector3> _vertexBuffer;
 		private Buffer<Vector3> _colorBuffer;
-
-		private readonly Vector3[] _vertexBufferData = {
-			// -X
-			new Vector3(-1, 1, 1), new Vector3(-1,-1, 1), new Vector3(-1, 1,-1),
-			new Vector3(-1,-1,-1), new Vector3(-1, 1,-1), new Vector3(-1,-1, 1),
-			// -Y
-			new Vector3(-1,-1,-1), new Vector3(-1,-1, 1), new Vector3( 1,-1,-1),
-			new Vector3( 1,-1, 1), new Vector3( 1,-1,-1), new Vector3(-1,-1, 1),
-			// -Z
-			new Vector3(-1, 1,-1), new Vector3(-1,-1,-1), new Vector3( 1, 1,-1),
-			new Vector3( 1,-1,-1), new Vector3( 1, 1,-1), new Vector3(-1,-1,-1),
-			// +X
-			new Vector3( 1, 1,-1), new Vector3( 1,-1,-1), new Vector3( 1, 1, 1),
-			new Vector3( 1,-1, 1), new Vector3( 1, 1, 1), new Vector3( 1,-1,-1),
-			// +Y
-			new Vector3(-1, 1, 1), new Vector3(-1, 1,-1), new Vector3( 1, 1, 1),
-			new Vector3( 1, 1,-1), new Vector3( 1, 1, 1), new Vector3(-1, 1,-1),
-			// +Z
-			new Vector3( 1, 1, 1), new Vector3(-1, 1, 1), new Vector3( 1,-1, 1),
-			new Vector3(-1,-1, 1), new Vector3( 1,-1, 1), new Vector3(-1, 1, 1),
-		};
-
-		private readonly Vector3[] _colorBufferData
-			= Enumerable.Range(0, 6 * 2 * 3) // Sides * TrianglesPerSide * VerticesPerTriangle
-				.Select(i => new Vector3(RND.NextFloat(), RND.NextFloat(), RND.NextFloat()))
-				.ToArray();
+		private int _vertexCount;
 
 		private void OnLoad()
 		{
@@ -118,10 +89,12 @@ namespace gaemstone.Client
 			GFX.OnDebugOutput += (source, type, id, severity, message) =>
 				Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");
 
+			Stream GetResourceStream(string name)
+				=> typeof(Game).Assembly.GetManifestResourceStream("gaemstone.Client.Resources." + name)!;
+
 			string GetResourceAsString(string name)
 			{
-				name = "gaemstone.Client.Resources." + name;
-				using (var stream = typeof(Game).Assembly.GetManifestResourceStream(name)!)
+				using (var stream = GetResourceStream(name))
 				using (var reader = new StreamReader(stream))
 					return reader.ReadToEnd();
 			}
@@ -141,10 +114,22 @@ namespace gaemstone.Client
 			_vertexArray = VertexArray.Gen();
 			_vertexArray.Bind();
 
-			_vertexBuffer = Buffer<Vector3>.CreateFromData(_vertexBufferData);
-			attribs["position"].Pointer(3, VertexAttribPointerType.Float);
 
-			_colorBuffer = Buffer<Vector3>.CreateFromData(_colorBufferData);
+			ModelRoot root;
+			using (var stream = GetResourceStream("sword.glb"))
+				root = ModelRoot.ReadGLB(stream, new SharpGLTF.Schema2.ReadSettings());
+			var primitive = root.LogicalMeshes[0].Primitives[0];
+
+			var indicesBufferData = primitive.GetIndices().Select(i => (ushort)i).ToArray();
+			var verticesBufferData = primitive.VertexAccessors["POSITION"].AsVector3Array().ToArray();
+			var colorsBufferData = verticesBufferData.Select(_ =>
+				new Vector3(RND.NextFloat(), RND.NextFloat(), RND.NextFloat())).ToArray();
+			_vertexCount = indicesBufferData.Length;
+
+			_indexBuffer = Buffer<ushort>.CreateFromData(indicesBufferData, BufferTargetARB.ElementArrayBuffer);
+			_vertexBuffer = Buffer<Vector3>.CreateFromData(verticesBufferData);
+			attribs["position"].Pointer(3, VertexAttribPointerType.Float);
+			_colorBuffer = Buffer<Vector3>.CreateFromData(colorsBufferData);
 			attribs["color"].Pointer(3, VertexAttribPointerType.Float);
 
 			OnResize(Window.Size);
@@ -194,7 +179,8 @@ namespace gaemstone.Client
 
 					ref var modelView = ref Transforms.GetComponentByIndex(transformIndex);
 					_mvpUniform.Set(modelView * view * projection);
-					GFX.GL.DrawArrays(PrimitiveType.Triangles, 0, (uint)_vertexBufferData.Length);
+					GFX.GL.DrawElements((GLEnum)PrimitiveType.Triangles, (uint)_vertexCount,
+					                    (GLEnum)DrawElementsType.UnsignedShort, 0);
 				}
 			}
 

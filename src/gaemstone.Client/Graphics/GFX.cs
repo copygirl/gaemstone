@@ -26,8 +26,11 @@ namespace gaemstone.Client.Graphics
 					null);
 			}
 
-			GL.Enable(GLEnum.DepthTest);
-			GL.DepthFunc(GLEnum.Less);
+			GL.Enable(EnableCap.DepthTest);
+			GL.DepthFunc(DepthFunction.Less);
+
+			GL.Enable(EnableCap.CullFace);
+			GL.CullFace(CullFaceMode.Back);
 		}
 
 		public static void Clear(Color color)

@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.0-alpha0014" />
     <PackageReference Include="Silk.NET" Version="1.0.0-preview420191127.3" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.6.0" />
   </ItemGroup>
