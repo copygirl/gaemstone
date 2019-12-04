@@ -5,6 +5,7 @@ using System.Numerics;
 using gaemstone.Client.Components;
 using gaemstone.Client.Graphics;
 using gaemstone.Common.ECS;
+using gaemstone.Common.ECS.Stores;
 using gaemstone.Common.Utility;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
@@ -24,9 +25,9 @@ namespace gaemstone.Client
 
 		public EntityManager Entities { get; }
 		public ComponentManager Components { get; }
-		public PackedArrayComponentStore<Transform> Transforms { get; }
-		public PackedArrayComponentStore<Mesh> Meshes { get; }
-		public PackedArrayComponentStore<Camera> Cameras { get; }
+		public IComponentRefStore<Transform> Transforms { get; }
+		public IComponentRefStore<Mesh> Meshes { get; }
+		public IComponentRefStore<Camera> Cameras { get; }
 		// TODO: Camera is uncommon. Handle uncommon components differently.
 
 		public Entity MainCamera { get; private set; }
@@ -51,9 +52,9 @@ namespace gaemstone.Client
 
 			Entities   = new EntityManager();
 			Components = new ComponentManager(Entities);
-			Transforms = new PackedArrayComponentStore<Transform>();
-			Meshes     = new PackedArrayComponentStore<Mesh>();
-			Cameras    = new PackedArrayComponentStore<Camera>();
+			Transforms = new PackedArrayStore<Transform>();
+			Meshes     = new PackedArrayStore<Mesh>();
+			Cameras    = new PackedArrayStore<Camera>();
 			Components.AddStore(Transforms);
 			Components.AddStore(Meshes);
 			Components.AddStore(Cameras);
@@ -144,19 +145,21 @@ namespace gaemstone.Client
 			GFX.Clear(Color.Indigo);
 			_program.Use();
 
-			for (var cameraIndex = 0; cameraIndex < Cameras.Count; cameraIndex++) {
-				var cameraID       = Cameras.GetEntityIDByIndex(cameraIndex);
-				ref var camera     = ref Cameras.GetComponentByIndex(cameraIndex);
-				ref var view       = ref Transforms.Get(cameraID).Value;
+			var cameraEnumerator = Cameras.GetEnumerator();
+			while (cameraEnumerator.MoveNext()) {
+				var cameraID       = cameraEnumerator.CurrentEntityID;
+				ref var camera     = ref cameraEnumerator.CurrentComponent;
+				ref var view       = ref Transforms.GetRef(cameraID).Value;
 				ref var projection = ref camera.Projection;
-				// TODO: view probably needs to be inverted once the transform represents a normal
+				// TODO: "view" probably needs to be inverted once the transform represents a normal
 				//       entity transform instead of being manually created from Matrix4x4.LookAt.
 				GFX.Viewport(camera.Viewport);
 
-				for (var meshIndex = 0; meshIndex < Meshes.Count; meshIndex++) {
-					var entityID      = Meshes.GetEntityIDByIndex(meshIndex);
-					ref var mesh      = ref Meshes.GetComponentByIndex(meshIndex);
-					ref var modelView = ref Transforms.Get(entityID).Value;
+				var meshEnumerator = Meshes.GetEnumerator();
+				while (meshEnumerator.MoveNext()) {
+					var entityID      = meshEnumerator.CurrentEntityID;
+					ref var mesh      = ref meshEnumerator.CurrentComponent;
+					ref var modelView = ref Transforms.GetRef(entityID).Value;
 					var meshInfo      = MeshManager.Find(mesh);
 					_mvpUniform.Set(modelView * view * projection);
 					meshInfo.Draw();

@@ -114,11 +114,8 @@ namespace gaemstone.Common.Collections
 		}
 
 
-		public ref Entry TryGetEntry(
-			GetBehavior behavior, TKey key, out bool found)
+		public ref Entry TryGetEntry(GetBehavior behavior, TKey key)
 		{
-			found = false;
-
 			if (_buckets == null) {
 				if (behavior != GetBehavior.Create)
 					return ref MISSING_ENTRY;
@@ -132,8 +129,6 @@ namespace gaemstone.Common.Collections
 			for (var i = bucket - 1; i >= 0; ) {
 				ref var entry = ref _entries![i];
 				if ((entry.HashCode == hashCode) && _comparer.Equals(entry.Key, key)) {
-					found = true;
-
 					if (behavior == GetBehavior.Remove) {
 						if (last < 0) bucket = entry._next + 1;
 						else _entries[last]._next = entry._next;
