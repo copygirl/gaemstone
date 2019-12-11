@@ -1,4 +1,5 @@
 using System;
+using gaemstone.Common.Utility;
 
 namespace gaemstone.Common.ECS.Stores
 {
@@ -6,8 +7,8 @@ namespace gaemstone.Common.ECS.Stores
 	{
 		Type ComponentType { get; }
 
-		event Action<uint>? OnComponentAdded;
-		event Action<uint>? OnComponentRemoved;
+		event ComponentAddedHandler? ComponentAdded;
+		event ComponentRemovedHandler? ComponentRemoved;
 
 		void Remove(uint entityID);
 	}
@@ -41,6 +42,11 @@ namespace gaemstone.Common.ECS.Stores
 			new ref T CurrentComponent { get; }
 		}
 	}
+
+	public delegate void ComponentAddedHandler(uint entityID);
+	public delegate void ComponentRemovedHandler(uint entityID);
+	public delegate void ComponentChangedHandler<T>(
+		uint entityID, NullableRef<T> oldValue, NullableRef<T> newValue);
 
 
 	public class ComponentNotFoundException

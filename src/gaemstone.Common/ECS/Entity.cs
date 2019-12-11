@@ -6,6 +6,8 @@ namespace gaemstone.Common.ECS
 	public readonly struct Entity
 		: IEquatable<Entity>
 	{
+		public static readonly Entity NONE = default(Entity);
+
 		public uint ID { get; }
 		public uint Generation { get; }
 
@@ -21,5 +23,10 @@ namespace gaemstone.Common.ECS
 			=> unchecked(HashHelper.Combine((int)ID, (int)Generation));
 		public override string ToString()
 			=> $"Entity(0x{ID:X8}, Generation={Generation})";
+
+		public static bool operator ==(Entity left, Entity right)
+			=> left.Equals(right);
+		public static bool operator !=(Entity left, Entity right)
+			=> !left.Equals(right);
 	}
 }

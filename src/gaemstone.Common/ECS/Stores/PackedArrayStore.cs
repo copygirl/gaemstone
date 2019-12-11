@@ -29,8 +29,8 @@ namespace gaemstone.Common.ECS.Stores
 			set => Components[index] = value;
 		}
 
-		public event Action<uint>? OnComponentAdded;
-		public event Action<uint>? OnComponentRemoved;
+		public event ComponentAddedHandler? ComponentAdded;
+		public event ComponentRemovedHandler? ComponentRemoved;
 
 		public PackedArrayStore()
 		{
@@ -55,6 +55,8 @@ namespace gaemstone.Common.ECS.Stores
 			if (!_indices.Remove(entityID)) throw new InvalidOperationException(
 				$"{EntityIDs[index]} not found in Indices"); // Shouldn't occur.
 
+			ComponentRemoved?.Invoke(entityID);
+
 			if (index == --Count) {
 				EntityIDs[index]  = default;
 				Components[index] = default;
@@ -63,8 +65,6 @@ namespace gaemstone.Common.ECS.Stores
 				Components[index] = Components[Count];
 				_indices[EntityIDs[index]] = index;
 			}
-
-			OnComponentRemoved?.Invoke(entityID);
 		}
 
 		public bool TryFindIndex(uint entityID, out int index)
@@ -87,7 +87,7 @@ namespace gaemstone.Common.ECS.Stores
 				EntityIDs[index] = entityID;
 			}
 			_indices[entityID] = index;
-			if (added) OnComponentAdded?.Invoke(entityID);
+			if (added) ComponentAdded?.Invoke(entityID);
 			return index;
 		}
 
@@ -111,8 +111,9 @@ namespace gaemstone.Common.ECS.Stores
 
 			if (newCapacity < Count) {
 				for (int i = newCapacity; i < Count; i++) {
-					_indices.Remove(EntityIDs[i]);
-					OnComponentRemoved?.Invoke(EntityIDs[i]);
+					var entityID = EntityIDs[i];
+					_indices.Remove(entityID);
+					ComponentRemoved?.Invoke(entityID);
 				}
 				Count = newCapacity;
 			}

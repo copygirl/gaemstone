@@ -1,10 +1,13 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 
 namespace gaemstone.Common.Utility
 {
 	public static class RandomExtensions
 	{
+		public static bool NextBool(this Random rnd, double chance)
+			=> rnd.NextDouble() < chance;
+
 		public static double NextDouble(this Random rnd, double max)
 			=> rnd.NextDouble() * max;
 		public static double NextDouble(this Random rnd, double min, double max)

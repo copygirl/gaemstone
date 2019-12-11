@@ -2,8 +2,11 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Numerics;
+using gaemstone.Client.Bloxel.Blocks;
+using gaemstone.Client.Bloxel.Chunks;
 using gaemstone.Client.Components;
 using gaemstone.Client.Graphics;
+using gaemstone.Common.Bloxel.Chunks;
 using gaemstone.Common.ECS;
 using gaemstone.Common.ECS.Stores;
 using gaemstone.Common.Utility;
@@ -22,6 +25,7 @@ namespace gaemstone.Client
 		public Random RND { get; } = new Random();
 
 		public MeshManager MeshManager { get; }
+		public ChunkMeshGenerator ChunkMeshGenerator { get; }
 
 		public EntityManager Entities { get; }
 		public ComponentManager Components { get; }
@@ -48,7 +52,8 @@ namespace gaemstone.Client
 			Window.Render  += OnRender;
 			Window.Closing += OnClosing;
 
-			MeshManager = new MeshManager(this);
+			MeshManager        = new MeshManager(this);
+			ChunkMeshGenerator = new ChunkMeshGenerator(MeshManager);
 
 			Entities   = new EntityManager();
 			Components = new ComponentManager(Entities);
@@ -97,9 +102,10 @@ namespace gaemstone.Client
 			var uniforms = _program.GetActiveUniforms();
 			var attribs  = _program.GetActiveAttributes();
 			_mvpUniform  = uniforms["modelViewProjection"].Matrix4x4;
+			MeshManager.ProgramAttributes = attribs;
 
-			var heartMesh = MeshManager.Load("heart.glb", attribs).ID;
-			var swordMesh = MeshManager.Load("sword.glb", attribs).ID;
+			var heartMesh = MeshManager.Load("heart.glb").ID;
+			var swordMesh = MeshManager.Load("sword.glb").ID;
 
 			MainCamera = Entities.New();
 			Transforms.Set(MainCamera.ID, Matrix4x4.CreateLookAt(
@@ -115,6 +121,19 @@ namespace gaemstone.Client
 				Transforms.Set(entity.ID, rotation * position);
 				Meshes.Set(entity.ID, RND.Pick(heartMesh, swordMesh));
 			}
+
+			var block   = new Block(Entities.New());
+			var storage = new ChunkPaletteStorage<Block>(default(Block));
+			for (var x = 0; x < 16; x++)
+			for (var y = 0; y < 16; y++)
+			for (var z = 0; z < 16; z++)
+				if (RND.NextBool(0.1))
+					storage[x, y, z] = block;
+
+			var chunkMesh = ChunkMeshGenerator.Generate(storage)!;
+			var chunk = Entities.New();
+			Transforms.Set(chunk.ID, Matrix4x4.CreateScale(0.15F));
+			Meshes.Set(chunk.ID, chunkMesh.ID);
 
 			OnResize(Window.Size);
 		}

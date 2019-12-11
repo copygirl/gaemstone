@@ -1,5 +1,6 @@
 using System;
 using gaemstone.Common.Collections;
+using gaemstone.Common.Utility;
 
 namespace gaemstone.Common.ECS.Stores
 {
@@ -12,8 +13,9 @@ namespace gaemstone.Common.ECS.Stores
 		public Type ComponentType { get; } = typeof(T);
 		public int Count => _dict.Count;
 
-		public event Action<uint>? OnComponentAdded;
-		public event Action<uint>? OnComponentRemoved;
+		public event ComponentAddedHandler? ComponentAdded;
+		public event ComponentRemovedHandler? ComponentRemoved;
+		public event ComponentChangedHandler<T>? ComponentChanged;
 
 
 		public T Get(uint entityID)
@@ -27,7 +29,10 @@ namespace gaemstone.Common.ECS.Stores
 		{
 			var previousCount = _dict.Count;
 			ref var entry = ref _dict.TryGetEntry(GetBehavior.Create, entityID);
-			if (_dict.Count > previousCount) OnComponentAdded?.Invoke(entityID);
+			var entryAdded = (_dict.Count > previousCount);
+			if (entryAdded) ComponentAdded?.Invoke(entityID);
+			var oldValue = (entryAdded ? NullableRef<T>.Empty : new NullableRef<T>(ref entry.Value));
+			ComponentChanged?.Invoke(entityID, oldValue, new NullableRef<T>(ref value));
 			entry.Value = value;
 		}
 
@@ -35,7 +40,10 @@ namespace gaemstone.Common.ECS.Stores
 		{
 			var previousCount = _dict.Count;
 			ref var entry = ref _dict.TryGetEntry(GetBehavior.Remove, entityID);
-			if (_dict.Count < previousCount) OnComponentRemoved?.Invoke(entityID);
+			if (_dict.Count < previousCount) {
+				ComponentRemoved?.Invoke(entityID);
+				ComponentChanged?.Invoke(entityID, new NullableRef<T>(ref entry.Value), NullableRef<T>.Empty);
+			}
 			else throw new ComponentNotFoundException(this, entityID);
 		}
 

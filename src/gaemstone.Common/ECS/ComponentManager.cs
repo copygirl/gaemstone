@@ -35,8 +35,8 @@ namespace gaemstone.Common.ECS
 			_stores.Add(store);
 			_byType.Add(store.ComponentType, storeIndex);
 
-			store.OnComponentAdded   += entityID => Set(entityID, storeIndex);
-			store.OnComponentRemoved += entityID => Unset(entityID, storeIndex);
+			store.ComponentAdded   += entityID => Set(entityID, storeIndex);
+			store.ComponentRemoved += entityID => Unset(entityID, storeIndex);
 
 			return storeIndex;
 		}

@@ -7,7 +7,7 @@ namespace gaemstone.Common.ECS
 	{
 		private const int STARTING_CAPACITY = 1024;
 
-		private uint _nextUnusedID = 0;
+		private uint _nextUnusedID = 1;
 		private Entry[] _entities = new Entry[STARTING_CAPACITY];
 		private Queue<uint> _unusedEntityIDs = new Queue<uint>();
 		// TODO: Attempt to keep Generation low by prioritizing smallest Generation?
@@ -33,6 +33,7 @@ namespace gaemstone.Common.ECS
 
 			ref var entry  = ref _entities[entityID];
 			entry.Occupied = true;
+			entry.Generation++;
 			Count++;
 
 			var entity = new Entity(entityID, entry.Generation);
@@ -49,7 +50,6 @@ namespace gaemstone.Common.ECS
 				throw new InvalidOperationException($"Entity {entity} is not alive");
 
 			entry.Occupied = false;
-			entry.Generation++;
 			Count--;
 
 			_unusedEntityIDs.Enqueue(entity.ID);
@@ -59,7 +59,7 @@ namespace gaemstone.Common.ECS
 
 		public Entity? GetByID(uint entityID)
 		{
-			if (entityID >= _nextUnusedID) return null;
+			if ((entityID == 0) || (entityID >= _nextUnusedID)) return null;
 			ref var entry = ref _entities[entityID];
 			if (!entry.Occupied) return null;
 			return new Entity(entityID, entry.Generation);
