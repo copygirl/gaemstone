@@ -9,6 +9,7 @@ namespace gaemstone.Client.Graphics
 	public static class GFX
 	{
 		public static GL GL { get; private set; } = null!;
+		public static bool IsInitialized => (GL != null);
 
 		public static event Action<DebugSource, DebugType, int, DebugSeverity, string>? OnDebugOutput;
 

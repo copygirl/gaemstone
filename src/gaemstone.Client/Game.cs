@@ -10,12 +10,11 @@ using gaemstone.Common.Bloxel.Chunks;
 using gaemstone.Common.ECS;
 using gaemstone.Common.ECS.Stores;
 using gaemstone.Common.Utility;
-using Silk.NET.OpenGL;
 using Silk.NET.Windowing.Common;
 
 namespace gaemstone.Client
 {
-	public class Game
+	public class Game : Universe
 	{
 		private static void Main(string[] args)
 			=> new Game(args).Run();
@@ -27,8 +26,6 @@ namespace gaemstone.Client
 		public MeshManager MeshManager { get; }
 		public ChunkMeshGenerator ChunkMeshGenerator { get; }
 
-		public EntityManager Entities { get; }
-		public ComponentManager Components { get; }
 		public IComponentRefStore<Transform> Transforms { get; }
 		public IComponentRefStore<Mesh> Meshes { get; }
 		public IComponentRefStore<Camera> Cameras { get; }
@@ -47,16 +44,12 @@ namespace gaemstone.Client
 				FramesPerSecond  = 60.0,
 			});
 			Window.Load    += OnLoad;
-			Window.Resize  += OnResize;
 			Window.Update  += OnUpdate;
-			Window.Render  += OnRender;
 			Window.Closing += OnClosing;
 
-			MeshManager        = new MeshManager(this);
+			MeshManager = new MeshManager(this);
 			ChunkMeshGenerator = new ChunkMeshGenerator(MeshManager);
 
-			Entities   = new EntityManager();
-			Components = new ComponentManager(Entities);
 			Transforms = new PackedArrayStore<Transform>();
 			Meshes     = new PackedArrayStore<Mesh>();
 			Cameras    = new PackedArrayStore<Camera>();
@@ -82,36 +75,21 @@ namespace gaemstone.Client
 		}
 
 
-		private Program _program;
-		private UniformMatrix4x4 _mvpUniform;
-
 		private void OnLoad()
 		{
-			GFX.Initialize();
-			GFX.OnDebugOutput += (source, type, id, severity, message) =>
-				Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");
-
-			var vertexShaderSource   = GetResourceAsString("default.vs.glsl");
-			var fragmentShaderSource = GetResourceAsString("default.fs.glsl");
-
-			_program = Program.LinkFromShaders("main",
-				Shader.CompileFromSource("vertex", ShaderType.VertexShader, vertexShaderSource),
-				Shader.CompileFromSource("fragment", ShaderType.FragmentShader, fragmentShaderSource));
-			_program.DetachAndDeleteShaders();
-
-			var uniforms = _program.GetActiveUniforms();
-			var attribs  = _program.GetActiveAttributes();
-			_mvpUniform  = uniforms["modelViewProjection"].Matrix4x4;
-			MeshManager.ProgramAttributes = attribs;
-
-			var heartMesh = MeshManager.Load("heart.glb").ID;
-			var swordMesh = MeshManager.Load("sword.glb").ID;
-
 			MainCamera = Entities.New();
 			Transforms.Set(MainCamera.ID, Matrix4x4.CreateLookAt(
 				cameraPosition : new Vector3(3, 2, 2),
 				cameraTarget   : new Vector3(0, 0, 0),
 				cameraUpVector : new Vector3(0, 1, 0)));
+
+			// TODO: This currently has to sit exactly here.
+			//       Renderer requires MainCamera, and it initializes GFX,
+			//       which is required for MeshManager to create meshes.
+			Processors.Start<Renderer>();
+
+			var heartMesh = MeshManager.Load("heart.glb").ID;
+			var swordMesh = MeshManager.Load("sword.glb").ID;
 
 			for (var x = -6; x <= 6; x++)
 			for (var z = -6; z <= 6; z++) {
@@ -134,8 +112,6 @@ namespace gaemstone.Client
 			var chunk = Entities.New();
 			Transforms.Set(chunk.ID, Matrix4x4.CreateScale(0.15F));
 			Meshes.Set(chunk.ID, chunkMesh.ID);
-
-			OnResize(Window.Size);
 		}
 
 		private void OnClosing()
@@ -143,49 +119,10 @@ namespace gaemstone.Client
 
 		}
 
-		private void OnResize(Size size)
-		{
-			const float DEGREES_TO_RADIANS = MathF.PI / 180;
-			var aspectRatio = (float)Window.Size.Width / Window.Size.Height;
-			Cameras.Set(MainCamera.ID, new Camera {
-				Viewport   = new Rectangle(Point.Empty, size),
-				Projection = Matrix4x4.CreatePerspectiveFieldOfView(
-					60.0F * DEGREES_TO_RADIANS, aspectRatio, 0.1F, 100.0F),
-			});
-		}
-
 		private void OnUpdate(double delta)
 		{
-
-		}
-
-		private void OnRender(double delta)
-		{
-			GFX.Clear(Color.Indigo);
-			_program.Use();
-
-			var cameraEnumerator = Cameras.GetEnumerator();
-			while (cameraEnumerator.MoveNext()) {
-				var cameraID       = cameraEnumerator.CurrentEntityID;
-				ref var camera     = ref cameraEnumerator.CurrentComponent;
-				ref var view       = ref Transforms.GetRef(cameraID).Value;
-				ref var projection = ref camera.Projection;
-				// TODO: "view" probably needs to be inverted once the transform represents a normal
-				//       entity transform instead of being manually created from Matrix4x4.LookAt.
-				GFX.Viewport(camera.Viewport);
-
-				var meshEnumerator = Meshes.GetEnumerator();
-				while (meshEnumerator.MoveNext()) {
-					var entityID      = meshEnumerator.CurrentEntityID;
-					ref var mesh      = ref meshEnumerator.CurrentComponent;
-					ref var modelView = ref Transforms.GetRef(entityID).Value;
-					var meshInfo      = MeshManager.Find(mesh);
-					_mvpUniform.Set(modelView * view * projection);
-					meshInfo.Draw();
-				}
-			}
-
-			Window.SwapBuffers();
+			foreach (var processor in Processors)
+				processor.OnUpdate(delta);
 		}
 	}
 }
