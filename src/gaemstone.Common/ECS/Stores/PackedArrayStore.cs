@@ -11,22 +11,24 @@ namespace gaemstone.Common.ECS.Stores
 
 		private readonly Dictionary<uint, int> _indices
 			= new Dictionary<uint, int>();
+		private uint[] _entityIDs;
+		private T[] _components;
 
-		protected uint[] EntityIDs { get; private set; }
-		protected T[] Components { get; private set; }
 		protected IReadOnlyDictionary<uint, int> Indices { get; }
+		protected uint[] EntityIDs => _entityIDs;
+		protected T[] Components => _components;
 
 		public Type ComponentType { get; } = typeof(T);
 		public int Count { get; private set; }
 
 		public int Capacity {
-			get => Components.Length;
+			get => _components.Length;
 			set => Resize(value);
 		}
 
 		public T this[int index] {
-			get => Components[index];
-			set => Components[index] = value;
+			get => _components[index];
+			set => _components[index] = value;
 		}
 
 		public event ComponentAddedHandler? ComponentAdded;
@@ -34,36 +36,36 @@ namespace gaemstone.Common.ECS.Stores
 
 		public PackedArrayStore()
 		{
-			EntityIDs  = new uint[STARTING_CAPACITY];
-			Components = new T[STARTING_CAPACITY];
+			_entityIDs  = new uint[STARTING_CAPACITY];
+			_components = new T[STARTING_CAPACITY];
 			Indices    = _indices;
 		}
 
 
 		public ref T GetRefByIndex(int index)
-			=> ref Components[index];
+			=> ref _components[index];
 
 		public uint GetEntityIDByIndex(int index)
-			=> EntityIDs[index];
+			=> _entityIDs[index];
 
 
 		public void RemoveByIndex(int index)
 		{
 			if ((index < 0) || (index >= Count)) throw new ArgumentOutOfRangeException(nameof(index));
 
-			var entityID = EntityIDs[index];
+			var entityID = _entityIDs[index];
 			if (!_indices.Remove(entityID)) throw new InvalidOperationException(
-				$"{EntityIDs[index]} not found in Indices"); // Shouldn't occur.
+				$"{_entityIDs[index]} not found in Indices"); // Shouldn't occur.
 
 			ComponentRemoved?.Invoke(entityID);
 
 			if (index == --Count) {
-				EntityIDs[index]  = default;
-				Components[index] = default;
+				_entityIDs[index]  = default;
+				_components[index] = default;
 			} else {
-				EntityIDs[index]  = EntityIDs[Count];
-				Components[index] = Components[Count];
-				_indices[EntityIDs[index]] = index;
+				_entityIDs[index]  = _entityIDs[Count];
+				_components[index] = _components[Count];
+				_indices[_entityIDs[index]] = index;
 			}
 		}
 
@@ -84,7 +86,7 @@ namespace gaemstone.Common.ECS.Stores
 				// Ensure we have the capacity to add another entry.
 				if (Count > Capacity) Resize(Capacity << 1);
 				// Associate the entry at the new index with this entity ID.
-				EntityIDs[index] = entityID;
+				_entityIDs[index] = entityID;
 			}
 			_indices[entityID] = index;
 			if (added) ComponentAdded?.Invoke(entityID);
@@ -96,7 +98,7 @@ namespace gaemstone.Common.ECS.Stores
 			=> this[FindIndexOrThrow(entityID)];
 
 		public ref T GetRef(uint entityID)
-			=> ref Components[FindIndexOrThrow(entityID)];
+			=> ref _components[FindIndexOrThrow(entityID)];
 		public void Set(uint entityID, T value)
 			=> this[GetOrCreateIndex(entityID)] = value;
 
@@ -111,24 +113,15 @@ namespace gaemstone.Common.ECS.Stores
 
 			if (newCapacity < Count) {
 				for (int i = newCapacity; i < Count; i++) {
-					var entityID = EntityIDs[i];
+					var entityID = _entityIDs[i];
 					_indices.Remove(entityID);
 					ComponentRemoved?.Invoke(entityID);
 				}
 				Count = newCapacity;
 			}
 
-			var newEntities   = new uint[newCapacity];
-			var newComponents = new T[newCapacity];
-
-			var copyCount = Math.Min(Capacity, newCapacity);
-			Buffer.BlockCopy(EntityIDs, 0, newEntities, 0, copyCount * sizeof(uint));
-			// FIXME: "Object must be an array of primitives." - Find another way to do fast copy.
-			// Buffer.BlockCopy(_components, 0, newComponents, 0, copyCount);
-			Array.Copy(Components, newComponents, copyCount);
-
-			EntityIDs  = newEntities;
-			Components = newComponents;
+			Array.Resize(ref _entityIDs, newCapacity);
+			Array.Resize(ref _components, newCapacity);
 		}
 
 
@@ -146,9 +139,9 @@ namespace gaemstone.Common.ECS.Stores
 			public Enumerator(PackedArrayStore<T> store)
 				=> (_store, _index) = (store, -1);
 
-			public uint CurrentEntityID => _store.EntityIDs[_index];
-			public ref T CurrentComponent => ref _store.Components[_index];
-			T IComponentStore<T>.Enumerator.CurrentComponent => _store.Components[_index];
+			public uint CurrentEntityID => _store._entityIDs[_index];
+			public ref T CurrentComponent => ref _store._components[_index];
+			T IComponentStore<T>.Enumerator.CurrentComponent => _store._components[_index];
 			public bool MoveNext() => (++_index < _store.Count);
 		}
 	}

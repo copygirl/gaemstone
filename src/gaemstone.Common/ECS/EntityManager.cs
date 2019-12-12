@@ -78,12 +78,7 @@ namespace gaemstone.Common.ECS
 			if (newCapacity < Capacity) throw new ArgumentOutOfRangeException(
 				nameof(newCapacity), newCapacity, "New capacity must be larger than previous");
 
-			var newEntities = new Entry[newCapacity];
-			// FIXME: "Object must be an array of primitives." - Find another way to do fast copy.
-			// Buffer.BlockCopy(_entities, 0, newEntities, 0, Capacity);
-			Array.Copy(_entities, newEntities, Capacity);
-			_entities = newEntities;
-
+			Array.Resize(ref _entities, newCapacity);
 			OnCapacityChanged?.Invoke(Capacity);
 		}
 

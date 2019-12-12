@@ -70,10 +70,7 @@ namespace gaemstone.Common.ECS
 		{
 			if (newCapacity < _components.Length) throw new ArgumentOutOfRangeException(
 				nameof(newCapacity), newCapacity, "New capacity must be larger than previous");
-
-			var newComponents = new int[newCapacity];
-			Buffer.BlockCopy(_components, 0, newComponents, 0, _components.Length);
-			_components = newComponents;
+			Array.Resize(ref _components, newCapacity);
 		}
 
 		private void Clear(Entity entity)

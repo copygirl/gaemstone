@@ -107,9 +107,7 @@ namespace gaemstone.Common.Bloxel.Chunks
 				newData.Set(i * _indicesLength + j, _data!.Get(i * oldIndicesLength + j));
 			_data = newData;
 
-			var newPalette = new PaletteEntry[1 << _indicesLength];
-			Array.Copy(_palette, 0, newPalette, 0, _palette.Length);
-			_palette = newPalette;
+			Array.Resize(ref _palette, 1 << _indicesLength);
 		}
 
 		// public void FitPalette() {
