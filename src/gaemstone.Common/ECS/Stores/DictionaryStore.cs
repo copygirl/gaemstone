@@ -25,13 +25,20 @@ namespace gaemstone.Common.ECS.Stores
 			return entry.Value;
 		}
 
+		public bool TryGet(uint entityID, out T value)
+		{
+			ref var entry = ref _dict.TryGetEntry(GetBehavior.Default, entityID);
+			value = (entry.HasValue ? entry.Value : default(T)!);
+			return entry.HasValue;
+		}
+
 		public void Set(uint entityID, T value)
 		{
 			var previousCount = _dict.Count;
 			ref var entry = ref _dict.TryGetEntry(GetBehavior.Create, entityID);
 			var entryAdded = (_dict.Count > previousCount);
 			if (entryAdded) ComponentAdded?.Invoke(entityID);
-			var oldValue = (entryAdded ? NullableRef<T>.Empty : new NullableRef<T>(ref entry.Value));
+			var oldValue = (entryAdded ? NullableRef<T>.Null : new NullableRef<T>(ref entry.Value));
 			ComponentChanged?.Invoke(entityID, oldValue, new NullableRef<T>(ref value));
 			entry.Value = value;
 		}
@@ -42,7 +49,7 @@ namespace gaemstone.Common.ECS.Stores
 			ref var entry = ref _dict.TryGetEntry(GetBehavior.Remove, entityID);
 			if (_dict.Count < previousCount) {
 				ComponentRemoved?.Invoke(entityID);
-				ComponentChanged?.Invoke(entityID, new NullableRef<T>(ref entry.Value), NullableRef<T>.Empty);
+				ComponentChanged?.Invoke(entityID, new NullableRef<T>(ref entry.Value), NullableRef<T>.Null);
 			}
 			else throw new ComponentNotFoundException(this, entityID);
 		}

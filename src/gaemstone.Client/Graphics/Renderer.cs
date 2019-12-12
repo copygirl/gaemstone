@@ -12,6 +12,7 @@ namespace gaemstone.Client.Graphics
 	{
 		private Program _program;
 		private UniformMatrix4x4 _mvpUniform;
+		private UniformBool _enableTextureUniform;
 
 		public Game Game { get; private set; } = null!;
 
@@ -33,10 +34,12 @@ namespace gaemstone.Client.Graphics
 				Shader.CompileFromSource("fragment", ShaderType.FragmentShader, fragmentShaderSource));
 			_program.DetachAndDeleteShaders();
 
-			var uniforms = _program.GetActiveUniforms();
-			var attribs  = _program.GetActiveAttributes();
-			_mvpUniform  = uniforms["modelViewProjection"].Matrix4x4;
+			var attribs = _program.GetActiveAttributes();
 			Game.MeshManager.ProgramAttributes = attribs;
+
+			var uniforms = _program.GetActiveUniforms();
+			_mvpUniform           = uniforms["modelViewProjection"].Matrix4x4;
+			_enableTextureUniform = uniforms["enableTexture"].Bool;
 
 			OnWindowResize(Game.Window.Size);
 		}
@@ -83,6 +86,14 @@ namespace gaemstone.Client.Graphics
 					ref var modelView = ref Game.Transforms.GetRef(entityID).Value;
 					var meshInfo      = Game.MeshManager.Find(mesh);
 					_mvpUniform.Set(modelView * view * projection);
+
+					if (Game.Textures.TryGet(meshEnumerator.CurrentEntityID, out var texture)) {
+						_enableTextureUniform.Set(true);
+						texture.Bind();
+					} else {
+						_enableTextureUniform.Set(false);
+					}
+
 					meshInfo.Draw();
 				}
 			}

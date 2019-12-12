@@ -17,6 +17,7 @@ namespace gaemstone.Common.ECS.Stores
 		: IComponentStore
 	{
 		T Get(uint entityID);
+		bool TryGet(uint entityID, out T value);
 		void Set(uint entityID, T value);
 
 		Enumerator GetEnumerator();

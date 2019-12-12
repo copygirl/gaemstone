@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 using gaemstone.Client.Components;
 using Silk.NET.OpenGL;
@@ -40,9 +39,9 @@ namespace gaemstone.Client.Graphics
 			var vertexArray  = VertexArray.GenAndBind();
 			var indexBuffer  = Buffer.CreateFromData(indexBufferData, BufferTargetARB.ElementArrayBuffer);
 			var vertexBuffer = Buffer.CreateFromData(vertexBufferData);
-			ProgramAttributes["position"].Pointer(3, VertexAttribPointerType.Float);
+			ProgramAttributes["vertPosition"].Pointer(3, VertexAttribPointerType.Float);
 			var colorBuffer  = Buffer.CreateFromData(colorBufferData);
-			ProgramAttributes["normal"].Pointer(3, VertexAttribPointerType.Float);
+			ProgramAttributes["vertNormal"].Pointer(3, VertexAttribPointerType.Float);
 
 			var mesh = new Mesh { Index = _counter++ };
 			var meshInfo = new MeshInfo(mesh, vertexArray, vertices, triangles);
@@ -51,7 +50,8 @@ namespace gaemstone.Client.Graphics
 			return meshInfo;
 		}
 
-		public MeshInfo Create(Span<ushort> indices, Span<Vector3> vertices, Span<Vector3> normals)
+		public MeshInfo Create(Span<ushort> indices, Span<Vector3> vertices,
+		                       Span<Vector3> normals, Span<Vector2> uvs)
 		{
 			if (ProgramAttributes == null) throw new InvalidOperationException(
 				$"{nameof(ProgramAttributes)} has not been set");
@@ -59,9 +59,11 @@ namespace gaemstone.Client.Graphics
 			var vertexArray  = VertexArray.GenAndBind();
 			var indexBuffer  = Buffer.CreateFromData(indices, BufferTargetARB.ElementArrayBuffer);
 			var vertexBuffer = Buffer.CreateFromData(vertices);
-			ProgramAttributes["position"].Pointer(3, VertexAttribPointerType.Float);
+			ProgramAttributes["vertPosition"].Pointer(3, VertexAttribPointerType.Float);
 			var normalBuffer = Buffer.CreateFromData(normals);
-			ProgramAttributes["normal"].Pointer(3, VertexAttribPointerType.Float);
+			ProgramAttributes["vertNormal"].Pointer(3, VertexAttribPointerType.Float);
+			var uvBuffer     = Buffer.CreateFromData(uvs);
+			ProgramAttributes["vertUV"].Pointer(2, VertexAttribPointerType.Float);
 
 			var mesh = new Mesh { Index = _counter++ };
 			var meshInfo = new MeshInfo(mesh, vertexArray, vertices.Length, indices.Length / 3);

@@ -36,9 +36,9 @@ namespace gaemstone.Common.ECS.Stores
 
 		public PackedArrayStore()
 		{
+			Indices     = _indices;
 			_entityIDs  = new uint[STARTING_CAPACITY];
 			_components = new T[STARTING_CAPACITY];
-			Indices    = _indices;
 		}
 
 
@@ -97,8 +97,16 @@ namespace gaemstone.Common.ECS.Stores
 		public T Get(uint entityID)
 			=> this[FindIndexOrThrow(entityID)];
 
+		public bool TryGet(uint entityID, out T value)
+		{
+			var found = TryFindIndex(entityID, out var index);
+			value = (found ? this[index] : default(T));
+			return found;
+		}
+
 		public ref T GetRef(uint entityID)
 			=> ref _components[FindIndexOrThrow(entityID)];
+
 		public void Set(uint entityID, T value)
 			=> this[GetOrCreateIndex(entityID)] = value;
 

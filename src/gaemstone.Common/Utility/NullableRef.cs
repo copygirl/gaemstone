@@ -2,9 +2,9 @@ using System.Runtime.CompilerServices;
 
 namespace gaemstone.Common.Utility
 {
-	public readonly struct NullableRef<T>
+	public readonly ref struct NullableRef<T>
 	{
-		public static readonly NullableRef<T> Empty = new NullableRef<T>();
+		public static NullableRef<T> Null => new NullableRef<T>();
 
 		private unsafe readonly void* _ref;
 

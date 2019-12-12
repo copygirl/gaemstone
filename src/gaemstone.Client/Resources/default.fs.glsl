@@ -1,9 +1,16 @@
-#version 330
-in vec4 fragmentColor;
+#version 330 core
+in vec4 fragColor;
+in vec2 fragUV;
 
-out vec4 outputColor;
+uniform bool enableTexture;
+uniform sampler2D textureSampler;
+
+out vec4 color;
 
 void main()
 {
-  outputColor = fragmentColor;
+  if (enableTexture)
+    color = fragColor * texture(textureSampler, fragUV);
+  else
+    color = fragColor;
 }

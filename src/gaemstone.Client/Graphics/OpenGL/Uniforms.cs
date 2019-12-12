@@ -61,6 +61,8 @@ namespace gaemstone.Client.Graphics
 			return Location;
 		}
 
+		public UniformBool Bool
+			=> new UniformBool(Ensure(1, UniformType.Bool, "bool"));
 		public UniformInt Int
 			=> new UniformInt(Ensure(1, UniformType.Int, "int"));
 		public UniformFloat Float
@@ -73,6 +75,12 @@ namespace gaemstone.Client.Graphics
 			=> new UniformMatrix4x4(Ensure(1, UniformType.Matrix4x4, "Matrix4x4"));
 	}
 
+	public readonly struct UniformBool
+	{
+		public int Location { get; }
+		internal UniformBool(int location) => Location = location;
+		public void Set(bool value) => GFX.GL.Uniform1(Location, value ? 1 : 0);
+	}
 	public readonly struct UniformInt
 	{
 		public int Location { get; }
@@ -106,6 +114,7 @@ namespace gaemstone.Client.Graphics
 
 	public enum UniformType
 	{
+		Bool      = GLEnum.Bool,
 		Int       = GLEnum.Int,
 		Float     = GLEnum.Float,
 		Vector3   = GLEnum.FloatVec3,

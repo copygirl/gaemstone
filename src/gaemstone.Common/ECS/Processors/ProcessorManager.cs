@@ -28,9 +28,13 @@ namespace gaemstone.Common.ECS.Processors
 			processor.OnLoad(_universe);
 			ProcessorLoaded?.Invoke(processor);
 		}
-		public void Start<T>()
-				where T : IProcessor, new()
-			=> Start(new T());
+		public T Start<T>()
+			where T : IProcessor, new()
+		{
+			var processor = new T();
+			Start(processor);
+			return processor;
+		}
 
 		public void Stop<T>()
 			where T : IProcessor

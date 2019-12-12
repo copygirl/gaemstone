@@ -55,13 +55,14 @@ namespace gaemstone.Client.Bloxel.Chunks
 			= { 0, 1, 3,  1, 2, 3 };
 
 
-		private readonly MeshManager _meshManager;
+		private readonly Game _game;
 		private ushort[] _indices = new ushort[STARTING_CAPACITY];
 		private Vector3[] _vertices = new Vector3[STARTING_CAPACITY];
 		private Vector3[] _normals  = new Vector3[STARTING_CAPACITY];
+		private Vector2[] _uvs      = new Vector2[STARTING_CAPACITY];
 
-		public ChunkMeshGenerator(MeshManager meshManager)
-			=> _meshManager = meshManager;
+		public ChunkMeshGenerator(Game game)
+			=> _game = game;
 
 		public MeshInfo? Generate(ChunkPaletteStorage<Block> storage)
 		{
@@ -72,7 +73,9 @@ namespace gaemstone.Client.Bloxel.Chunks
 			for (var z = 0; z < 16; z++) {
 				var block = storage[x, y, z];
 				if (block.Prototype == Entity.NONE) continue;
-				var blockVertex = new Vector3(x, y, z);
+
+				var blockVertex     = new Vector3(x, y, z);
+				ref var textureCell = ref _game.TextureCells.GetRef(block.Prototype.ID);
 
 				foreach (var facing in BlockFacings.ALL) {
 					if (!IsNeighborEmpty(storage, x, y, z, facing)) continue;
@@ -81,24 +84,33 @@ namespace gaemstone.Client.Bloxel.Chunks
 						Array.Resize(ref _indices, _indices.Length << 1);
 					if (_vertices.Length <= vertexCount + 4) {
 						Array.Resize(ref _vertices, _vertices.Length << 1);
-						Array.Resize(ref _normals, _normals.Length << 1);
+						Array.Resize(ref _normals , _vertices.Length << 1);
+						Array.Resize(ref _uvs     , _vertices.Length << 1);
 					}
 
 					for (var i = 0; i < TRIANGLE_INDICES.Length; i++)
 						_indices[indexCount++] = (ushort)(vertexCount + TRIANGLE_INDICES[i]);
 
 					var normal = facing.ToVector3();
-					foreach (var offset in OFFSET_PER_FACING[(int)facing]) {
+					for (var i = 0; i < 4; i++) {
+						var offset = OFFSET_PER_FACING[(int)facing][i];
 						_vertices[vertexCount] = blockVertex + offset;
 						_normals[vertexCount]  = normal;
+						_uvs[vertexCount]      = i switch {
+							0 => textureCell.TopLeft,
+							1 => textureCell.BottomLeft,
+							2 => textureCell.BottomRight,
+							3 => textureCell.TopRight,
+							_ => throw new InvalidOperationException()
+						};
 						vertexCount++;
 					}
 				}
 			}
 
-			return _meshManager.Create(_indices.AsSpan(0, indexCount),
-			                           _vertices.AsSpan(0, vertexCount),
-			                           _normals.AsSpan(0, vertexCount));
+			return _game.MeshManager.Create(
+				_indices.AsSpan(0, indexCount), _vertices.AsSpan(0, vertexCount),
+				_normals.AsSpan(0, vertexCount), _uvs.AsSpan(0, vertexCount));
 		}
 
 		private bool IsNeighborEmpty(
