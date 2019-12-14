@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="bin\**;obj\**" />
     <EmbeddedResource Include="Resources/*" />
   </ItemGroup>
 
