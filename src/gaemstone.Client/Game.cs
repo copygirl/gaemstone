@@ -6,6 +6,7 @@ using gaemstone.Client.Bloxel.Blocks;
 using gaemstone.Client.Bloxel.Chunks;
 using gaemstone.Client.Components;
 using gaemstone.Client.Graphics;
+using gaemstone.Client.Processors;
 using gaemstone.Common.Bloxel.Chunks;
 using gaemstone.Common.ECS;
 using gaemstone.Common.ECS.Stores;
@@ -84,23 +85,21 @@ namespace gaemstone.Client
 		private void OnLoad()
 		{
 			MainCamera = Entities.New();
-			Transforms.Set(MainCamera.ID, Matrix4x4.CreateLookAt(
-				cameraPosition : new Vector3(3, 2, 2),
-				cameraTarget   : new Vector3(0, 0, 0),
-				cameraUpVector : new Vector3(0, 1, 0)));
+			Transforms.Set(MainCamera.ID, Matrix4x4.CreateTranslation(3, 2, 3));
 
 			// TODO: This currently has to sit exactly here.
 			//       Renderer requires MainCamera, and it initializes GFX,
 			//       which is required for MeshManager to create meshes.
 			Processors.Start<Renderer>();
+			Processors.Start<CameraController>();
 
 			var heartMesh = MeshManager.Load("heart.glb").ID;
 			var swordMesh = MeshManager.Load("sword.glb").ID;
 
-			for (var x = -6; x <= 6; x++)
-			for (var z = -6; z <= 6; z++) {
+			for (var x = -12; x <= 12; x++)
+			for (var z = -12; z <= 12; z++) {
 				var entity   = Entities.New();
-				var position = Matrix4x4.CreateTranslation(x, 0, z);
+				var position = Matrix4x4.CreateTranslation(x * 1.5F, 0, z * 1.5F);
 				var rotation = Matrix4x4.CreateRotationY(RND.NextFloat(MathF.PI * 2));
 				Transforms.Set(entity.ID, rotation * position);
 				Meshes.Set(entity.ID, RND.Pick(heartMesh, swordMesh));
