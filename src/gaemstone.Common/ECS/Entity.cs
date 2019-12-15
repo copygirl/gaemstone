@@ -6,10 +6,12 @@ namespace gaemstone.Common.ECS
 	public readonly struct Entity
 		: IEquatable<Entity>
 	{
-		public static readonly Entity NONE = default(Entity);
+		public static readonly Entity None = default(Entity);
 
 		public uint ID { get; }
 		public uint Generation { get; }
+
+		public bool IsNone => (ID == 0);
 
 		public Entity(uint id, uint generation)
 			=> (ID, Generation) = (id, generation);

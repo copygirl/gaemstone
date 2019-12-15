@@ -72,7 +72,7 @@ namespace gaemstone.Client.Bloxel.Chunks
 			for (var y = 0; y < 16; y++)
 			for (var z = 0; z < 16; z++) {
 				var block = storage[x, y, z];
-				if (block.Prototype == Entity.NONE) continue;
+				if (block.Prototype.IsNone) continue;
 
 				var blockVertex     = new Vector3(x, y, z);
 				ref var textureCell = ref _game.TextureCells.GetRef(block.Prototype.ID);
@@ -123,7 +123,7 @@ namespace gaemstone.Client.Bloxel.Chunks
 			 || (y < 0) || (y >= 16)
 			 || (z < 0) || (z >= 16))
 				return true;
-			return (storage[x, y, z].Prototype == Entity.NONE);
+			return storage[x, y, z].Prototype.IsNone;
 		}
 	}
 }
