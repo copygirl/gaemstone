@@ -36,12 +36,14 @@ namespace gaemstone.Client.Graphics
 			var vertexBufferData = primitive.VertexAccessors["POSITION"].SourceBufferView.Content;
 			var colorBufferData  = primitive.VertexAccessors["NORMAL"].SourceBufferView.Content;
 
-			var vertexArray  = VertexArray.GenAndBind();
-			var indexBuffer  = Buffer.CreateFromData(indexBufferData, BufferTargetARB.ElementArrayBuffer);
-			var vertexBuffer = Buffer.CreateFromData(vertexBufferData);
-			ProgramAttributes["vertPosition"].Pointer(3, VertexAttribPointerType.Float);
-			var colorBuffer  = Buffer.CreateFromData(colorBufferData);
-			ProgramAttributes["vertNormal"].Pointer(3, VertexAttribPointerType.Float);
+			var vertexArray = VertexArray.Gen();
+			using (vertexArray.Bind()) {
+				var indexBuffer  = Buffer.CreateFromData(indexBufferData, BufferTargetARB.ElementArrayBuffer);
+				var vertexBuffer = Buffer.CreateFromData(vertexBufferData);
+				ProgramAttributes["vertPosition"].Pointer(3, VertexAttribPointerType.Float);
+				var colorBuffer  = Buffer.CreateFromData(colorBufferData);
+				ProgramAttributes["vertNormal"].Pointer(3, VertexAttribPointerType.Float);
+			}
 
 			var mesh = new Mesh { Index = _counter++ };
 			var meshInfo = new MeshInfo(mesh, vertexArray, vertices, triangles);
@@ -56,14 +58,16 @@ namespace gaemstone.Client.Graphics
 			if (ProgramAttributes == null) throw new InvalidOperationException(
 				$"{nameof(ProgramAttributes)} has not been set");
 
-			var vertexArray  = VertexArray.GenAndBind();
-			var indexBuffer  = Buffer.CreateFromData(indices, BufferTargetARB.ElementArrayBuffer);
-			var vertexBuffer = Buffer.CreateFromData(vertices);
-			ProgramAttributes["vertPosition"].Pointer(3, VertexAttribPointerType.Float);
-			var normalBuffer = Buffer.CreateFromData(normals);
-			ProgramAttributes["vertNormal"].Pointer(3, VertexAttribPointerType.Float);
-			var uvBuffer     = Buffer.CreateFromData(uvs);
-			ProgramAttributes["vertUV"].Pointer(2, VertexAttribPointerType.Float);
+			var vertexArray = VertexArray.Gen();
+			using (vertexArray.Bind()) {
+				Buffer.CreateFromData(indices, BufferTargetARB.ElementArrayBuffer);
+				Buffer.CreateFromData(vertices);
+				ProgramAttributes["vertPosition"].Pointer(3, VertexAttribPointerType.Float);
+				Buffer.CreateFromData(normals);
+				ProgramAttributes["vertNormal"].Pointer(3, VertexAttribPointerType.Float);
+				Buffer.CreateFromData(uvs);
+				ProgramAttributes["vertUV"].Pointer(2, VertexAttribPointerType.Float);
+			}
 
 			var mesh = new Mesh { Index = _counter++ };
 			var meshInfo = new MeshInfo(mesh, vertexArray, vertices.Length, indices.Length / 3);

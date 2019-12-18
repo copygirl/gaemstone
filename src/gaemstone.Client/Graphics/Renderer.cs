@@ -71,10 +71,10 @@ namespace gaemstone.Client.Graphics
 
 			var cameraEnumerator = _game.Cameras.GetEnumerator();
 			while (cameraEnumerator.MoveNext()) {
-				var cameraID       = cameraEnumerator.CurrentEntityID;
-				ref var camera     = ref cameraEnumerator.CurrentComponent;
-				ref var projection = ref camera.Projection;
-				Matrix4x4.Invert(_game.Transforms.GetRef(cameraID).Value, out var view);
+				var cameraID   = cameraEnumerator.CurrentEntityID;
+				ref var camera = ref cameraEnumerator.CurrentComponent;
+				Matrix4x4.Invert(_game.Transforms.Get(cameraID), out var view);
+				var viewProjection = view * camera.Projection;
 				GFX.Viewport(camera.Viewport);
 
 				var meshEnumerator = _game.Meshes.GetEnumerator();
@@ -82,8 +82,7 @@ namespace gaemstone.Client.Graphics
 					var entityID      = meshEnumerator.CurrentEntityID;
 					ref var mesh      = ref meshEnumerator.CurrentComponent;
 					ref var modelView = ref _game.Transforms.GetRef(entityID).Value;
-					var meshInfo      = _game.MeshManager.Find(mesh);
-					_mvpUniform.Set(modelView * view * projection);
+					_mvpUniform.Set(modelView * viewProjection);
 
 					if (_game.Textures.TryGet(meshEnumerator.CurrentEntityID, out var texture)) {
 						_enableTextureUniform.Set(true);
@@ -92,10 +91,12 @@ namespace gaemstone.Client.Graphics
 						_enableTextureUniform.Set(false);
 					}
 
+					var meshInfo = _game.MeshManager.Find(mesh);
 					meshInfo.Draw();
 				}
 			}
 
+			VertexArray.Unbind();
 			_game.Window.SwapBuffers();
 		}
 	}

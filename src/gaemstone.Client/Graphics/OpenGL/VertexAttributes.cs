@@ -27,7 +27,7 @@ namespace gaemstone.Client.Graphics
 				                       out var length, out var size, out AttributeType type, out nameBuffer);
 				var name     = nameBuffer.Substring(0, (int)length);
 				var location = GFX.GL.GetAttribLocation(program.Handle, name);
-				var attrib   = new VertexAttributeInfo(program, attribIndex, location, size, type, name);
+				var attrib   = new VertexAttributeInfo(attribIndex, location, size, type, name);
 				_activeAttribs[attribIndex] = attrib;
 				_attribsByName[nameBuffer]  = attrib;
 			}
@@ -42,21 +42,23 @@ namespace gaemstone.Client.Graphics
 
 	public class VertexAttributeInfo
 	{
-		public Program Program { get; }
 		public uint Index { get; }
 		public int Location { get; }
 		public int Size { get; }
 		public AttributeType Type { get; }
 		public string Name { get; }
 
-		internal VertexAttributeInfo(Program program, uint index, int location, int size, AttributeType type, string name)
-			=> (Program, Index, Location, Size, Type, Name) = (program, index, location, size, type, name);
+		internal VertexAttributeInfo(uint index, int location, int size, AttributeType type, string name)
+			=> (Index, Location, Size, Type, Name) = (index, location, size, type, name);
 
 		public void Pointer(int size, VertexAttribPointerType type,
 		                    bool normalized = false, uint stride = 0, int offset = 0)
 		{
-			GFX.GL.EnableVertexAttribArray(Index);
-			GFX.GL.VertexAttribPointer(Index, size, (GLEnum)type, normalized, stride, offset);
+			GFX.GL.EnableVertexAttribArray((uint)Location);
+			GFX.GL.VertexAttribPointer((uint)Location, size, (GLEnum)type, normalized, stride, offset);
 		}
+
+		public override string ToString()
+			=> $"VertexAttributeInfo '{Name}' {{ Index={Index}, Location={Location}, Size={Size}, Type={Type} }}";
 	}
 }
