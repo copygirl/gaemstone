@@ -17,14 +17,14 @@ namespace gaemstone.Common.ECS.Stores
 			ComponentChanged += OnComponentChanged;
 		}
 
-		public void OnComponentChanged(uint entityID, NullableRef<T> oldValue, NullableRef<T> newValue)
+		public void OnComponentChanged(uint entityID, ref T oldValue, ref T newValue)
 		{
-			if (!oldValue.IsNull) {
-				var key = _lookupFunc(oldValue.Reference);
+			if (!RefHelper.IsNull(ref oldValue)) {
+				var key = _lookupFunc(oldValue);
 				_lookup.Remove(key);
 			}
-			if (!newValue.IsNull) {
-				var key = _lookupFunc(newValue.Reference);
+			if (!RefHelper.IsNull(ref newValue)) {
+				var key = _lookupFunc(newValue);
 				_lookup.Add(key, entityID);
 			}
 		}
