@@ -2,7 +2,7 @@ using System;
 using System.Collections.Immutable;
 using System.Numerics;
 
-namespace Immersion.Voxel.Blocks
+namespace gaemstone.Common.Bloxel.Blocks
 {
 	public enum BlockFacing
 	{
@@ -16,15 +16,15 @@ namespace Immersion.Voxel.Blocks
 
 	public static class BlockFacings
 	{
-		public static readonly ImmutableHashSet<BlockFacing> HORIZONTALS =
-			ImmutableHashSet.Create(BlockFacing.East , BlockFacing.West ,
-			                        BlockFacing.South, BlockFacing.North);
+		public static readonly ImmutableHashSet<BlockFacing> HORIZONTALS
+			= ImmutableHashSet.Create(BlockFacing.East , BlockFacing.West ,
+			                          BlockFacing.South, BlockFacing.North);
 
-		public static readonly ImmutableHashSet<BlockFacing> VERTICALS =
-			ImmutableHashSet.Create(BlockFacing.Up, BlockFacing.Down);
+		public static readonly ImmutableHashSet<BlockFacing> VERTICALS
+			= ImmutableHashSet.Create(BlockFacing.Up, BlockFacing.Down);
 
-		public static readonly ImmutableHashSet<BlockFacing> ALL =
-			HORIZONTALS.Union(VERTICALS);
+		public static readonly ImmutableHashSet<BlockFacing> ALL
+			= HORIZONTALS.Union(VERTICALS);
 	}
 
 	public static class BlockFacingExtensions

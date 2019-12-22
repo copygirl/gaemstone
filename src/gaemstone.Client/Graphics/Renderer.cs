@@ -4,6 +4,7 @@ using System.Numerics;
 using gaemstone.Client.Components;
 using gaemstone.Common.ECS;
 using gaemstone.Common.ECS.Processors;
+using gaemstone.Common.ECS.Stores;
 using Silk.NET.OpenGL;
 
 namespace gaemstone.Client.Graphics
@@ -11,6 +12,11 @@ namespace gaemstone.Client.Graphics
 	public class Renderer : IProcessor
 	{
 		private Game _game = null!;
+		private IComponentStore<Camera> _cameraStore = null!;
+		private IComponentStore<Transform> _transformStore = null!;
+		private IComponentStore<Mesh> _meshStore = null!;
+		private IComponentStore<Texture> _textureStore = null!;
+
 		private Program _program;
 		private UniformMatrix4x4 _mvpUniform;
 		private UniformBool _enableTextureUniform;
@@ -19,6 +25,11 @@ namespace gaemstone.Client.Graphics
 		public void OnLoad(Universe universe)
 		{
 			_game = (Game)universe;
+			_cameraStore    = universe.Components.GetStore<Camera>();
+			_transformStore = universe.Components.GetStore<Transform>();
+			_meshStore      = universe.Components.GetStore<Mesh>();
+			_textureStore   = universe.Components.GetStore<Texture>();
+
 			_game.Window.Resize += OnWindowResize;
 			_game.Window.Render += OnWindowRender;
 
@@ -57,7 +68,7 @@ namespace gaemstone.Client.Graphics
 		{
 			const float DEGREES_TO_RADIANS = MathF.PI / 180;
 			var aspectRatio = (float)size.Width / size.Height;
-			_game.Cameras.Set(_game.MainCamera.ID, new Camera {
+			_game.Set(_game.MainCamera, new Camera {
 				Viewport   = new Rectangle(Point.Empty, size),
 				Projection = Matrix4x4.CreatePerspectiveFieldOfView(
 					60.0F * DEGREES_TO_RADIANS, aspectRatio, 0.1F, 100.0F),
@@ -69,22 +80,22 @@ namespace gaemstone.Client.Graphics
 			GFX.Clear(Color.Indigo);
 			_program.Use();
 
-			var cameraEnumerator = _game.Cameras.GetEnumerator();
+			var cameraEnumerator = _cameraStore.GetEnumerator();
 			while (cameraEnumerator.MoveNext()) {
-				var cameraID   = cameraEnumerator.CurrentEntityID;
-				ref var camera = ref cameraEnumerator.CurrentComponent;
-				Matrix4x4.Invert(_game.Transforms.Get(cameraID), out var view);
+				var cameraID = cameraEnumerator.CurrentEntityID;
+				var camera   = cameraEnumerator.CurrentComponent;
+				Matrix4x4.Invert(_transformStore.Get(cameraID), out var view);
 				var viewProjection = view * camera.Projection;
 				GFX.Viewport(camera.Viewport);
 
-				var meshEnumerator = _game.Meshes.GetEnumerator();
+				var meshEnumerator = _meshStore.GetEnumerator();
 				while (meshEnumerator.MoveNext()) {
-					var entityID      = meshEnumerator.CurrentEntityID;
-					ref var mesh      = ref meshEnumerator.CurrentComponent;
-					ref var modelView = ref _game.Transforms.GetRef(entityID).Value;
+					var entityID  = meshEnumerator.CurrentEntityID;
+					var mesh      = meshEnumerator.CurrentComponent;
+					var modelView = _transformStore.Get(entityID).Value;
 					_mvpUniform.Set(modelView * viewProjection);
 
-					if (_game.Textures.TryGet(meshEnumerator.CurrentEntityID, out var texture)) {
+					if (_textureStore.TryGet(meshEnumerator.CurrentEntityID, out var texture)) {
 						_enableTextureUniform.Set(true);
 						texture.Bind();
 					} else {

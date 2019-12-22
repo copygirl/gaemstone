@@ -1,5 +1,6 @@
 using System;
 using System.Numerics;
+using gaemstone.Common.Bloxel.Blocks;
 using gaemstone.Common.Utility;
 
 namespace gaemstone.Common.Bloxel.Chunks
@@ -31,19 +32,19 @@ namespace gaemstone.Common.Bloxel.Chunks
 			=> new ChunkPos(X + x, Y + y, Z + z);
 		public ChunkPos Add(in ChunkPos other)
 			=> new ChunkPos(X + other.X, Y + other.Y, Z + other.Z);
-		// public ChunkPos Add(BlockFacing facing)
-		// 	{ var (x, y, z) = facing; return Add(x, y, z); }
-		// public ChunkPos Add(Neighbor neighbor)
-		// 	{ var (x, y, z) = neighbor; return Add(x, y, z); }
+		public ChunkPos Add(BlockFacing facing)
+			{ var (x, y, z) = facing; return Add(x, y, z); }
+		public ChunkPos Add(Neighbor neighbor)
+			{ var (x, y, z) = neighbor; return Add(x, y, z); }
 
 		public ChunkPos Subtract(int x, int y, int z)
 			=> new ChunkPos(X - x, Y - y, Z - z);
 		public ChunkPos Subtract(in ChunkPos other)
 			=> new ChunkPos(X - other.X, Y - other.Y, Z - other.Z);
-		// public ChunkPos Subtract(BlockFacing facing)
-		// 	{ var (x, y, z) = facing; return Subtract(x, y, z); }
-		// public ChunkPos Subtract(Neighbor neighbor)
-		// 	{ var (x, y, z) = neighbor; return Subtract(x, y, z); }
+		public ChunkPos Subtract(BlockFacing facing)
+			{ var (x, y, z) = facing; return Subtract(x, y, z); }
+		public ChunkPos Subtract(Neighbor neighbor)
+			{ var (x, y, z) = neighbor; return Subtract(x, y, z); }
 
 
 		public bool Equals(ChunkPos other)
@@ -68,14 +69,14 @@ namespace gaemstone.Common.Bloxel.Chunks
 			=> left.Add(right);
 		public static ChunkPos operator -(ChunkPos left, ChunkPos right)
 			=> left.Subtract(right);
-		// public static ChunkPos operator +(ChunkPos left, BlockFacing right)
-		// 	=> left.Add(right);
-		// public static ChunkPos operator -(ChunkPos left, BlockFacing right)
-		// 	=> left.Subtract(right);
-		// public static ChunkPos operator +(ChunkPos left, Neighbor right)
-		// 	=> left.Add(right);
-		// public static ChunkPos operator -(ChunkPos left, Neighbor right)
-		// 	=> left.Subtract(right);
+		public static ChunkPos operator +(ChunkPos left, BlockFacing right)
+			=> left.Add(right);
+		public static ChunkPos operator -(ChunkPos left, BlockFacing right)
+			=> left.Subtract(right);
+		public static ChunkPos operator +(ChunkPos left, Neighbor right)
+			=> left.Add(right);
+		public static ChunkPos operator -(ChunkPos left, Neighbor right)
+			=> left.Subtract(right);
 
 		public static bool operator ==(ChunkPos left, ChunkPos right)
 			=> left.Equals(right);
@@ -90,13 +91,13 @@ namespace gaemstone.Common.Bloxel.Chunks
 			                (int)MathF.Floor(pos.Y) >> 4,
 			                (int)MathF.Floor(pos.Z) >> 4);
 
-		// public static ChunkPos ToChunkPos(this BlockPos self)
-		// 	=> new ChunkPos(self.X >> 4, self.Y >> 4, self.Z >> 4);
-		// public static BlockPos ToChunkRelative(this BlockPos self)
-		// 	=> new BlockPos(self.X & 0b1111, self.Y & 0b1111, self.Z & 0b1111);
-		// public static BlockPos ToChunkRelative(this BlockPos self, ChunkPos chunk)
-		// 	=> new BlockPos(self.X - (chunk.X << 4),
-		// 	                self.Y - (chunk.Y << 4),
-		// 	                self.Z - (chunk.Z << 4));
+		public static ChunkPos ToChunkPos(this BlockPos self)
+			=> new ChunkPos(self.X >> 4, self.Y >> 4, self.Z >> 4);
+		public static BlockPos ToChunkRelative(this BlockPos self)
+			=> new BlockPos(self.X & 0b1111, self.Y & 0b1111, self.Z & 0b1111);
+		public static BlockPos ToChunkRelative(this BlockPos self, ChunkPos chunk)
+			=> new BlockPos(self.X - (chunk.X << 4),
+			                self.Y - (chunk.Y << 4),
+			                self.Z - (chunk.Z << 4));
 	}
 }

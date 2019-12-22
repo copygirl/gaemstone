@@ -43,8 +43,10 @@ namespace gaemstone.Common.ECS
 
 		public IComponentStore GetStore(int storeIndex)
 			=> _stores[storeIndex];
+		public IComponentStore GetStore(Type componentType)
+			=> GetStore(_byType[componentType]);
 		public IComponentStore<T> GetStore<T>()
-			=> (IComponentStore<T>)GetStore(_byType[typeof(T)]);
+			=> (IComponentStore<T>)GetStore(typeof(T));
 
 
 		public int GetFlags(uint entityID)

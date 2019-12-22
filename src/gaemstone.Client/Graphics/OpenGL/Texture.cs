@@ -1,6 +1,4 @@
-using System;
 using System.IO;
-using System.Runtime.CompilerServices;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
@@ -19,10 +17,10 @@ namespace gaemstone.Client.Graphics
 			texture.Bind();
 
 			var image = Image.Load<Rgba32>(stream);
-			unsafe { fixed (Rgba32* pixels = &image.Frames[0].GetPixelSpan()[0]) {
+			unsafe { fixed (Rgba32* pixels = image.Frames[0].GetPixelSpan()) {
 				GFX.GL.TexImage2D(TextureTarget.Texture2D, 0, (int)PixelFormat.Rgba,
 				                  (uint)image.Width, (uint)image.Height, 0,
-				                  PixelFormat.Rgba, PixelType.Byte, pixels);
+				                  PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
 			} }
 
 			GFX.GL.TexParameterI(TextureTarget.Texture2D,

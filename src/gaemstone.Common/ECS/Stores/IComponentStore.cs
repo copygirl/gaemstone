@@ -46,6 +46,7 @@ namespace gaemstone.Common.ECS.Stores
 
 	public delegate void ComponentAddedHandler(uint entityID);
 	public delegate void ComponentRemovedHandler(uint entityID);
+	// FIXME: Change back to "ref T", use "null" ref.
 	public delegate void ComponentChangedHandler<T>(
 		uint entityID, NullableRef<T> oldValue, NullableRef<T> newValue);
 

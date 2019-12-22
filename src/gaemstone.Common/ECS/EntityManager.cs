@@ -41,7 +41,7 @@ namespace gaemstone.Common.ECS
 			return entity;
 		}
 
-		public void Destroy(in Entity entity)
+		public void Destroy(Entity entity)
 		{
 			if (entity.ID >= _nextUnusedID) throw new InvalidOperationException(
 				$"Entity {entity} is not alive (ID not yet assigned)");
@@ -65,7 +65,7 @@ namespace gaemstone.Common.ECS
 			return new Entity(entityID, entry.Generation);
 		}
 
-		public bool IsAlive(in Entity entity)
+		public bool IsAlive(Entity entity)
 		{
 			if (entity.ID >= _nextUnusedID) return false;
 			ref var entry = ref _entities[entity.ID];

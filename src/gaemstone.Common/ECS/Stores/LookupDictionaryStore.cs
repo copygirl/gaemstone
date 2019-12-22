@@ -20,15 +20,22 @@ namespace gaemstone.Common.ECS.Stores
 		public void OnComponentChanged(uint entityID, NullableRef<T> oldValue, NullableRef<T> newValue)
 		{
 			if (!oldValue.IsNull) {
-				var key = _lookupFunc(in oldValue.Reference);
+				var key = _lookupFunc(oldValue.Reference);
 				_lookup.Remove(key);
 			}
 			if (!newValue.IsNull) {
-				var key = _lookupFunc(in newValue.Reference);
+				var key = _lookupFunc(newValue.Reference);
 				_lookup.Add(key, entityID);
 			}
 		}
 
-		public delegate TKey KeyLookupFunc(in T component);
+		public uint GetEntityID(TKey key)
+			=> _lookup.TryGetValue(key, out uint entityID) ? entityID
+				: throw new KeyNotFoundException($"The key '{key}' was not found");
+
+		public bool TryGetEntityID(TKey key, out uint entityID)
+			=> _lookup.TryGetValue(key, out entityID);
+
+		public delegate TKey KeyLookupFunc(T component);
 	}
 }

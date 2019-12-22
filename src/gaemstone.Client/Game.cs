@@ -27,12 +27,6 @@ namespace gaemstone.Client
 		public MeshManager MeshManager { get; }
 		public ChunkMeshGenerator ChunkMeshGenerator { get; }
 
-		public IComponentRefStore<Transform> Transforms { get; }
-		public IComponentRefStore<Mesh> Meshes { get; }
-		public IComponentRefStore<Camera> Cameras { get; } // TODO: Camera is uncommon. Handle uncommon components differently.
-		public IComponentRefStore<Texture> Textures { get; }
-		public IComponentRefStore<TextureCell> TextureCells { get; }
-
 		public Entity MainCamera { get; private set; }
 
 
@@ -49,19 +43,16 @@ namespace gaemstone.Client
 			Window.Update  += OnUpdate;
 			Window.Closing += OnClosing;
 
+			Components.AddStore(new PackedArrayStore<Transform>());
+			Components.AddStore(new PackedArrayStore<Camera>());
+			Components.AddStore(new PackedArrayStore<Mesh>());
+			Components.AddStore(new PackedArrayStore<Texture>());
+			Components.AddStore(new PackedArrayStore<TextureCell>());
+			Components.AddStore(new LookupDictionaryStore<ChunkPos, Chunk>(chunk => chunk.Position));
+			Components.AddStore(new DictionaryStore<ChunkPaletteStorage<Block>>());
+
 			MeshManager        = new MeshManager(this);
 			ChunkMeshGenerator = new ChunkMeshGenerator(this);
-
-			Transforms   = new PackedArrayStore<Transform>();
-			Meshes       = new PackedArrayStore<Mesh>();
-			Cameras      = new PackedArrayStore<Camera>();
-			Textures     = new PackedArrayStore<Texture>();
-			TextureCells = new PackedArrayStore<TextureCell>();
-			Components.AddStore(Transforms);
-			Components.AddStore(Meshes);
-			Components.AddStore(Cameras);
-			Components.AddStore(Textures);
-			Components.AddStore(TextureCells);
 		}
 
 		public void Run()
@@ -85,7 +76,7 @@ namespace gaemstone.Client
 		private void OnLoad()
 		{
 			MainCamera = Entities.New();
-			Transforms.Set(MainCamera.ID, Matrix4x4.CreateTranslation(3, 2, 3));
+			Set(MainCamera, (Transform)Matrix4x4.CreateTranslation(0, 26, 0));
 
 			// TODO: This currently has to sit exactly here.
 			//       Renderer requires MainCamera, and it initializes GFX,
@@ -99,31 +90,63 @@ namespace gaemstone.Client
 			for (var x = -12; x <= 12; x++)
 			for (var z = -12; z <= 12; z++) {
 				var entity   = Entities.New();
-				var position = Matrix4x4.CreateTranslation(x * 1.5F, 0, z * 1.5F);
+				var position = Matrix4x4.CreateTranslation(x * 2, 24, z * 2);
 				var rotation = Matrix4x4.CreateRotationY(RND.NextFloat(MathF.PI * 2));
-				Transforms.Set(entity.ID, rotation * position);
-				Meshes.Set(entity.ID, RND.Pick(heartMesh, swordMesh));
+				Set(entity, (Transform)(rotation * position));
+				Set(entity, RND.Pick(heartMesh, swordMesh));
 			}
+
 
 			Texture texture;
 			using (var stream = GetResourceStream("terrain.png"))
 				texture = Texture.CreateFromStream(stream);
 
-			var block = Entities.New();
-			TextureCells.Set(block.ID, new TextureCell(1, 0, 16, new Size(64, 64)));
+			var stone = Entities.New();
+			var dirt  = Entities.New();
+			var grass = Entities.New();
+			Set(stone, new TextureCell(1, 0, 16, new Size(64, 64)));
+			Set(dirt , new TextureCell(2, 0, 16, new Size(64, 64)));
+			Set(grass, new TextureCell(3, 0, 16, new Size(64, 64)));
 
-			var storage = new ChunkPaletteStorage<Block>(default(Block));
-			for (var x = 0; x < 16; x++)
-			for (var y = 0; y < 16; y++)
-			for (var z = 0; z < 16; z++)
-				if (RND.NextBool(0.1))
-					storage[x, y, z] = new Block(block);
 
-			var chunkMesh = ChunkMeshGenerator.Generate(storage)!;
-			var chunk = Entities.New();
-			Transforms.Set(chunk.ID, Matrix4x4.CreateScale(0.15F));
-			Meshes.Set(chunk.ID, chunkMesh.ID);
-			Textures.Set(chunk.ID, texture);
+			void CreateChunk(ChunkPos pos)
+			{
+				var chunk = Entities.New();
+				var storage = new ChunkPaletteStorage<Block>(default(Block));
+				for (var x = 0; x < 16; x++)
+				for (var y = 0; y < 16; y++)
+				for (var z = 0; z < 16; z++) {
+					var yy = (pos.Y << 4) | y;
+					if (RND.NextBool(0.5 - yy / 48.0))
+						storage[x, y, z] = new Block((yy >  16) ? grass
+						                           : (yy > -16) ? dirt
+						                                        : stone);
+				}
+
+				Set(chunk, new Chunk(pos));
+				Set(chunk, (Transform)Matrix4x4.CreateTranslation(pos.GetOrigin()));
+				Set(chunk, storage);
+			}
+
+			var chunkStore = (LookupDictionaryStore<ChunkPos, Chunk>)Components.GetStore<Chunk>();
+			void GenerateChunkMesh(ChunkPos pos)
+			{
+				var chunk = Entities.GetByID(chunkStore.GetEntityID(pos))!.Value;
+				var chunkMesh = ChunkMeshGenerator.Generate(pos);
+				if (chunkMesh == null) return;
+				Set(chunk, chunkMesh.ID);
+				Set(chunk, texture);
+			}
+
+			for (var x = -6; x < 6; x++)
+			for (var y = -2; y < 2; y++)
+			for (var z = -6; z < 6; z++)
+				CreateChunk(new ChunkPos(x, y, z));
+
+			for (var x = -6; x < 6; x++)
+			for (var y = -2; y < 2; y++)
+			for (var z = -6; z < 6; z++)
+				GenerateChunkMesh(new ChunkPos(x, y, z));
 		}
 
 		private void OnClosing()
