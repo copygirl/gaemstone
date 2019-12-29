@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Numerics;
 using gaemstone.Client.Components;
+using gaemstone.Common.Components;
 using gaemstone.Common.ECS;
 using gaemstone.Common.ECS.Processors;
 using gaemstone.Common.ECS.Stores;
@@ -12,10 +13,10 @@ namespace gaemstone.Client.Graphics
 	public class Renderer : IProcessor
 	{
 		private Game _game = null!;
-		private IComponentStore<Camera> _cameraStore = null!;
+		private IComponentStore<Camera>    _cameraStore    = null!;
 		private IComponentStore<Transform> _transformStore = null!;
-		private IComponentStore<Mesh> _meshStore = null!;
-		private IComponentStore<Texture> _textureStore = null!;
+		private IComponentStore<Mesh>      _meshStore      = null!;
+		private IComponentStore<Texture>   _textureStore   = null!;
 
 		private Program _program;
 		private UniformMatrix4x4 _mvpUniform;

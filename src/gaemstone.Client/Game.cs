@@ -8,6 +8,7 @@ using gaemstone.Client.Components;
 using gaemstone.Client.Graphics;
 using gaemstone.Client.Processors;
 using gaemstone.Common.Bloxel.Chunks;
+using gaemstone.Common.Components;
 using gaemstone.Common.ECS;
 using gaemstone.Common.ECS.Stores;
 using gaemstone.Common.Utility;
