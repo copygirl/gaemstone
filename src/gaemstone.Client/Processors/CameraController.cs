@@ -1,5 +1,7 @@
 using System.Drawing;
+using System.Linq;
 using System.Numerics;
+using gaemstone.Client.Components;
 using gaemstone.Common.Components;
 using gaemstone.Common.ECS;
 using gaemstone.Common.ECS.Processors;
@@ -98,7 +100,8 @@ namespace gaemstone.Client.Processors
 
 		public void OnUpdate(double delta)
 		{
-			var transform = _game.Get<Transform>(_game.MainCamera);
+			var (mainCamera, _) = _game.GetAll<MainCamera>().First();
+			var transform = _game.Get<Transform>(mainCamera);
 
 			var xMovement = -_mouseMoved.X * (float)delta / 100;
 			var yMovement = -_mouseMoved.Y * (float)delta / 100;
@@ -112,7 +115,7 @@ namespace gaemstone.Client.Processors
 			var pitchRotation = Matrix4x4.CreateRotationX(yMovement);
 			var translation   = Matrix4x4.CreateTranslation(sideMovement, 0, forwardMovement);
 
-			_game.Set(_game.MainCamera, (Transform)(translation * pitchRotation * transform * yawRotation));
+			_game.Set(mainCamera, (Transform)(translation * pitchRotation * transform * yawRotation));
 		}
 	}
 }

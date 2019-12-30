@@ -1,11 +1,13 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Numerics;
 using gaemstone.Bloxel;
 using gaemstone.Bloxel.Chunks;
 using gaemstone.Bloxel.Client;
 using gaemstone.Client;
+using gaemstone.Client.Components;
 using gaemstone.Client.Graphics;
 using gaemstone.Common.Components;
 using gaemstone.Common.ECS.Stores;
@@ -34,7 +36,8 @@ namespace Immersion
 		protected override void OnLoad()
 		{
 			base.OnLoad();
-			Set(MainCamera, (Transform)Matrix4x4.CreateTranslation(0, 26, 0));
+			var (mainCamera, _) = GetAll<MainCamera>().First();
+			Set(mainCamera, (Transform)Matrix4x4.CreateTranslation(0, 26, 0));
 
 			var heartMesh = MeshManager.Load("heart.glb").ID;
 			var swordMesh = MeshManager.Load("sword.glb").ID;

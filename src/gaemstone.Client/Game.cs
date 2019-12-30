@@ -18,8 +18,6 @@ namespace gaemstone.Client
 		// TODO: Re-implement MeshManager as a processor.
 		public MeshManager MeshManager { get; }
 
-		public Entity MainCamera { get; private set; }
-
 
 		public Game()
 		{
@@ -36,6 +34,7 @@ namespace gaemstone.Client
 
 			Components.AddStore(new PackedArrayStore<Transform>());
 			Components.AddStore(new PackedArrayStore<Camera>());
+			Components.AddStore(new PackedArrayStore<MainCamera>());
 			Components.AddStore(new PackedArrayStore<Mesh>());
 			Components.AddStore(new PackedArrayStore<Texture>());
 			Components.AddStore(new PackedArrayStore<TextureCell>());
@@ -51,8 +50,9 @@ namespace gaemstone.Client
 
 		protected virtual void OnLoad()
 		{
-			MainCamera = Entities.New();
-			Set(MainCamera, (Transform)Matrix4x4.Identity);
+			var mainCamera = Entities.New();
+			Set(mainCamera, (Transform)Matrix4x4.Identity);
+			Set(mainCamera, MainCamera.Default3D);
 
 			// TODO: This currently has to sit exactly here.
 			//       Renderer requires MainCamera, and it initializes GFX,

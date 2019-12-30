@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using gaemstone.Common.ECS.Processors;
 
 namespace gaemstone.Common.ECS
@@ -32,6 +33,19 @@ namespace gaemstone.Common.ECS
 			var store = Components.GetStore<T>() ?? throw new InvalidOperationException(
 				$"No store in Components for type {typeof(T)}");
 			store.Set(entity.ID, value);
+		}
+
+		public IEnumerable<(Entity, T)> GetAll<T>()
+		{
+			var store = Components.GetStore<T>();
+			if (store == null) yield break;
+
+			var enumerator = store.GetEnumerator();
+			while (enumerator.MoveNext())
+				yield return (
+					Entities.GetByID(enumerator.CurrentEntityID)!.Value,
+					enumerator.CurrentComponent
+				);
 		}
 	}
 }

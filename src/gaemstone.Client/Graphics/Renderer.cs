@@ -13,23 +13,25 @@ namespace gaemstone.Client.Graphics
 	public class Renderer : IProcessor
 	{
 		private Game _game = null!;
-		private IComponentStore<Camera>    _cameraStore    = null!;
-		private IComponentStore<Transform> _transformStore = null!;
-		private IComponentStore<Mesh>      _meshStore      = null!;
-		private IComponentStore<Texture>   _textureStore   = null!;
+		private IComponentStore<Camera>     _cameraStore     = null!;
+		private IComponentStore<MainCamera> _mainCameraStore = null!;
+		private IComponentStore<Transform>  _transformStore  = null!;
+		private IComponentStore<Mesh>       _meshStore       = null!;
+		private IComponentStore<Texture>    _textureStore    = null!;
 
 		private Program _program;
-		private UniformMatrix4x4 _mvpUniform;
+		private UniformMatrix4x4 _cameraMatrixUniform;
 		private UniformBool _enableTextureUniform;
 
 
 		public void OnLoad(Universe universe)
 		{
 			_game = (Game)universe;
-			_cameraStore    = universe.Components.GetStore<Camera>();
-			_transformStore = universe.Components.GetStore<Transform>();
-			_meshStore      = universe.Components.GetStore<Mesh>();
-			_textureStore   = universe.Components.GetStore<Texture>();
+			_cameraStore     = universe.Components.GetStore<Camera>();
+			_mainCameraStore = universe.Components.GetStore<MainCamera>();
+			_transformStore  = universe.Components.GetStore<Transform>();
+			_meshStore       = universe.Components.GetStore<Mesh>();
+			_textureStore    = universe.Components.GetStore<Texture>();
 
 			_game.Window.Resize += OnWindowResize;
 			_game.Window.Render += OnWindowRender;
@@ -50,7 +52,7 @@ namespace gaemstone.Client.Graphics
 			_game.MeshManager.ProgramAttributes = attribs;
 
 			var uniforms = _program.GetActiveUniforms();
-			_mvpUniform           = uniforms["modelViewProjection"].Matrix4x4;
+			_cameraMatrixUniform  = uniforms["cameraMatrix"].Matrix4x4;
 			_enableTextureUniform = uniforms["enableTexture"].Bool;
 
 			OnWindowResize(_game.Window.Size);
@@ -67,13 +69,23 @@ namespace gaemstone.Client.Graphics
 
 		public void OnWindowResize(Size size)
 		{
-			const float DEGREES_TO_RADIANS = MathF.PI / 180;
+			const float DEG_TO_RAD = MathF.PI / 180;
 			var aspectRatio = (float)size.Width / size.Height;
-			_game.Set(_game.MainCamera, new Camera {
-				Viewport   = new Rectangle(Point.Empty, size),
-				Projection = Matrix4x4.CreatePerspectiveFieldOfView(
-					60.0F * DEGREES_TO_RADIANS, aspectRatio, 0.1F, 100.0F),
-			});
+
+			var mainCameraEnumerator = _mainCameraStore.GetEnumerator();
+			while (mainCameraEnumerator.MoveNext()) {
+				var cameraID   = mainCameraEnumerator.CurrentEntityID;
+				var mainCamera = mainCameraEnumerator.CurrentComponent;
+				_cameraStore.Set(cameraID, new Camera {
+					Viewport = new Rectangle(Point.Empty, size),
+					Matrix   = mainCamera.IsOrthographic
+						? Matrix4x4.CreateOrthographic(size.Width, size.Height,
+							mainCamera.NearPlane, mainCamera.FarPlane)
+						: Matrix4x4.CreatePerspectiveFieldOfView(
+							mainCamera.FieldOfView * DEG_TO_RAD, aspectRatio,
+							mainCamera.NearPlane, mainCamera.FarPlane)
+				});
+			}
 		}
 
 		public void OnWindowRender(double delta)
@@ -86,7 +98,7 @@ namespace gaemstone.Client.Graphics
 				var cameraID = cameraEnumerator.CurrentEntityID;
 				var camera   = cameraEnumerator.CurrentComponent;
 				Matrix4x4.Invert(_transformStore.Get(cameraID), out var view);
-				var viewProjection = view * camera.Projection;
+				var viewProjection = view * camera.Matrix;
 				GFX.Viewport(camera.Viewport);
 
 				var meshEnumerator = _meshStore.GetEnumerator();
@@ -94,7 +106,7 @@ namespace gaemstone.Client.Graphics
 					var entityID  = meshEnumerator.CurrentEntityID;
 					var mesh      = meshEnumerator.CurrentComponent;
 					var modelView = _transformStore.Get(entityID).Value;
-					_mvpUniform.Set(modelView * viewProjection);
+					_cameraMatrixUniform.Set(modelView * viewProjection);
 
 					if (_textureStore.TryGet(meshEnumerator.CurrentEntityID, out var texture)) {
 						_enableTextureUniform.Set(true);
