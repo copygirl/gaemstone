@@ -11,7 +11,7 @@
     "preLaunchTask": "build",
 
     "cwd": "${workspaceFolder}",
-    "program": "${workspaceFolder}/src/gaemstone.Client/bin/Debug/netcoreapp3.0/gaemstone.Client.dll",
+    "program": "${workspaceFolder}/src/Immersion/bin/Debug/netcoreapp3.0/Immersion.dll",
     "args": [],
 
     "console": "internalConsole",
@@ -19,13 +19,14 @@
   },{
     // FIXME: Doesn't currently appear to work with this project.
     // https://github.com/Samsung/netcoredbg
+
     "name": "Launch Client (netcoredbg)",
     "type": "coreclr",
     "request": "launch",
     "preLaunchTask": "build",
 
     "cwd": "${workspaceFolder}",
-    "program": "${workspaceFolder}/src/gaemstone.Client/bin/Debug/netcoreapp3.0/gaemstone.Client.dll",
+    "program": "${workspaceFolder}/src/Immersion/bin/Debug/netcoreapp3.0/Immersion.dll",
     "args": [],
 
     "console": "internalConsole",
