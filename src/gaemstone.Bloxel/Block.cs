@@ -1,6 +1,6 @@
 using gaemstone.Common.ECS;
 
-namespace gaemstone.Client.Bloxel.Blocks
+namespace gaemstone.Bloxel
 {
 	public readonly struct Block
 	{

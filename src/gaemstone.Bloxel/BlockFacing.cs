@@ -2,7 +2,7 @@ using System;
 using System.Collections.Immutable;
 using System.Numerics;
 
-namespace gaemstone.Common.Bloxel.Blocks
+namespace gaemstone.Bloxel
 {
 	public enum BlockFacing
 	{

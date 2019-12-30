@@ -2,9 +2,8 @@ using System;
 using System.Collections.Immutable;
 using System.Numerics;
 using System.Text;
-using gaemstone.Common.Bloxel.Blocks;
 
-namespace gaemstone.Common.Bloxel
+namespace gaemstone.Bloxel
 {
 	[Flags]
 	public enum Neighbor : byte

@@ -1,5 +1,5 @@
 
-namespace gaemstone.Common.Bloxel.Chunks
+namespace gaemstone.Bloxel.Chunks
 {
 	public readonly struct Chunk
 	{

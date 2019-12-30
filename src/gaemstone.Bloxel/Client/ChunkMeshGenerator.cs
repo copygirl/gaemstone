@@ -1,14 +1,12 @@
 using System.Linq;
 using System;
 using System.Numerics;
-using gaemstone.Client.Bloxel.Blocks;
+using gaemstone.Bloxel.Chunks;
+using gaemstone.Client;
 using gaemstone.Client.Graphics;
-using gaemstone.Common.Bloxel;
-using gaemstone.Common.Bloxel.Blocks;
-using gaemstone.Common.Bloxel.Chunks;
 using gaemstone.Common.ECS.Stores;
 
-namespace gaemstone.Client.Bloxel.Chunks
+namespace gaemstone.Bloxel.Client
 {
 	public class ChunkMeshGenerator
 	{

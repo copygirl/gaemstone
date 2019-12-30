@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace gaemstone.Common.Bloxel.Chunks
+namespace gaemstone.Bloxel.Chunks
 {
 	// Based on "Palette-based compression for chunked discrete voxel data" by /u/Longor1996
 	// https://www.reddit.com/r/VoxelGameDev/comments/9yu8qy/palettebased_compression_for_chunked_discrete/

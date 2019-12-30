@@ -1,9 +1,8 @@
 using System;
 using System.Numerics;
-using gaemstone.Common.Bloxel.Blocks;
 using gaemstone.Common.Utility;
 
-namespace gaemstone.Common.Bloxel.Chunks
+namespace gaemstone.Bloxel.Chunks
 {
 	public readonly struct ChunkPos : IEquatable<ChunkPos>
 	{

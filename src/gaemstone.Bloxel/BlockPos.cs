@@ -2,7 +2,7 @@ using System;
 using System.Numerics;
 using gaemstone.Common.Utility;
 
-namespace gaemstone.Common.Bloxel.Blocks
+namespace gaemstone.Bloxel
 {
 	public readonly struct BlockPos
 		: IEquatable<BlockPos>
