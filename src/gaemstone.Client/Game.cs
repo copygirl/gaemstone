@@ -37,7 +37,6 @@ namespace gaemstone.Client
 			Components.AddStore(new PackedArrayStore<MainCamera>());
 			Components.AddStore(new PackedArrayStore<Mesh>());
 			Components.AddStore(new PackedArrayStore<Texture>());
-			Components.AddStore(new PackedArrayStore<TextureCell>());
 
 			MeshManager = new MeshManager(this);
 		}

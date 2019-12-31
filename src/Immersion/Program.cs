@@ -27,6 +27,7 @@ namespace Immersion
 		public Program()
 		{
 			Window.Title = "gæmstone: Immersion";
+			Components.AddStore(new PackedArrayStore<TextureCoords4>());
 			Components.AddStore(new LookupDictionaryStore<ChunkPos, Chunk>(chunk => chunk.Position));
 			Components.AddStore(new DictionaryStore<ChunkPaletteStorage<Block>>());
 			ChunkMeshGenerator = new ChunkMeshGenerator(this);
@@ -59,9 +60,9 @@ namespace Immersion
 			var stone = Entities.New();
 			var dirt  = Entities.New();
 			var grass = Entities.New();
-			Set(stone, new TextureCell(1, 0, 16, new Size(64, 64)));
-			Set(dirt , new TextureCell(2, 0, 16, new Size(64, 64)));
-			Set(grass, new TextureCell(3, 0, 16, new Size(64, 64)));
+			Set(stone, TextureCoords4.FromGrid(new Size(64, 64), 1, 0, 16));
+			Set(dirt , TextureCoords4.FromGrid(new Size(64, 64), 2, 0, 16));
+			Set(grass, TextureCoords4.FromGrid(new Size(64, 64), 3, 0, 16));
 
 
 			void CreateChunk(ChunkPos pos)

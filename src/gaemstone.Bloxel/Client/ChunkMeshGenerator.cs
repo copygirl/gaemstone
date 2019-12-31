@@ -58,7 +58,7 @@ namespace gaemstone.Bloxel.Client
 		private readonly Game _game;
 		private readonly LookupDictionaryStore<ChunkPos, Chunk> _chunkStore;
 		private readonly IComponentStore<ChunkPaletteStorage<Block>> _storageStore;
-		private readonly IComponentStore<TextureCell> _textureCellStore;
+		private readonly IComponentStore<TextureCoords4> _textureCellStore;
 
 		private ushort[] _indices = new ushort[STARTING_CAPACITY];
 		private Vector3[] _vertices = new Vector3[STARTING_CAPACITY];
@@ -70,7 +70,7 @@ namespace gaemstone.Bloxel.Client
 			_game = game;
 			_chunkStore       = (LookupDictionaryStore<ChunkPos, Chunk>)game.Components.GetStore<Chunk>();
 			_storageStore     = game.Components.GetStore<ChunkPaletteStorage<Block>>();
-			_textureCellStore = game.Components.GetStore<TextureCell>();
+			_textureCellStore = game.Components.GetStore<TextureCoords4>();
 		}
 
 		public MeshInfo? Generate(ChunkPos chunkPos)
