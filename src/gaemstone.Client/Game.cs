@@ -38,7 +38,7 @@ namespace gaemstone.Client
 			Components.AddStore(new PackedArrayStore<Mesh>());
 			Components.AddStore(new PackedArrayStore<Texture>());
 
-			MeshManager = new MeshManager(this);
+			MeshManager = new MeshManager();
 		}
 
 		public void Run()

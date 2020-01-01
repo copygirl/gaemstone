@@ -13,20 +13,16 @@ namespace gaemstone.Client.Graphics
 		private Dictionary<Mesh, MeshInfo> _meshes
 			= new Dictionary<Mesh, MeshInfo>();
 
-		public Game Game { get; }
 		public VertexAttributes? ProgramAttributes { get; internal set; }
 
-		public MeshManager(Game game)
-			=> Game = game;
 
-
-		public MeshInfo Load(string name)
+		public MeshInfo Load(Game game, string name)
 		{
 			if (ProgramAttributes == null) throw new InvalidOperationException(
 				$"{nameof(ProgramAttributes)} has not been set");
 
 			ModelRoot root;
-			using (var stream = Game.GetResourceStream(name))
+			using (var stream = game.GetResourceStream(name))
 				root = ModelRoot.ReadGLB(stream, new SharpGLTF.Schema2.ReadSettings());
 			var primitive = root.LogicalMeshes[0].Primitives[0];
 

@@ -40,8 +40,8 @@ namespace Immersion
 			var (mainCamera, _) = GetAll<MainCamera>().First();
 			Set(mainCamera, (Transform)Matrix4x4.CreateTranslation(0, 26, 0));
 
-			var heartMesh = MeshManager.Load("heart.glb").ID;
-			var swordMesh = MeshManager.Load("sword.glb").ID;
+			var heartMesh = MeshManager.Load(this, "heart.glb").ID;
+			var swordMesh = MeshManager.Load(this, "sword.glb").ID;
 
 			for (var x = -12; x <= 12; x++)
 			for (var z = -12; z <= 12; z++) {
@@ -53,9 +53,7 @@ namespace Immersion
 			}
 
 
-			Texture texture;
-			using (var stream = GetResourceStream("terrain.png"))
-				texture = Texture.CreateFromStream(stream);
+			var texture = Texture.Load(this, "terrain.png");
 
 			var stone = Entities.New();
 			var dirt  = Entities.New();

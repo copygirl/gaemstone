@@ -11,6 +11,11 @@ namespace gaemstone.Client.Graphics
 		public static Texture Gen(TextureTarget target)
 			=> new Texture(GFX.GL.GenTexture(), target);
 
+		public static Texture Load(Game game, string name)
+		{
+			using (var stream = game.GetResourceStream(name))
+				return CreateFromStream(stream);
+		}
 		public static Texture CreateFromStream(Stream stream)
 		{
 			var texture = Gen(TextureTarget.Texture2D);
