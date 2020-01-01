@@ -27,11 +27,11 @@ namespace gaemstone.Client.Graphics
 				(x + width ) / (float)textureSize.Width  - 0.001F,
 				(y + height) / (float)textureSize.Height - 0.001F);
 
-		public static TextureCoords4 FromGrid(Size textureSize, int cellX, int cellY, int cellSize)
+		public static TextureCoords4 FromGrid(int numCellsX, int numCellsY, int cellX, int cellY)
 			=> new TextureCoords4(
-				( cellX      * cellSize) / (float)textureSize.Width  + 0.001F,
-				( cellY      * cellSize) / (float)textureSize.Height + 0.001F,
-				((cellX + 1) * cellSize) / (float)textureSize.Width  - 0.001F,
-				((cellY + 1) * cellSize) / (float)textureSize.Height - 0.001F);
+				 cellX      / (float)numCellsX + 0.001F,
+				 cellY      / (float)numCellsY + 0.001F,
+				(cellX + 1) / (float)numCellsX - 0.001F,
+				(cellY + 1) / (float)numCellsY - 0.001F);
 	}
 }

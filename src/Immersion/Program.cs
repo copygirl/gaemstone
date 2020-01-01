@@ -58,9 +58,9 @@ namespace Immersion
 			var stone = Entities.New();
 			var dirt  = Entities.New();
 			var grass = Entities.New();
-			Set(stone, TextureCoords4.FromGrid(new Size(64, 64), 1, 0, 16));
-			Set(dirt , TextureCoords4.FromGrid(new Size(64, 64), 2, 0, 16));
-			Set(grass, TextureCoords4.FromGrid(new Size(64, 64), 3, 0, 16));
+			Set(stone, TextureCoords4.FromGrid(4, 4, 1, 0));
+			Set(dirt , TextureCoords4.FromGrid(4, 4, 2, 0));
+			Set(grass, TextureCoords4.FromGrid(4, 4, 3, 0));
 
 
 			void CreateChunk(ChunkPos pos)
