@@ -29,7 +29,7 @@ namespace gaemstone.Client.Graphics
 				                        out var length, out var size, out var type, out nameBuffer);
 				var name     = nameBuffer.Substring(0, (int)length);
 				var location = GFX.GL.GetUniformLocation(program.Handle, name);
-				var uniform  = new UniformInfo(program, uniformIndex, location, size, (UniformType)type, name);
+				var uniform  = new UniformInfo(uniformIndex, location, size, (UniformType)type, name);
 				_activeUniforms[uniformIndex] = uniform;
 				_uniformsByName[nameBuffer]   = uniform;
 			}
@@ -44,15 +44,14 @@ namespace gaemstone.Client.Graphics
 
 	public class UniformInfo
 	{
-		public Program Program { get; }
 		public uint Index { get; }
 		public int Location { get; }
 		public int Size { get; }
 		public UniformType Type { get; }
 		public string Name { get; }
 
-		internal UniformInfo(Program program, uint index, int location, int size, UniformType type, string name)
-			=> (Program, Index, Location, Size, Type, Name) = (program, index, location, size, type, name);
+		internal UniformInfo(uint index, int location, int size, UniformType type, string name)
+			=> (Index, Location, Size, Type, Name) = (index, location, size, type, name);
 
 		private int Ensure(int size, UniformType type, string convert)
 		{
