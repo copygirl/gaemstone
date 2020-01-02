@@ -13,11 +13,11 @@ namespace gaemstone.Client.Graphics
 	public class Renderer : IProcessor
 	{
 		private Game _game = null!;
-		private IComponentStore<Camera>     _cameraStore     = null!;
-		private IComponentStore<MainCamera> _mainCameraStore = null!;
-		private IComponentStore<Transform>  _transformStore  = null!;
-		private IComponentStore<Mesh>       _meshStore       = null!;
-		private IComponentStore<Texture>    _textureStore    = null!;
+		private IComponentStore<Camera>      _cameraStore     = null!;
+		private IComponentStore<MainCamera>  _mainCameraStore = null!;
+		private IComponentStore<Transform>   _transformStore  = null!;
+		private IComponentStore<IndexedMesh> _meshStore       = null!;
+		private IComponentStore<Texture>     _textureStore    = null!;
 
 		private Program _program;
 		private UniformMatrix4x4 _cameraMatrixUniform;
@@ -30,7 +30,7 @@ namespace gaemstone.Client.Graphics
 			_cameraStore     = universe.Components.GetStore<Camera>();
 			_mainCameraStore = universe.Components.GetStore<MainCamera>();
 			_transformStore  = universe.Components.GetStore<Transform>();
-			_meshStore       = universe.Components.GetStore<Mesh>();
+			_meshStore       = universe.Components.GetStore<IndexedMesh>();
 			_textureStore    = universe.Components.GetStore<Texture>();
 
 			_game.Window.Resize += OnWindowResize;
@@ -48,9 +48,7 @@ namespace gaemstone.Client.Graphics
 				Shader.CompileFromSource("fragment", ShaderType.FragmentShader, fragmentShaderSource));
 			_program.DetachAndDeleteShaders();
 
-			var attribs = _program.GetActiveAttributes();
-			_game.MeshManager.ProgramAttributes = attribs;
-
+			var attribs  = _program.GetActiveAttributes();
 			var uniforms = _program.GetActiveUniforms();
 			_cameraMatrixUniform  = uniforms["cameraMatrix"].Matrix4x4;
 			_enableTextureUniform = uniforms["enableTexture"].Bool;
@@ -115,8 +113,7 @@ namespace gaemstone.Client.Graphics
 						_enableTextureUniform.Set(false);
 					}
 
-					var meshInfo = _game.MeshManager.Find(mesh);
-					meshInfo.Draw();
+					mesh.Draw();
 				}
 			}
 

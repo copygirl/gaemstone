@@ -15,10 +15,6 @@ namespace gaemstone.Client
 	{
 		public IWindow Window { get; }
 
-		// TODO: Re-implement MeshManager as a processor.
-		public MeshManager MeshManager { get; }
-
-
 		public Game()
 		{
 			Window = Silk.NET.Windowing.Window.Create(new WindowOptions {
@@ -35,10 +31,8 @@ namespace gaemstone.Client
 			Components.AddStore(new PackedArrayStore<Transform>());
 			Components.AddStore(new PackedArrayStore<Camera>());
 			Components.AddStore(new PackedArrayStore<MainCamera>());
-			Components.AddStore(new PackedArrayStore<Mesh>());
+			Components.AddStore(new PackedArrayStore<IndexedMesh>());
 			Components.AddStore(new PackedArrayStore<Texture>());
-
-			MeshManager = new MeshManager();
 		}
 
 		public void Run()
@@ -55,8 +49,9 @@ namespace gaemstone.Client
 
 			// TODO: This currently has to sit exactly here.
 			//       Renderer requires MainCamera, and it initializes GFX,
-			//       which is required for MeshManager to create meshes.
+			//       which is required for MeshLoader to create meshes.
 			Processors.Start<Renderer>();
+			Processors.Start<MeshLoader>();
 			Processors.Start<CameraController>();
 		}
 

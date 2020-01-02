@@ -1,5 +1,4 @@
 using System;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Numerics;
@@ -22,7 +21,6 @@ namespace Immersion
 
 
 		public Random RND { get; } = new Random();
-		public ChunkMeshGenerator ChunkMeshGenerator { get; }
 
 		public Program()
 		{
@@ -30,7 +28,6 @@ namespace Immersion
 			Components.AddStore(new PackedArrayStore<TextureCoords4>());
 			Components.AddStore(new LookupDictionaryStore<ChunkPos, Chunk>(chunk => chunk.Position));
 			Components.AddStore(new DictionaryStore<ChunkPaletteStorage<Block>>());
-			ChunkMeshGenerator = new ChunkMeshGenerator(this);
 		}
 
 
@@ -40,8 +37,9 @@ namespace Immersion
 			var (mainCamera, _) = GetAll<MainCamera>().First();
 			Set(mainCamera, (Transform)Matrix4x4.CreateTranslation(0, 26, 0));
 
-			var heartMesh = MeshManager.Load(this, "heart.glb").ID;
-			var swordMesh = MeshManager.Load(this, "sword.glb").ID;
+			var meshLoader = Processors.GetOrThrow<MeshLoader>();
+			var heartMesh  = meshLoader.Load(this, "heart.glb");
+			var swordMesh  = meshLoader.Load(this, "sword.glb");
 
 			for (var x = -12; x <= 12; x++)
 			for (var z = -12; z <= 12; z++) {
@@ -82,13 +80,14 @@ namespace Immersion
 				Set(chunk, storage);
 			}
 
+			var chunkMeshGenerator = new ChunkMeshGenerator(this);
 			var chunkStore = (LookupDictionaryStore<ChunkPos, Chunk>)Components.GetStore<Chunk>();
 			void GenerateChunkMesh(ChunkPos pos)
 			{
 				var chunk = Entities.GetByID(chunkStore.GetEntityID(pos))!.Value;
-				var chunkMesh = ChunkMeshGenerator.Generate(pos);
+				var chunkMesh = chunkMeshGenerator.Generate(pos);
 				if (chunkMesh == null) return;
-				Set(chunk, chunkMesh.ID);
+				Set(chunk, chunkMesh.Value);
 				Set(chunk, texture);
 			}
 

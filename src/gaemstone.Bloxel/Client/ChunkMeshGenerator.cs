@@ -8,6 +8,7 @@ using gaemstone.Common.ECS.Stores;
 
 namespace gaemstone.Bloxel.Client
 {
+	// TODO: Turn into an IProcessor.
 	public class ChunkMeshGenerator
 	{
 		private const int STARTING_CAPACITY = 1024;
@@ -56,6 +57,7 @@ namespace gaemstone.Bloxel.Client
 
 
 		private readonly Game _game;
+		private readonly MeshLoader _meshLoader;
 		private readonly LookupDictionaryStore<ChunkPos, Chunk> _chunkStore;
 		private readonly IComponentStore<ChunkPaletteStorage<Block>> _storageStore;
 		private readonly IComponentStore<TextureCoords4> _textureCellStore;
@@ -67,13 +69,14 @@ namespace gaemstone.Bloxel.Client
 
 		public ChunkMeshGenerator(Game game)
 		{
-			_game = game;
+			_game       = game;
+			_meshLoader = game.Processors.GetOrThrow<MeshLoader>();
 			_chunkStore       = (LookupDictionaryStore<ChunkPos, Chunk>)game.Components.GetStore<Chunk>();
 			_storageStore     = game.Components.GetStore<ChunkPaletteStorage<Block>>();
 			_textureCellStore = game.Components.GetStore<TextureCoords4>();
 		}
 
-		public MeshInfo? Generate(ChunkPos chunkPos)
+		public IndexedMesh? Generate(ChunkPos chunkPos)
 		{
 			var storages = new ChunkPaletteStorage<Block>[3, 3, 3];
 			foreach (var (x, y, z) in Neighbors.ALL.Prepend(Neighbor.None))
@@ -125,10 +128,10 @@ namespace gaemstone.Bloxel.Client
 			}
 
 			return (indexCount > 0)
-				? _game.MeshManager.Create(
+				? _meshLoader.Create(
 					_indices.AsSpan(0, indexCount), _vertices.AsSpan(0, vertexCount),
 					_normals.AsSpan(0, vertexCount), _uvs.AsSpan(0, vertexCount))
-				: null;
+				: (IndexedMesh?)null;
 		}
 
 		private bool IsNeighborEmpty(
