@@ -100,7 +100,7 @@ namespace gaemstone.Client.Processors
 
 		public void OnUpdate(double delta)
 		{
-			var (mainCamera, _) = _game.GetAll<MainCamera>().First();
+			var (mainCamera, _) = _game.GetAll<FullscreenCamera>().First();
 			var transform = _game.Get<Transform>(mainCamera);
 
 			var xMovement = -_mouseMoved.X * (float)delta / 100;

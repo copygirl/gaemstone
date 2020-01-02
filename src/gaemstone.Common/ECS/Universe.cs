@@ -26,6 +26,13 @@ namespace gaemstone.Common.ECS
 			return store.Get(entity.ID);
 		}
 
+		public bool Has<T>(Entity entity)
+		{
+			if (!Entities.IsAlive(entity))
+				throw new ArgumentException($"{entity} is not alive");
+			return Components.GetStore<T>()?.TryGet(entity.ID, out _) ?? false;
+		}
+
 		public void Set<T>(Entity entity, T value)
 		{
 			if (!Entities.IsAlive(entity))

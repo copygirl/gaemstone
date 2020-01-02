@@ -34,7 +34,7 @@ namespace Immersion
 		protected override void OnLoad()
 		{
 			base.OnLoad();
-			var (mainCamera, _) = GetAll<MainCamera>().First();
+			var (mainCamera, _) = GetAll<FullscreenCamera>().First();
 			Set(mainCamera, (Transform)Matrix4x4.CreateTranslation(0, 26, 0));
 
 			var meshLoader = Processors.GetOrThrow<MeshLoader>();

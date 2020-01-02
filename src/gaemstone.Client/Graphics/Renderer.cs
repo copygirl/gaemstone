@@ -14,7 +14,7 @@ namespace gaemstone.Client.Graphics
 	{
 		private Game _game = null!;
 		private IComponentStore<Camera>      _cameraStore     = null!;
-		private IComponentStore<MainCamera>  _mainCameraStore = null!;
+		private IComponentStore<FullscreenCamera>  _mainCameraStore = null!;
 		private IComponentStore<Transform>   _transformStore  = null!;
 		private IComponentStore<IndexedMesh> _meshStore       = null!;
 		private IComponentStore<Texture>     _textureStore    = null!;
@@ -28,17 +28,13 @@ namespace gaemstone.Client.Graphics
 		{
 			_game = (Game)universe;
 			_cameraStore     = universe.Components.GetStore<Camera>();
-			_mainCameraStore = universe.Components.GetStore<MainCamera>();
+			_mainCameraStore = universe.Components.GetStore<FullscreenCamera>();
 			_transformStore  = universe.Components.GetStore<Transform>();
 			_meshStore       = universe.Components.GetStore<IndexedMesh>();
 			_textureStore    = universe.Components.GetStore<Texture>();
 
 			_game.Window.Resize += OnWindowResize;
 			_game.Window.Render += OnWindowRender;
-
-			GFX.Initialize();
-			GFX.OnDebugOutput += (source, type, id, severity, message) =>
-				Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");
 
 			var vertexShaderSource   = _game.GetResourceAsString("default.vs.glsl");
 			var fragmentShaderSource = _game.GetResourceAsString("default.fs.glsl");

@@ -9,12 +9,12 @@ namespace gaemstone.Client.Components
 		public Matrix4x4 Matrix;
 	}
 
-	public struct MainCamera
+	public struct FullscreenCamera
 	{
-		public static readonly MainCamera Default2D
-			= new MainCamera { NearPlane = -100.0F, FarPlane = 100.0F };
-		public static readonly MainCamera Default3D
-			= new MainCamera { FieldOfView = 80.0F, NearPlane = 0.1F, FarPlane = 100.0F };
+		public static readonly FullscreenCamera Default2D
+			= new FullscreenCamera { NearPlane = -100.0F, FarPlane = 100.0F };
+		public static readonly FullscreenCamera Default3D
+			= new FullscreenCamera { FieldOfView = 80.0F, NearPlane = 0.1F, FarPlane = 100.0F };
 
 		public float FieldOfView;
 		public float NearPlane, FarPlane;
