@@ -8,6 +8,10 @@
     "editor.tabSize": 3,
     "editor.insertSpaces": false
   },
+  "[markdown]": {
+    // Allows to put double-space at end of lines.
+    "files.trimTrailingWhitespace": false,
+  },
 
   "files.exclude": {
     "**/.git": true,
