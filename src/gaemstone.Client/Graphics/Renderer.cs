@@ -108,12 +108,10 @@ namespace gaemstone.Client.Graphics
 					} else {
 						mesh.Draw();
 					}
-
 				}
 			}
 
 			VertexArray.Unbind();
-			_game.Window.SwapBuffers();
 		}
 	}
 }

@@ -24,6 +24,7 @@ namespace gaemstone.Client
 				API   = GraphicsAPI.Default,
 				UpdatesPerSecond = 30.0,
 				FramesPerSecond  = 60.0,
+				ShouldSwapAutomatically = true,
 			});
 			Window.Load    += OnLoad;
 			Window.Update  += OnUpdate;
