@@ -31,10 +31,9 @@ namespace gaemstone.Client
 			Window.Closing += OnClosing;
 
 			Components.AddStore(new PackedArrayStore<Transform>());
-			Components.AddStore(new PackedArrayStore<Camera>());
-			Components.AddStore(new PackedArrayStore<FullscreenCamera>());
 			Components.AddStore(new PackedArrayStore<IndexedMesh>());
 			Components.AddStore(new PackedArrayStore<Texture>());
+			Components.AddStore(new DictionaryStore<Camera>());
 		}
 
 		public void Run()
@@ -52,12 +51,11 @@ namespace gaemstone.Client
 			Processors.Start<Renderer>();
 			Processors.Start<TextureManager>();
 			Processors.Start<MeshManager>();
-			Processors.Start<UpdateCameraOnResize>();
 			Processors.Start<CameraController>();
 
 			var mainCamera = Entities.New();
 			Set(mainCamera, (Transform)Matrix4x4.Identity);
-			Set(mainCamera, FullscreenCamera.Default3D);
+			Set(mainCamera, Camera.Default3D);
 		}
 
 		protected virtual void OnClosing()

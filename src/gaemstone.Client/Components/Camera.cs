@@ -1,23 +1,18 @@
-using System.Drawing;
-using System.Numerics;
-
 namespace gaemstone.Client.Components
 {
-	public struct Camera
+	public class Camera
 	{
-		public Rectangle Viewport;
-		public Matrix4x4 Matrix;
-	}
+		public static readonly Camera Default2D = Create2D();
+		public static readonly Camera Default3D = Create3D(80.0F);
 
-	public struct FullscreenCamera
-	{
-		public static readonly FullscreenCamera Default2D
-			= new FullscreenCamera { NearPlane = -100.0F, FarPlane = 100.0F };
-		public static readonly FullscreenCamera Default3D
-			= new FullscreenCamera { FieldOfView = 80.0F, NearPlane = 0.1F, FarPlane = 100.0F };
+		public static Camera Create2D(float nearPlane = -100.0F, float farPlane = 100.0F)
+			=> new Camera { NearPlane = nearPlane, FarPlane = farPlane };
+		public static Camera Create3D(float fieldOfView, float nearPlane = 0.1F, float farPlane = 200.0F)
+			=> new Camera { FieldOfView = fieldOfView, NearPlane = nearPlane, FarPlane = farPlane };
 
-		public float FieldOfView;
-		public float NearPlane, FarPlane;
+		public float FieldOfView { get; set; }
+		public float NearPlane { get; set; }
+		public float FarPlane { get; set; }
 
 		public bool IsOrthographic {
 			get => (FieldOfView == 0.0F);

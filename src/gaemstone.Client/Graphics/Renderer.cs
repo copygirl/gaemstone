@@ -14,7 +14,6 @@ namespace gaemstone.Client.Graphics
 	{
 		private Game _game = null!;
 		private IComponentStore<Camera> _cameraStore = null!;
-		private IComponentStore<FullscreenCamera> _mainCameraStore = null!;
 		private IComponentStore<Transform> _transformStore = null!;
 		private IComponentStore<IndexedMesh> _meshStore = null!;
 		private IComponentStore<Texture> _textureStore = null!;
@@ -27,11 +26,10 @@ namespace gaemstone.Client.Graphics
 		public void OnLoad(Universe universe)
 		{
 			_game = (Game)universe;
-			_cameraStore     = universe.Components.GetStore<Camera>();
-			_mainCameraStore = universe.Components.GetStore<FullscreenCamera>();
-			_transformStore  = universe.Components.GetStore<Transform>();
-			_meshStore       = universe.Components.GetStore<IndexedMesh>();
-			_textureStore    = universe.Components.GetStore<Texture>();
+			_cameraStore    = universe.Components.GetStore<Camera>();
+			_transformStore = universe.Components.GetStore<Transform>();
+			_meshStore      = universe.Components.GetStore<IndexedMesh>();
+			_textureStore   = universe.Components.GetStore<Texture>();
 
 			_game.Window.Render += OnWindowRender;
 
@@ -56,6 +54,8 @@ namespace gaemstone.Client.Graphics
 
 		public void OnWindowRender(double delta)
 		{
+			var size = _game.Window.Size;
+			GFX.Viewport(new Rectangle(Point.Empty, size));
 			GFX.Clear(Color.Indigo);
 			_program.Use();
 
@@ -63,9 +63,20 @@ namespace gaemstone.Client.Graphics
 			while (cameraEnumerator.MoveNext()) {
 				var cameraID = cameraEnumerator.CurrentEntityID;
 				var camera   = cameraEnumerator.CurrentComponent;
-				Matrix4x4.Invert(_transformStore.Get(cameraID), out var view);
-				_cameraMatrixUniform.Set(view * camera.Matrix);
-				GFX.Viewport(camera.Viewport);
+
+				// Get the camera's transform matrix and invert it.
+				var cameraTransform = (Matrix4x4)_transformStore.Get(cameraID);
+				Matrix4x4.Invert(cameraTransform, out cameraTransform);
+				// Create the camera's projection matrix, either ortho or perspective.
+				var cameraProjection = camera.IsOrthographic
+					? Matrix4x4.CreateOrthographic(size.Width, size.Height,
+						camera.NearPlane, camera.FarPlane)
+					: Matrix4x4.CreatePerspectiveFieldOfView(
+						camera.FieldOfView * MathF.PI / 180, // Degrees => Radians
+						(float)size.Width / size.Height,     // Aspect Ratio
+						camera.NearPlane, camera.FarPlane);
+				// Set the uniform to the combined transform and projection.
+				_cameraMatrixUniform.Set(cameraTransform * cameraProjection);
 
 				var meshEnumerator = _meshStore.GetEnumerator();
 				while (meshEnumerator.MoveNext()) {
