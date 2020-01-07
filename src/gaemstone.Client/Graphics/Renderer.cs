@@ -33,7 +33,6 @@ namespace gaemstone.Client.Graphics
 			_meshStore       = universe.Components.GetStore<IndexedMesh>();
 			_textureStore    = universe.Components.GetStore<Texture>();
 
-			_game.Window.Resize += OnWindowResize;
 			_game.Window.Render += OnWindowRender;
 
 			var vertexShaderSource   = _game.GetResourceAsString("default.vs.glsl");
@@ -48,39 +47,12 @@ namespace gaemstone.Client.Graphics
 			var uniforms = _program.GetActiveUniforms();
 			_cameraMatrixUniform = uniforms["cameraMatrix"].Matrix4x4;
 			_modelMatrixUniform  = uniforms["modelMatrix"].Matrix4x4;
-
-			OnWindowResize(_game.Window.Size);
 		}
 
 		public void OnUnload()
-		{
-			_game.Window.Resize -= OnWindowResize;
-			_game.Window.Render -= OnWindowRender;
-		}
+			=> _game.Window.Render -= OnWindowRender;
 
 		public void OnUpdate(double delta) {  }
-
-
-		public void OnWindowResize(Size size)
-		{
-			const float DEG_TO_RAD = MathF.PI / 180;
-			var aspectRatio = (float)size.Width / size.Height;
-
-			var mainCameraEnumerator = _mainCameraStore.GetEnumerator();
-			while (mainCameraEnumerator.MoveNext()) {
-				var cameraID   = mainCameraEnumerator.CurrentEntityID;
-				var mainCamera = mainCameraEnumerator.CurrentComponent;
-				_cameraStore.Set(cameraID, new Camera {
-					Viewport = new Rectangle(Point.Empty, size),
-					Matrix   = mainCamera.IsOrthographic
-						? Matrix4x4.CreateOrthographic(size.Width, size.Height,
-							mainCamera.NearPlane, mainCamera.FarPlane)
-						: Matrix4x4.CreatePerspectiveFieldOfView(
-							mainCamera.FieldOfView * DEG_TO_RAD, aspectRatio,
-							mainCamera.NearPlane, mainCamera.FarPlane)
-				});
-			}
-		}
 
 		public void OnWindowRender(double delta)
 		{
