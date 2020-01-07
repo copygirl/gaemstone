@@ -21,6 +21,7 @@ namespace gaemstone.Client.Graphics
 
 		private Program _program;
 		private UniformMatrix4x4 _cameraMatrixUniform;
+		private UniformMatrix4x4 _modelMatrixUniform;
 
 
 		public void OnLoad(Universe universe)
@@ -46,6 +47,7 @@ namespace gaemstone.Client.Graphics
 			var attribs  = _program.GetActiveAttributes();
 			var uniforms = _program.GetActiveUniforms();
 			_cameraMatrixUniform = uniforms["cameraMatrix"].Matrix4x4;
+			_modelMatrixUniform  = uniforms["modelMatrix"].Matrix4x4;
 
 			OnWindowResize(_game.Window.Size);
 		}
@@ -90,7 +92,7 @@ namespace gaemstone.Client.Graphics
 				var cameraID = cameraEnumerator.CurrentEntityID;
 				var camera   = cameraEnumerator.CurrentComponent;
 				Matrix4x4.Invert(_transformStore.Get(cameraID), out var view);
-				var viewProjection = view * camera.Matrix;
+				_cameraMatrixUniform.Set(view * camera.Matrix);
 				GFX.Viewport(camera.Viewport);
 
 				var meshEnumerator = _meshStore.GetEnumerator();
@@ -98,7 +100,7 @@ namespace gaemstone.Client.Graphics
 					var entityID  = meshEnumerator.CurrentEntityID;
 					var mesh      = meshEnumerator.CurrentComponent;
 					var modelView = _transformStore.Get(entityID).Value;
-					_cameraMatrixUniform.Set(modelView * viewProjection);
+					_modelMatrixUniform.Set(modelView);
 
 					if (_textureStore.TryGet(meshEnumerator.CurrentEntityID, out var texture)) {
 						using (texture.Bind())
