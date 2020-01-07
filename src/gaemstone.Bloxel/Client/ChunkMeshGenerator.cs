@@ -57,7 +57,7 @@ namespace gaemstone.Bloxel.Client
 
 
 		private readonly Game _game;
-		private readonly MeshLoader _meshLoader;
+		private readonly MeshManager _meshManager;
 		private readonly LookupDictionaryStore<ChunkPos, Chunk> _chunkStore;
 		private readonly IComponentStore<ChunkPaletteStorage<Block>> _storageStore;
 		private readonly IComponentStore<TextureCoords4> _textureCellStore;
@@ -69,8 +69,8 @@ namespace gaemstone.Bloxel.Client
 
 		public ChunkMeshGenerator(Game game)
 		{
-			_game       = game;
-			_meshLoader = game.Processors.GetOrThrow<MeshLoader>();
+			_game = game;
+			_meshManager = game.Processors.GetOrThrow<MeshManager>();
 			_chunkStore       = (LookupDictionaryStore<ChunkPos, Chunk>)game.Components.GetStore<Chunk>();
 			_storageStore     = game.Components.GetStore<ChunkPaletteStorage<Block>>();
 			_textureCellStore = game.Components.GetStore<TextureCoords4>();
@@ -128,7 +128,7 @@ namespace gaemstone.Bloxel.Client
 			}
 
 			return (indexCount > 0)
-				? _meshLoader.Create(
+				? _meshManager.Create(
 					_indices.AsSpan(0, indexCount), _vertices.AsSpan(0, vertexCount),
 					_normals.AsSpan(0, vertexCount), _uvs.AsSpan(0, vertexCount))
 				: (IndexedMesh?)null;

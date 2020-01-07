@@ -7,7 +7,7 @@ using ModelRoot = SharpGLTF.Schema2.ModelRoot;
 
 namespace gaemstone.Client.Graphics
 {
-	public class MeshLoader
+	public class MeshManager
 		: IProcessor
 	{
 		private const uint POSITION_ATTRIB_INDEX = 0;

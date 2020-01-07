@@ -37,9 +37,9 @@ namespace Immersion
 			var (mainCamera, _) = GetAll<FullscreenCamera>().First();
 			Set(mainCamera, (Transform)Matrix4x4.CreateTranslation(0, 26, 0));
 
-			var meshLoader = Processors.GetOrThrow<MeshLoader>();
-			var heartMesh  = meshLoader.Load(this, "heart.glb");
-			var swordMesh  = meshLoader.Load(this, "sword.glb");
+			var meshManager = Processors.GetOrThrow<MeshManager>();
+			var heartMesh = meshManager.Load(this, "heart.glb");
+			var swordMesh = meshManager.Load(this, "sword.glb");
 
 			for (var x = -12; x <= 12; x++)
 			for (var z = -12; z <= 12; z++) {
@@ -50,8 +50,8 @@ namespace Immersion
 				Set(entity, RND.Pick(heartMesh, swordMesh));
 			}
 
-
-			var texture = Texture.Load(this, "terrain.png");
+			var textureManager = Processors.GetOrThrow<TextureManager>();
+			var texture = textureManager.Load(this, "terrain.png");
 
 			var stone = Entities.New();
 			var dirt  = Entities.New();

@@ -13,15 +13,14 @@ namespace gaemstone.Client.Graphics
 	public class Renderer : IProcessor
 	{
 		private Game _game = null!;
-		private IComponentStore<Camera>      _cameraStore     = null!;
-		private IComponentStore<FullscreenCamera>  _mainCameraStore = null!;
-		private IComponentStore<Transform>   _transformStore  = null!;
-		private IComponentStore<IndexedMesh> _meshStore       = null!;
-		private IComponentStore<Texture>     _textureStore    = null!;
+		private IComponentStore<Camera> _cameraStore = null!;
+		private IComponentStore<FullscreenCamera> _mainCameraStore = null!;
+		private IComponentStore<Transform> _transformStore = null!;
+		private IComponentStore<IndexedMesh> _meshStore = null!;
+		private IComponentStore<Texture> _textureStore = null!;
 
 		private Program _program;
 		private UniformMatrix4x4 _cameraMatrixUniform;
-		private UniformBool _enableTextureUniform;
 
 
 		public void OnLoad(Universe universe)
@@ -46,8 +45,7 @@ namespace gaemstone.Client.Graphics
 
 			var attribs  = _program.GetActiveAttributes();
 			var uniforms = _program.GetActiveUniforms();
-			_cameraMatrixUniform  = uniforms["cameraMatrix"].Matrix4x4;
-			_enableTextureUniform = uniforms["enableTexture"].Bool;
+			_cameraMatrixUniform = uniforms["cameraMatrix"].Matrix4x4;
 
 			OnWindowResize(_game.Window.Size);
 		}
@@ -103,13 +101,12 @@ namespace gaemstone.Client.Graphics
 					_cameraMatrixUniform.Set(modelView * viewProjection);
 
 					if (_textureStore.TryGet(meshEnumerator.CurrentEntityID, out var texture)) {
-						_enableTextureUniform.Set(true);
-						texture.Bind();
+						using (texture.Bind())
+							mesh.Draw();
 					} else {
-						_enableTextureUniform.Set(false);
+						mesh.Draw();
 					}
 
-					mesh.Draw();
 				}
 			}
 

@@ -1,49 +1,56 @@
-using System.IO;
+using System;
 using Silk.NET.OpenGL;
-using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
-using SixLabors.ImageSharp.PixelFormats;
 
 namespace gaemstone.Client.Graphics
 {
 	public readonly struct Texture
 	{
 		public static Texture Gen(TextureTarget target)
-			=> new Texture(GFX.GL.GenTexture(), target);
-
-		public static Texture Load(Game game, string name)
-		{
-			using (var stream = game.GetResourceStream(name))
-				return CreateFromStream(stream);
-		}
-		public static Texture CreateFromStream(Stream stream)
-		{
-			var texture = Gen(TextureTarget.Texture2D);
-			texture.Bind();
-
-			var image = Image.Load<Rgba32>(stream);
-			unsafe { fixed (Rgba32* pixels = image.Frames[0].GetPixelSpan()) {
-				GFX.GL.TexImage2D(TextureTarget.Texture2D, 0, (int)PixelFormat.Rgba,
-				                  (uint)image.Width, (uint)image.Height, 0,
-				                  PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
-			} }
-
-			GFX.GL.TexParameterI(TextureTarget.Texture2D,
-				TextureParameterName.TextureMagFilter, (int)TextureMagFilter.Nearest);
-			GFX.GL.TexParameterI(TextureTarget.Texture2D,
-				TextureParameterName.TextureMinFilter, (int)TextureMinFilter.Nearest);
-
-			return texture;
-		}
+			=> new Texture(target, GFX.GL.GenTexture());
 
 
-		public uint Handle { get; }
 		public TextureTarget Target { get; }
+		public uint Handle { get; }
 
-		private Texture(uint handle, TextureTarget target)
-			=> (Handle, Target) = (handle, target);
+		public Texture(TextureTarget target, uint handle)
+			=> (Target, Handle) = (target, handle);
 
-		public void Bind()
-			=> GFX.GL.BindTexture(Target, Handle);
+
+		public UnbindOnDispose Bind()
+		{
+			GFX.GL.BindTexture(Target, Handle);
+			return new UnbindOnDispose(Target);
+		}
+
+		public void Unbind()
+			=> GFX.GL.BindTexture(Target, 0);
+		public static void Unbind(TextureTarget target)
+			=> GFX.GL.BindTexture(target, 0);
+
+		public readonly struct UnbindOnDispose
+			: IDisposable
+		{
+			public TextureTarget Target { get; }
+			public UnbindOnDispose(TextureTarget target)
+				=> Target = target;
+			public void Dispose()
+				=> GFX.GL.BindTexture(Target, 0);
+		}
+
+
+		public TextureMagFilter MagFilter {
+			get {
+				GFX.GL.GetTexParameterI(Target, GetTextureParameter.TextureMagFilter, out int value);
+				return (TextureMagFilter)value;
+			}
+			set => GFX.GL.TexParameterI(Target, TextureParameterName.TextureMagFilter, (int)value);
+		}
+		public TextureMinFilter MinFilter {
+			get {
+				GFX.GL.GetTexParameterI(Target, GetTextureParameter.TextureMinFilter, out int value);
+				return (TextureMinFilter)value;
+			}
+			set => GFX.GL.TexParameterI(Target, TextureParameterName.TextureMinFilter, (int)value);
+		}
 	}
 }

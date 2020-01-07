@@ -49,7 +49,8 @@ namespace gaemstone.Client
 				Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");
 
 			Processors.Start<Renderer>();
-			Processors.Start<MeshLoader>();
+			Processors.Start<TextureManager>();
+			Processors.Start<MeshManager>();
 			Processors.Start<UpdateCameraOnResize>();
 			Processors.Start<CameraController>();
 
