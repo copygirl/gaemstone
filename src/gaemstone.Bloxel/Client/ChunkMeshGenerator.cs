@@ -76,7 +76,7 @@ namespace gaemstone.Bloxel.Client
 			_textureCellStore = game.Components.GetStore<TextureCoords4>();
 		}
 
-		public IndexedMesh? Generate(ChunkPos chunkPos)
+		public Mesh? Generate(ChunkPos chunkPos)
 		{
 			var storages = new ChunkPaletteStorage<Block>[3, 3, 3];
 			foreach (var (x, y, z) in Neighbors.ALL.Prepend(Neighbor.None))
@@ -131,7 +131,7 @@ namespace gaemstone.Bloxel.Client
 				? _meshManager.Create(
 					_indices.AsSpan(0, indexCount), _vertices.AsSpan(0, vertexCount),
 					_normals.AsSpan(0, vertexCount), _uvs.AsSpan(0, vertexCount))
-				: (IndexedMesh?)null;
+				: (Mesh?)null;
 		}
 
 		private bool IsNeighborEmpty(

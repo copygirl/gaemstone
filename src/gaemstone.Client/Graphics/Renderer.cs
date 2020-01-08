@@ -13,10 +13,11 @@ namespace gaemstone.Client.Graphics
 	public class Renderer : IProcessor
 	{
 		private Game _game = null!;
-		private IComponentStore<Camera> _cameraStore = null!;
-		private IComponentStore<Transform> _transformStore = null!;
-		private IComponentStore<IndexedMesh> _meshStore = null!;
-		private IComponentStore<Texture> _textureStore = null!;
+		private IComponentStore<Camera>      _cameraStore    = null!;
+		private IComponentStore<Transform>   _transformStore = null!;
+		private IComponentStore<Mesh>        _meshStore      = null!;
+		private IComponentStore<Texture>     _textureStore   = null!;
+		private IComponentStore<SpriteIndex> _spriteStore    = null!;
 
 		private Program _program;
 		private UniformMatrix4x4 _cameraMatrixUniform;
@@ -28,8 +29,9 @@ namespace gaemstone.Client.Graphics
 			_game = (Game)universe;
 			_cameraStore    = universe.Components.GetStore<Camera>();
 			_transformStore = universe.Components.GetStore<Transform>();
-			_meshStore      = universe.Components.GetStore<IndexedMesh>();
+			_meshStore      = universe.Components.GetStore<Mesh>();
 			_textureStore   = universe.Components.GetStore<Texture>();
+			_spriteStore    = universe.Components.GetStore<SpriteIndex>();
 
 			_game.Window.Render += OnWindowRender;
 
@@ -55,7 +57,7 @@ namespace gaemstone.Client.Graphics
 		public void OnWindowRender(double delta)
 		{
 			var size = _game.Window.Size;
-			GFX.Viewport(new Rectangle(Point.Empty, size));
+			GFX.Viewport(size);
 			GFX.Clear(Color.Indigo);
 			_program.Use();
 
@@ -69,7 +71,7 @@ namespace gaemstone.Client.Graphics
 				Matrix4x4.Invert(cameraTransform, out cameraTransform);
 				// Create the camera's projection matrix, either ortho or perspective.
 				var cameraProjection = camera.IsOrthographic
-					? Matrix4x4.CreateOrthographic(size.Width, size.Height,
+					? Matrix4x4.CreateOrthographic(size.Width, -size.Height,
 						camera.NearPlane, camera.FarPlane)
 					: Matrix4x4.CreatePerspectiveFieldOfView(
 						camera.FieldOfView * MathF.PI / 180, // Degrees => Radians
@@ -85,9 +87,12 @@ namespace gaemstone.Client.Graphics
 					var modelView = _transformStore.Get(entityID).Value;
 					_modelMatrixUniform.Set(modelView);
 
-					if (_textureStore.TryGet(meshEnumerator.CurrentEntityID, out var texture)) {
-						using (texture.Bind())
-							mesh.Draw();
+					if (_textureStore.TryGet(entityID, out var texture)) {
+						using (texture.Bind()) {
+							if (_spriteStore.TryGet(entityID, out var spriteIndex))
+								mesh.Draw(spriteIndex.Value * 6, 6);
+							else mesh.Draw();
+						}
 					} else {
 						mesh.Draw();
 					}

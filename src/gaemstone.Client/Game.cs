@@ -31,8 +31,9 @@ namespace gaemstone.Client
 			Window.Closing += OnClosing;
 
 			Components.AddStore(new PackedArrayStore<Transform>());
-			Components.AddStore(new PackedArrayStore<IndexedMesh>());
+			Components.AddStore(new PackedArrayStore<Mesh>());
 			Components.AddStore(new PackedArrayStore<Texture>());
+			Components.AddStore(new PackedArrayStore<SpriteIndex>());
 			Components.AddStore(new DictionaryStore<Camera>());
 		}
 
@@ -77,6 +78,15 @@ namespace gaemstone.Client
 			using (var stream = GetResourceStream(name))
 			using (var reader = new StreamReader(stream))
 				return reader.ReadToEnd();
+		}
+
+		public byte[] GetResourceAsBytes(string name)
+		{
+			using (var stream = GetResourceStream(name))
+			using (var memoryStream = new MemoryStream()) {
+				stream.CopyTo(memoryStream);
+				return memoryStream.ToArray();
+			}
 		}
 	}
 }

@@ -9,15 +9,21 @@ namespace gaemstone.Client.Graphics
 		public static Buffer Gen(BufferTargetARB target)
 			=> new Buffer(GFX.GL.GenBuffer(), target);
 
+		// These overloads are available because without them, the implicit casting
+		// (say from T[] to ReadOnlySpan<T>) causes the generic type resolving to break.
 		public static Buffer CreateFromData<T>(T[] data,
 				BufferTargetARB target = BufferTargetARB.ArrayBuffer,
 				BufferUsageARB usage   = BufferUsageARB.StaticDraw)
-			=> CreateFromData<T>((Span<T>)data, target, usage);
+			=> CreateFromData<T>((ReadOnlySpan<T>)data, target, usage);
 		public static Buffer CreateFromData<T>(ArraySegment<T> data,
 				BufferTargetARB target = BufferTargetARB.ArrayBuffer,
 				BufferUsageARB usage   = BufferUsageARB.StaticDraw)
-			=> CreateFromData<T>((Span<T>)data, target, usage);
+			=> CreateFromData<T>((ReadOnlySpan<T>)data, target, usage);
 		public static Buffer CreateFromData<T>(Span<T> data,
+				BufferTargetARB target = BufferTargetARB.ArrayBuffer,
+				BufferUsageARB usage   = BufferUsageARB.StaticDraw)
+			=> CreateFromData<T>((ReadOnlySpan<T>)data, target, usage);
+		public static Buffer CreateFromData<T>(ReadOnlySpan<T> data,
 			BufferTargetARB target = BufferTargetARB.ArrayBuffer,
 			BufferUsageARB usage   = BufferUsageARB.StaticDraw)
 		{
@@ -38,13 +44,15 @@ namespace gaemstone.Client.Graphics
 			=> GFX.GL.BindBuffer(Target, Handle);
 
 		public void Data<T>(T[] data, BufferUsageARB usage)
-			=> Data<T>((Span<T>)data, usage);
+			=> Data<T>((ReadOnlySpan<T>)data, usage);
 		public void Data<T>(ArraySegment<T> data, BufferUsageARB usage)
-			=> Data<T>((Span<T>)data, usage);
+			=> Data<T>((ReadOnlySpan<T>)data, usage);
 		public void Data<T>(Span<T> data, BufferUsageARB usage)
+			=> Data<T>((ReadOnlySpan<T>)data, usage);
+		public void Data<T>(ReadOnlySpan<T> data, BufferUsageARB usage)
 		{ unsafe {
 			GFX.GL.BufferData(Target, (uint)(data.Length * Unsafe.SizeOf<T>()),
-			                  Unsafe.AsPointer(ref data[0]), usage);
+			                  Unsafe.AsPointer(ref Unsafe.AsRef(in data[0])), usage);
 		} }
 	}
 }

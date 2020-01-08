@@ -100,22 +100,26 @@ namespace gaemstone.Client.Processors
 
 		public void OnUpdate(double delta)
 		{
-			var (mainCamera, _) = _game.GetAll<Camera>().First();
+			var (mainCamera, camera) = _game.GetAll<Camera>().First();
 			var transform = _game.Get<Transform>(mainCamera);
 
-			var xMovement = -_mouseMoved.X * (float)delta / 100;
-			var yMovement = -_mouseMoved.Y * (float)delta / 100;
+			var xMovement = _mouseMoved.X * (float)delta;
+			var yMovement = _mouseMoved.Y * (float)delta;
 			_mouseMoved = PointF.Empty;
 
-			var speed = (float)delta * (_fastMovement ? 12 : 4);
-			var forwardMovement = ((_moveForward ? -1 : 0) + (_moveBack  ? 1 : 0)) * speed;
-			var sideMovement    = ((_moveLeft    ? -1 : 0) + (_moveRight ? 1 : 0)) * speed;
+			if (camera.IsOrthographic) {
+				_game.Set(mainCamera, (Transform)(transform * Matrix4x4.CreateTranslation(-xMovement, -yMovement, 0)));
+			} else {
+				var speed = (float)delta * (_fastMovement ? 12 : 4);
+				var forwardMovement = ((_moveForward ? -1 : 0) + (_moveBack  ? 1 : 0)) * speed;
+				var sideMovement    = ((_moveLeft    ? -1 : 0) + (_moveRight ? 1 : 0)) * speed;
 
-			var yawRotation   = Matrix4x4.CreateRotationY(xMovement, transform.Value.Translation);
-			var pitchRotation = Matrix4x4.CreateRotationX(yMovement);
-			var translation   = Matrix4x4.CreateTranslation(sideMovement, 0, forwardMovement);
+				var yawRotation   = Matrix4x4.CreateRotationY(-xMovement / 100, transform.Value.Translation);
+				var pitchRotation = Matrix4x4.CreateRotationX(-yMovement / 100);
+				var translation   = Matrix4x4.CreateTranslation(sideMovement, 0, forwardMovement);
 
-			_game.Set(mainCamera, (Transform)(translation * pitchRotation * transform * yawRotation));
+				_game.Set(mainCamera, (Transform)(translation * pitchRotation * transform * yawRotation));
+			}
 		}
 	}
 }
