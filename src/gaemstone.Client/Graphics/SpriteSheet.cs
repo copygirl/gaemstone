@@ -147,7 +147,12 @@ namespace gaemstone.Client.Graphics
 	public readonly struct SpriteIndex
 	{
 		public readonly int Value;
-		public SpriteIndex(int value)
+		private SpriteIndex(int value)
 			=> Value = value;
+
+		public static implicit operator SpriteIndex(in int value)
+			=> new SpriteIndex(value);
+		public static implicit operator int(in SpriteIndex transform)
+			=> transform.Value;
 	}
 }

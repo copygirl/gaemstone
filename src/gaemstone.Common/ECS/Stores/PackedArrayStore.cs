@@ -136,7 +136,9 @@ namespace gaemstone.Common.ECS.Stores
 		public IComponentRefStore<T>.Enumerator GetEnumerator()
 			=> new Enumerator(this);
 		IComponentStore<T>.Enumerator IComponentStore<T>.GetEnumerator()
-			=> GetEnumerator();
+			=> new Enumerator(this);
+		IComponentStore.Enumerator IComponentStore.GetEnumerator()
+			=> new Enumerator(this);
 
 		private struct Enumerator
 			: IComponentRefStore<T>.Enumerator

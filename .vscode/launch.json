@@ -17,8 +17,8 @@
     "console": "internalConsole",
     "stopAtEntry": false,
   },{
-    // FIXME: Doesn't currently appear to work with this project.
     // https://github.com/Samsung/netcoredbg
+    // FIXME: Doesn't currently appear to work with this project.
 
     "name": "Launch Client (netcoredbg)",
     "type": "coreclr",

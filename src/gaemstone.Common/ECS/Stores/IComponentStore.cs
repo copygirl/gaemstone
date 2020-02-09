@@ -1,16 +1,24 @@
 using System;
-using gaemstone.Common.Utility;
 
 namespace gaemstone.Common.ECS.Stores
 {
 	public interface IComponentStore
 	{
 		Type ComponentType { get; }
+		int Count { get; }
 
 		event ComponentAddedHandler? ComponentAdded;
 		event ComponentRemovedHandler? ComponentRemoved;
 
 		void Remove(uint entityID);
+
+		Enumerator GetEnumerator();
+
+		interface Enumerator
+		{
+			uint CurrentEntityID { get; }
+			bool MoveNext();
+		}
 	}
 
 	public interface IComponentStore<T>
@@ -20,13 +28,12 @@ namespace gaemstone.Common.ECS.Stores
 		bool TryGet(uint entityID, out T value);
 		void Set(uint entityID, T value);
 
-		Enumerator GetEnumerator();
+		new Enumerator GetEnumerator();
 
-		interface Enumerator
+		new interface Enumerator
+			: IComponentStore.Enumerator
 		{
-			uint CurrentEntityID { get; }
 			T CurrentComponent { get; }
-			bool MoveNext();
 		}
 	}
 

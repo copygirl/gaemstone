@@ -61,45 +61,52 @@ namespace gaemstone.Client.Graphics
 			GFX.Clear(Color.Indigo);
 			_program.Use();
 
-			var cameraEnumerator = _cameraStore.GetEnumerator();
-			while (cameraEnumerator.MoveNext()) {
-				var cameraID = cameraEnumerator.CurrentEntityID;
-				var camera   = cameraEnumerator.CurrentComponent;
-
+			Aspect<ICameraAspect>.ForEach(_game, camera => {
 				// Get the camera's transform matrix and invert it.
-				var cameraTransform = (Matrix4x4)_transformStore.Get(cameraID);
-				Matrix4x4.Invert(cameraTransform, out cameraTransform);
+				Matrix4x4.Invert(camera.Transform, out var cameraTransform);
 				// Create the camera's projection matrix, either ortho or perspective.
-				var cameraProjection = camera.IsOrthographic
+				var cameraProjection = camera.Camera.IsOrthographic
 					? Matrix4x4.CreateOrthographic(size.Width, -size.Height,
-						camera.NearPlane, camera.FarPlane)
+						camera.Camera.NearPlane, camera.Camera.FarPlane)
 					: Matrix4x4.CreatePerspectiveFieldOfView(
-						camera.FieldOfView * MathF.PI / 180, // Degrees => Radians
-						(float)size.Width / size.Height,     // Aspect Ratio
-						camera.NearPlane, camera.FarPlane);
+						camera.Camera.FieldOfView * MathF.PI / 180, // Degrees => Radians
+						(float)size.Width / size.Height,            // Aspect Ratio
+						camera.Camera.NearPlane, camera.Camera.FarPlane);
 				// Set the uniform to the combined transform and projection.
 				_cameraMatrixUniform.Set(cameraTransform * cameraProjection);
 
-				var meshEnumerator = _meshStore.GetEnumerator();
-				while (meshEnumerator.MoveNext()) {
-					var entityID  = meshEnumerator.CurrentEntityID;
-					var mesh      = meshEnumerator.CurrentComponent;
-					var modelView = _transformStore.Get(entityID).Value;
-					_modelMatrixUniform.Set(modelView);
+				Aspect<IRenderableAspect>.ForEach(_game, renderable => {
+					_modelMatrixUniform.Set(renderable.Transform);
+					// If entity has Texture, bind it now.
+					if (renderable.Texture != null) renderable.Texture.Value.Bind();
 
-					if (_textureStore.TryGet(entityID, out var texture)) {
-						using (texture.Bind()) {
-							if (_spriteStore.TryGet(entityID, out var spriteIndex))
-								mesh.Draw(spriteIndex.Value * 6, 6);
-							else mesh.Draw();
-						}
-					} else {
-						mesh.Draw();
-					}
-				}
-			}
+					// If entity has SpriteIndex, only render two
+					// triangles out of the mesh specified by that index.
+					if (renderable.SpriteIndex != null)
+						renderable.Mesh.Draw(renderable.SpriteIndex.Value * 6, 6);
+					// Otherwise just render the entire mesh like usual.
+					renderable.Mesh.Draw();
+
+					// If entity has Texture, unbind it after it has been rendered.
+					if (renderable.Texture != null) renderable.Texture.Value.Unbind();
+				});
+			});
 
 			VertexArray.Unbind();
 		}
+	}
+
+	public interface ICameraAspect
+	{
+		Camera Camera { get; }
+		Transform Transform { get; set; }
+	}
+
+	public interface IRenderableAspect
+	{
+		Mesh Mesh { get; }
+		Transform Transform { get; }
+		Texture? Texture { get; }
+		SpriteIndex? SpriteIndex { get; }
 	}
 }
