@@ -18,15 +18,15 @@ namespace gaemstone.Client
 
 		public Game()
 		{
-			Window = Silk.NET.Windowing.Window.Create(new WindowOptions {
-				Title = "gæmstone",
-				Size  = new Size(1280, 720),
-				API   = GraphicsAPI.Default,
-				UpdatesPerSecond = 30.0,
-				FramesPerSecond  = 60.0,
-				ShouldSwapAutomatically = true,
-				IsVisible = true, // FIXME: Required for some reason?
-			});
+			var options = WindowOptions.Default;
+			options.Title = "gæmstone";
+			options.Size  = new Size(1280, 720);
+			options.API   = GraphicsAPI.Default;
+			options.UpdatesPerSecond = 30.0;
+			options.FramesPerSecond  = 60.0;
+			options.ShouldSwapAutomatically = true;
+
+			Window = Silk.NET.Windowing.Window.Create(options);
 			Window.Load    += OnLoad;
 			Window.Update  += OnUpdate;
 			Window.Closing += OnClosing;
