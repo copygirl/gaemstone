@@ -25,6 +25,7 @@ namespace gaemstone.Client
 				UpdatesPerSecond = 30.0,
 				FramesPerSecond  = 60.0,
 				ShouldSwapAutomatically = true,
+				IsVisible = true, // FIXME: Required for some reason?
 			});
 			Window.Load    += OnLoad;
 			Window.Update  += OnUpdate;

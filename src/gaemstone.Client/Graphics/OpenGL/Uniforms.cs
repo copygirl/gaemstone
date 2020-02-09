@@ -25,11 +25,12 @@ namespace gaemstone.Client.Graphics
 			GFX.GL.GetProgram(program.Handle, ProgramPropertyARB.ActiveUniforms, out var uniformCount);
 			_activeUniforms = new UniformInfo[uniformCount];
 			for (uint uniformIndex = 0; uniformIndex < uniformCount; uniformIndex++) {
+				UniformType type;
 				GFX.GL.GetActiveUniform(program.Handle, uniformIndex, (uint)uniformMaxLength,
-				                        out var length, out var size, out var type, out nameBuffer);
+				                        out var length, out var size, out type, out nameBuffer);
 				var name     = nameBuffer.Substring(0, (int)length);
 				var location = GFX.GL.GetUniformLocation(program.Handle, name);
-				var uniform  = new UniformInfo(uniformIndex, location, size, (UniformType)type, name);
+				var uniform  = new UniformInfo(uniformIndex, location, size, type, name);
 				_activeUniforms[uniformIndex] = uniform;
 				_uniformsByName[nameBuffer]   = uniform;
 			}
@@ -67,11 +68,11 @@ namespace gaemstone.Client.Graphics
 		public UniformFloat Float
 			=> new UniformFloat(Ensure(1, UniformType.Float, "float"));
 		public UniformVector3 Vector3
-			=> new UniformVector3(Ensure(1, UniformType.Vector3, "Vector3"));
+			=> new UniformVector3(Ensure(1, UniformType.FloatVec3, "Vector3"));
 		public UniformVector3 Vector4
-			=> new UniformVector3(Ensure(1, UniformType.Vector4, "Vector4"));
+			=> new UniformVector3(Ensure(1, UniformType.FloatVec4, "Vector4"));
 		public UniformMatrix4x4 Matrix4x4
-			=> new UniformMatrix4x4(Ensure(1, UniformType.Matrix4x4, "Matrix4x4"));
+			=> new UniformMatrix4x4(Ensure(1, UniformType.FloatMat4, "Matrix4x4"));
 	}
 
 	public readonly struct UniformBool
@@ -109,15 +110,5 @@ namespace gaemstone.Client.Graphics
 		public int Location { get; }
 		internal UniformMatrix4x4(int location) => Location = location;
 		public void Set(in Matrix4x4 value) => GFX.GL.UniformMatrix4(Location, 1, false, in value.M11);
-	}
-
-	public enum UniformType
-	{
-		Bool      = GLEnum.Bool,
-		Int       = GLEnum.Int,
-		Float     = GLEnum.Float,
-		Vector3   = GLEnum.FloatVec3,
-		Vector4   = GLEnum.FloatVec4,
-		Matrix4x4 = GLEnum.FloatMat4,
 	}
 }

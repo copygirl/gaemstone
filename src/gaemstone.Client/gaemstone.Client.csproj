@@ -4,6 +4,7 @@
     <OutputType>Library</OutputType>
     <TargetFramework>netstandard2.1</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -17,9 +18,9 @@
 
   <ItemGroup>
     <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.0-alpha0014" />
-    <PackageReference Include="Silk.NET" Version="1.0.0-preview420191127.3" />
+    <PackageReference Include="Silk.NET" Version="1.0.0-preview4" />
     <PackageReference Include="SixLabors.ImageSharp" Version="1.0.0-beta0007" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.6.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.7.0" />
   </ItemGroup>
 
 </Project>
