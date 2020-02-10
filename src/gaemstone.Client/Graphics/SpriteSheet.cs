@@ -128,12 +128,12 @@ namespace gaemstone.Client.Graphics
 		public class Sprite
 		{
 			public SpriteSheet TextureSheet { get; }
-			public int Index { get; }
+			public SpriteIndex Index { get; }
 			public string Name { get; }
 			public Rectangle Bounds { get; }
 			public Point Center { get; }
 
-			public Sprite(SpriteSheet textureSheet, int index, string name, Rectangle bounds, Point center)
+			public Sprite(SpriteSheet textureSheet, SpriteIndex index, string name, Rectangle bounds, Point center)
 				=> (TextureSheet, Index, Name, Bounds, Center) = (textureSheet, index, name, bounds, center);
 		}
 
