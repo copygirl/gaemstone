@@ -5,7 +5,6 @@ using gaemstone.Client.Components;
 using gaemstone.Common.Components;
 using gaemstone.Common.ECS;
 using gaemstone.Common.ECS.Processors;
-using gaemstone.Common.ECS.Stores;
 using Silk.NET.OpenGL;
 
 namespace gaemstone.Client.Graphics
@@ -13,26 +12,13 @@ namespace gaemstone.Client.Graphics
 	public class Renderer : IProcessor
 	{
 		private Game _game = null!;
-		private IComponentStore<Camera>      _cameraStore    = null!;
-		private IComponentStore<Transform>   _transformStore = null!;
-		private IComponentStore<Mesh>        _meshStore      = null!;
-		private IComponentStore<Texture>     _textureStore   = null!;
-		private IComponentStore<SpriteIndex> _spriteStore    = null!;
-
 		private Program _program;
 		private UniformMatrix4x4 _cameraMatrixUniform;
 		private UniformMatrix4x4 _modelMatrixUniform;
 
-
 		public void OnLoad(Universe universe)
 		{
 			_game = (Game)universe;
-			_cameraStore    = universe.Components.GetStore<Camera>();
-			_transformStore = universe.Components.GetStore<Transform>();
-			_meshStore      = universe.Components.GetStore<Mesh>();
-			_textureStore   = universe.Components.GetStore<Texture>();
-			_spriteStore    = universe.Components.GetStore<SpriteIndex>();
-
 			_game.Window.Render += OnWindowRender;
 
 			var vertexShaderSource   = _game.GetResourceAsString("default.vs.glsl");
