@@ -8,6 +8,8 @@ using gaemstone.Client.Processors;
 using gaemstone.Common.Components;
 using gaemstone.Common.ECS;
 using gaemstone.Common.ECS.Stores;
+using Silk.NET.Input;
+using Silk.NET.Input.Common;
 using Silk.NET.Windowing.Common;
 
 namespace gaemstone.Client
@@ -15,6 +17,7 @@ namespace gaemstone.Client
 	public abstract class Game : Universe
 	{
 		public IWindow Window { get; }
+		public IInputContext Input { get; private set; } = null!;
 
 		public Game()
 		{
@@ -46,6 +49,8 @@ namespace gaemstone.Client
 
 		protected virtual void OnLoad()
 		{
+			Input = Window.CreateInput();
+
 			GFX.Initialize();
 			GFX.OnDebugOutput += (source, type, id, severity, message) =>
 				Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");

@@ -31,9 +31,8 @@ namespace gaemstone.Client.Processors
 		{
 			_game = (Game)universe;
 
-			var input = _game.Window.CreateInput();
-			_mouse    = input.Mice[0];
-			_keyboard = input.Keyboards[0];
+			_mouse    = _game.Input.Mice[0];
+			_keyboard = _game.Input.Keyboards[0];
 
 			_mouse.MouseDown += OnMouseDown;
 			_mouse.MouseUp   += OnMouseUp;
