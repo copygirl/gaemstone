@@ -11,6 +11,7 @@ using gaemstone.Common.ECS.Stores;
 using Silk.NET.Input;
 using Silk.NET.Input.Common;
 using Silk.NET.Windowing.Common;
+using gaemstone.Common.Utility;
 
 namespace gaemstone.Client
 {
@@ -53,7 +54,8 @@ namespace gaemstone.Client
 
 			GFX.Initialize();
 			GFX.OnDebugOutput += (source, type, id, severity, message) =>
-				Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");
+				//Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");
+				this.Log(severity.ToLogSeverity(), "{0}/{1}: {2}", type, id, message);
 
 			Processors.Start<Renderer>();
 			Processors.Start<TextureManager>();
