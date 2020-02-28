@@ -17,6 +17,7 @@ namespace gaemstone.Client.Processors
 		private IMouse _mouse = null!;
 		private IKeyboard _keyboard = null!;
 
+		private float _mouseSpeed = 4.0F;
 		private PointF? _mouseGrabbedAt = null;
 		private PointF _mouseMoved;
 
@@ -30,9 +31,8 @@ namespace gaemstone.Client.Processors
 		{
 			_game = (Game)universe;
 
-			var input = _game.Window.GetInput();
-			_mouse    = input.Mice[0];
-			_keyboard = input.Keyboards[0];
+			_mouse    = _game.Input.Mice[0];
+			_keyboard = _game.Input.Keyboards[0];
 
 			_mouse.MouseDown += OnMouseDown;
 			_mouse.MouseUp   += OnMouseUp;
@@ -103,8 +103,8 @@ namespace gaemstone.Client.Processors
 			var (mainCamera, camera) = _game.GetAll<Camera>().First();
 			var transform = _game.Get<Transform>(mainCamera);
 
-			var xMovement = _mouseMoved.X * (float)delta;
-			var yMovement = _mouseMoved.Y * (float)delta;
+			var xMovement = _mouseMoved.X * (float)delta * _mouseSpeed;
+			var yMovement = _mouseMoved.Y * (float)delta * _mouseSpeed;
 			_mouseMoved = PointF.Empty;
 
 			if (camera.IsOrthographic) {

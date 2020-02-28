@@ -57,6 +57,8 @@ namespace gaemstone.Common.ECS.Stores
 
 		public IComponentStore<T>.Enumerator GetEnumerator()
 			=> new Enumerator(_dict);
+		IComponentStore.Enumerator IComponentStore.GetEnumerator()
+			=> new Enumerator(_dict);
 
 		private struct Enumerator
 			: IComponentStore<T>.Enumerator

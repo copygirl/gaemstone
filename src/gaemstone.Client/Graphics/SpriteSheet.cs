@@ -128,12 +128,12 @@ namespace gaemstone.Client.Graphics
 		public class Sprite
 		{
 			public SpriteSheet TextureSheet { get; }
-			public int Index { get; }
+			public SpriteIndex Index { get; }
 			public string Name { get; }
 			public Rectangle Bounds { get; }
 			public Point Center { get; }
 
-			public Sprite(SpriteSheet textureSheet, int index, string name, Rectangle bounds, Point center)
+			public Sprite(SpriteSheet textureSheet, SpriteIndex index, string name, Rectangle bounds, Point center)
 				=> (TextureSheet, Index, Name, Bounds, Center) = (textureSheet, index, name, bounds, center);
 		}
 
@@ -147,7 +147,12 @@ namespace gaemstone.Client.Graphics
 	public readonly struct SpriteIndex
 	{
 		public readonly int Value;
-		public SpriteIndex(int value)
+		private SpriteIndex(int value)
 			=> Value = value;
+
+		public static implicit operator SpriteIndex(in int value)
+			=> new SpriteIndex(value);
+		public static implicit operator int(in SpriteIndex transform)
+			=> transform.Value;
 	}
 }

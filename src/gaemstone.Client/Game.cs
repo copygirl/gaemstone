@@ -8,6 +8,8 @@ using gaemstone.Client.Processors;
 using gaemstone.Common.Components;
 using gaemstone.Common.ECS;
 using gaemstone.Common.ECS.Stores;
+using Silk.NET.Input;
+using Silk.NET.Input.Common;
 using Silk.NET.Windowing.Common;
 using gaemstone.Common.Utility;
 
@@ -16,17 +18,19 @@ namespace gaemstone.Client
 	public abstract class Game : Universe
 	{
 		public IWindow Window { get; }
+		public IInputContext Input { get; private set; } = null!;
 
 		public Game()
 		{
-			Window = Silk.NET.Windowing.Window.Create(new WindowOptions {
-				Title = "gæmstone",
-				Size  = new Size(1280, 720),
-				API   = GraphicsAPI.Default,
-				UpdatesPerSecond = 30.0,
-				FramesPerSecond  = 60.0,
-				ShouldSwapAutomatically = true,
-			});
+			var options = WindowOptions.Default;
+			options.Title = "gæmstone";
+			options.Size  = new Size(1280, 720);
+			options.API   = GraphicsAPI.Default;
+			options.UpdatesPerSecond = 30.0;
+			options.FramesPerSecond  = 60.0;
+			options.ShouldSwapAutomatically = true;
+
+			Window = Silk.NET.Windowing.Window.Create(options);
 			Window.Load    += OnLoad;
 			Window.Update  += OnUpdate;
 			Window.Closing += OnClosing;
@@ -46,6 +50,8 @@ namespace gaemstone.Client
 
 		protected virtual void OnLoad()
 		{
+			Input = Window.CreateInput();
+
 			GFX.Initialize();
 			GFX.OnDebugOutput += (source, type, id, severity, message) =>
 				//Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");
