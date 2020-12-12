@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Silk.NET.Core.Contexts;
 using Silk.NET.OpenGL;
 
 namespace gaemstone.Client.Graphics
@@ -13,9 +14,11 @@ namespace gaemstone.Client.Graphics
 
 		public static event Action<DebugSource, DebugType, int, DebugSeverity, string>? OnDebugOutput;
 
-		public static void Initialize()
+		public static void Initialize(IGLContextSource iGLContextSource)
 		{
-			GL = Silk.NET.OpenGL.GL.GetApi();
+            
+
+			GL = GL.GetApi(iGLContextSource);
 
 			GL.Enable(GLEnum.DebugOutput);
 			unsafe {
