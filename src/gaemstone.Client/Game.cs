@@ -21,17 +21,17 @@ namespace gaemstone.Client
 
 		public Game()
 		{
-			var options = WindowOptions.Default;
+			var options   = WindowOptions.Default;
 			options.Title = "gæmstone";
-			options.Size = new Vector2D<int>(1280, 720);
-			options.API = GraphicsAPI.Default;
+			options.Size  = new Vector2D<int>(1280, 720);
+			options.API   = GraphicsAPI.Default;
 			options.UpdatesPerSecond = 30.0;
-			options.FramesPerSecond = 60.0;
+			options.FramesPerSecond  = 60.0;
 			options.ShouldSwapAutomatically = true;
 
 			Window = Silk.NET.Windowing.Window.Create(options);
-			Window.Load += OnLoad;
-			Window.Update += OnUpdate;
+			Window.Load    += OnLoad;
+			Window.Update  += OnUpdate;
 			Window.Closing += OnClosing;
 
 			Components.AddStore(new PackedArrayStore<Transform>());

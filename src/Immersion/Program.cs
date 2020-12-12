@@ -38,8 +38,8 @@ namespace Immersion
 			Set(mainCamera, (Transform)Matrix4x4.CreateTranslation(0, 26, 0));
 
 			var meshManager = Processors.GetOrThrow<MeshManager>();
-			var heartMesh = meshManager.Load(this, "heart.glb");
-			var swordMesh = meshManager.Load(this, "sword.glb");
+			var heartMesh   = meshManager.Load(this, "heart.glb");
+			var swordMesh   = meshManager.Load(this, "sword.glb");
 
 			for (var x = -12; x <= 12; x++)
 			for (var z = -12; z <= 12; z++) {
@@ -84,7 +84,7 @@ namespace Immersion
 			var chunkStore = (LookupDictionaryStore<ChunkPos, Chunk>)Components.GetStore<Chunk>();
 			void GenerateChunkMesh(ChunkPos pos)
 			{
-				var chunk = Entities.GetByID(chunkStore.GetEntityID(pos))!.Value;
+				var chunk     = Entities.GetByID(chunkStore.GetEntityID(pos))!.Value;
 				var chunkMesh = chunkMeshGenerator.Generate(pos);
 				if (chunkMesh == null) return;
 				Set(chunk, chunkMesh.Value);

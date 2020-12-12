@@ -21,7 +21,7 @@ namespace gaemstone.Client.Graphics
 			_game = (Game)universe;
 			_game.Window.Render += OnWindowRender;
 
-			var vertexShaderSource = _game.GetResourceAsString("default.vs.glsl");
+			var vertexShaderSource   = _game.GetResourceAsString("default.vs.glsl");
 			var fragmentShaderSource = _game.GetResourceAsString("default.fs.glsl");
 
 			_program = Program.LinkFromShaders("main",
@@ -29,10 +29,10 @@ namespace gaemstone.Client.Graphics
 				Shader.CompileFromSource("fragment", ShaderType.FragmentShader, fragmentShaderSource));
 			_program.DetachAndDeleteShaders();
 
-			var attribs = _program.GetActiveAttributes();
+			var attribs  = _program.GetActiveAttributes();
 			var uniforms = _program.GetActiveUniforms();
 			_cameraMatrixUniform = uniforms["cameraMatrix"].Matrix4x4;
-			_modelMatrixUniform = uniforms["modelMatrix"].Matrix4x4;
+			_modelMatrixUniform  = uniforms["modelMatrix"].Matrix4x4;
 		}
 
 		public void OnUnload()

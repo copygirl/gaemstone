@@ -76,26 +76,26 @@ namespace gaemstone.Client.Graphics
 
 	public enum ObjectLabelIdentifier
 	{
-		Buffer = GLEnum.Buffer,
-		Shader = GLEnum.Shader,
+		Buffer  = GLEnum.Buffer,
+		Shader  = GLEnum.Shader,
 		Program = GLEnum.Program,
 		// FIXME: GLEnum.VertexArray doesn't exist.
 		// VertexArray       = GLEnum.VertexArray,
 		Query = GLEnum.Query,
-		ProgramPipeline = GLEnum.ProgramPipeline,
+		ProgramPipeline   = GLEnum.ProgramPipeline,
 		TransformFeedback = GLEnum.TransformFeedback,
 		Sampler = GLEnum.Sampler,
 		Texture = GLEnum.Texture,
 		Renderbuffer = GLEnum.Renderbuffer,
-		Framebuffer = GLEnum.Framebuffer
+		Framebuffer  = GLEnum.Framebuffer
 	}
 
 	public enum DebugSource
 	{
 		Api = GLEnum.DebugSourceApi,
-		WindowSystem = GLEnum.DebugSourceWindowSystem,
+		WindowSystem   = GLEnum.DebugSourceWindowSystem,
 		ShaderCompiler = GLEnum.DebugSourceShaderCompiler,
-		ThirdParty = GLEnum.DebugSourceThirdParty,
+		ThirdParty  = GLEnum.DebugSourceThirdParty,
 		Application = GLEnum.DebugSourceApplication,
 		Other = GLEnum.DebugSourceOther,
 	}
@@ -104,20 +104,20 @@ namespace gaemstone.Client.Graphics
 	{
 		Error = GLEnum.DebugTypeError,
 		DeprecatedBehavior = GLEnum.DebugTypeDeprecatedBehavior,
-		UndefinedBehavior = GLEnum.DebugTypeUndefinedBehavior,
+		UndefinedBehavior  = GLEnum.DebugTypeUndefinedBehavior,
 		Portability = GLEnum.DebugTypePortability,
 		Performance = GLEnum.DebugTypePerformance,
-		Marker = GLEnum.DebugTypeMarker,
+		Marker    = GLEnum.DebugTypeMarker,
 		PushGroup = GLEnum.DebugTypePushGroup,
-		PopGroup = GLEnum.DebugTypePopGroup,
-		Other = GLEnum.DebugTypeOther,
+		PopGroup  = GLEnum.DebugTypePopGroup,
+		Other     = GLEnum.DebugTypeOther,
 	}
 
 	public enum DebugSeverity
 	{
-		High = GLEnum.DebugSeverityHigh,
+		High   = GLEnum.DebugSeverityHigh,
 		Medium = GLEnum.DebugSeverityMedium,
-		Low = GLEnum.DebugSeverityLow,
+		Low    = GLEnum.DebugSeverityLow,
 		Notification = GLEnum.DebugSeverityNotification,
 	}
 }
