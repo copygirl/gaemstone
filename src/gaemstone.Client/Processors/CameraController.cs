@@ -20,35 +20,35 @@ namespace gaemstone.Client.Processors
 		private Vector2? _mouseGrabbedAt = null;
 		private PointF _mouseMoved;
 
-		private bool _moveLeft    = false; // -X
-		private bool _moveRight   = false; // +X
+		private bool _moveLeft = false; // -X
+		private bool _moveRight = false; // +X
 		private bool _moveForward = false; // -Z
-		private bool _moveBack    = false; // +Z
+		private bool _moveBack = false; // +Z
 		private bool _fastMovement = false;
 
 		public void OnLoad(Universe universe)
 		{
 			_game = (Game)universe;
 
-			_mouse    = _game.Input.Mice[0];
+			_mouse = _game.Input.Mice[0];
 			_keyboard = _game.Input.Keyboards[0];
 
 			_mouse.MouseDown += OnMouseDown;
-			_mouse.MouseUp   += OnMouseUp;
+			_mouse.MouseUp += OnMouseUp;
 			_mouse.MouseMove += OnMouseMove;
 
 			_keyboard.KeyDown += OnKeyDown;
-			_keyboard.KeyUp   += OnKeyUp;
+			_keyboard.KeyUp += OnKeyUp;
 		}
 
 		public void OnUnload()
 		{
 			_mouse.MouseDown -= OnMouseDown;
-			_mouse.MouseUp   -= OnMouseUp;
+			_mouse.MouseUp -= OnMouseUp;
 			_mouse.MouseMove -= OnMouseMove;
 
 			_keyboard.KeyDown -= OnKeyDown;
-			_keyboard.KeyUp   -= OnKeyUp;
+			_keyboard.KeyUp -= OnKeyUp;
 		}
 
 
@@ -75,22 +75,24 @@ namespace gaemstone.Client.Processors
 
 		private void OnKeyDown(IKeyboard keyboard, Key key, int code)
 		{
-			switch (key) {
-				case Key.A: _moveLeft    = true; break;
-				case Key.D: _moveRight   = true; break;
+			switch (key)
+			{
+				case Key.A: _moveLeft = true; break;
+				case Key.D: _moveRight = true; break;
 				case Key.W: _moveForward = true; break;
-				case Key.S: _moveBack    = true; break;
+				case Key.S: _moveBack = true; break;
 				case Key.ShiftLeft: _fastMovement = true; break;
 			}
 		}
 
 		private void OnKeyUp(IKeyboard keyboard, Key key, int code)
 		{
-			switch (key) {
-				case Key.A: _moveLeft    = false; break;
-				case Key.D: _moveRight   = false; break;
+			switch (key)
+			{
+				case Key.A: _moveLeft = false; break;
+				case Key.D: _moveRight = false; break;
 				case Key.W: _moveForward = false; break;
-				case Key.S: _moveBack    = false; break;
+				case Key.S: _moveBack = false; break;
 				case Key.ShiftLeft: _fastMovement = false; break;
 			}
 		}
@@ -104,16 +106,19 @@ namespace gaemstone.Client.Processors
 			var yMovement = _mouseMoved.Y * (float)delta * _mouseSpeed;
 			_mouseMoved = PointF.Empty;
 
-			if (camera.IsOrthographic) {
+			if (camera.IsOrthographic)
+			{
 				_game.Set(mainCamera, (Transform)(transform * Matrix4x4.CreateTranslation(-xMovement, -yMovement, 0)));
-			} else {
+			}
+			else
+			{
 				var speed = (float)delta * (_fastMovement ? 12 : 4);
-				var forwardMovement = ((_moveForward ? -1 : 0) + (_moveBack  ? 1 : 0)) * speed;
-				var sideMovement    = ((_moveLeft    ? -1 : 0) + (_moveRight ? 1 : 0)) * speed;
+				var forwardMovement = ((_moveForward ? -1 : 0) + (_moveBack ? 1 : 0)) * speed;
+				var sideMovement = ((_moveLeft ? -1 : 0) + (_moveRight ? 1 : 0)) * speed;
 
-				var yawRotation   = Matrix4x4.CreateRotationY(-xMovement / 100, transform.Value.Translation);
+				var yawRotation = Matrix4x4.CreateRotationY(-xMovement / 100, transform.Value.Translation);
 				var pitchRotation = Matrix4x4.CreateRotationX(-yMovement / 100);
-				var translation   = Matrix4x4.CreateTranslation(sideMovement, 0, forwardMovement);
+				var translation = Matrix4x4.CreateTranslation(sideMovement, 0, forwardMovement);
 
 				_game.Set(mainCamera, (Transform)(translation * pitchRotation * transform * yawRotation));
 			}

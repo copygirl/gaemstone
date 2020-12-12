@@ -16,12 +16,13 @@ namespace gaemstone.Client.Graphics
 
 		public static void Initialize(IGLContextSource iGLContextSource)
 		{
-            
+
 
 			GL = GL.GetApi(iGLContextSource);
 
 			GL.Enable(GLEnum.DebugOutput);
-			unsafe {
+			unsafe
+			{
 				GL.DebugMessageCallback(
 					(source, type, id, severity, length, message, userParam) =>
 						OnDebugOutput?.Invoke(
@@ -60,10 +61,11 @@ namespace gaemstone.Client.Graphics
 		private static string? LABEL_BUFFER;
 		public static string GetObjectLabel(ObjectLabelIdentifier identifier, uint handle)
 		{
-			if (MAX_LABEL_LENGTH == 0) {
+			if (MAX_LABEL_LENGTH == 0)
+			{
 				// One-time initialization.
 				MAX_LABEL_LENGTH = GL.GetInteger(GLEnum.MaxLabelLength);
-				LABEL_BUFFER     = new string(' ', MAX_LABEL_LENGTH);
+				LABEL_BUFFER = new string(' ', MAX_LABEL_LENGTH);
 			}
 			GL.GetObjectLabel((GLEnum)identifier, handle, (uint)MAX_LABEL_LENGTH, out var length, out LABEL_BUFFER);
 			return LABEL_BUFFER.Substring(0, (int)length);
@@ -74,48 +76,48 @@ namespace gaemstone.Client.Graphics
 
 	public enum ObjectLabelIdentifier
 	{
-		Buffer            = GLEnum.Buffer,
-		Shader            = GLEnum.Shader,
-		Program           = GLEnum.Program,
+		Buffer = GLEnum.Buffer,
+		Shader = GLEnum.Shader,
+		Program = GLEnum.Program,
 		// FIXME: GLEnum.VertexArray doesn't exist.
 		// VertexArray       = GLEnum.VertexArray,
-		Query             = GLEnum.Query,
-		ProgramPipeline   = GLEnum.ProgramPipeline,
+		Query = GLEnum.Query,
+		ProgramPipeline = GLEnum.ProgramPipeline,
 		TransformFeedback = GLEnum.TransformFeedback,
-		Sampler           = GLEnum.Sampler,
-		Texture           = GLEnum.Texture,
-		Renderbuffer      = GLEnum.Renderbuffer,
-		Framebuffer       = GLEnum.Framebuffer
+		Sampler = GLEnum.Sampler,
+		Texture = GLEnum.Texture,
+		Renderbuffer = GLEnum.Renderbuffer,
+		Framebuffer = GLEnum.Framebuffer
 	}
 
 	public enum DebugSource
 	{
-		Api            = GLEnum.DebugSourceApi,
-		WindowSystem   = GLEnum.DebugSourceWindowSystem,
+		Api = GLEnum.DebugSourceApi,
+		WindowSystem = GLEnum.DebugSourceWindowSystem,
 		ShaderCompiler = GLEnum.DebugSourceShaderCompiler,
-		ThirdParty     = GLEnum.DebugSourceThirdParty,
-		Application    = GLEnum.DebugSourceApplication,
-		Other          = GLEnum.DebugSourceOther,
+		ThirdParty = GLEnum.DebugSourceThirdParty,
+		Application = GLEnum.DebugSourceApplication,
+		Other = GLEnum.DebugSourceOther,
 	}
 
 	public enum DebugType
 	{
-		Error              = GLEnum.DebugTypeError,
+		Error = GLEnum.DebugTypeError,
 		DeprecatedBehavior = GLEnum.DebugTypeDeprecatedBehavior,
-		UndefinedBehavior  = GLEnum.DebugTypeUndefinedBehavior,
-		Portability        = GLEnum.DebugTypePortability,
-		Performance        = GLEnum.DebugTypePerformance,
-		Marker             = GLEnum.DebugTypeMarker,
-		PushGroup          = GLEnum.DebugTypePushGroup,
-		PopGroup           = GLEnum.DebugTypePopGroup,
-		Other              = GLEnum.DebugTypeOther,
+		UndefinedBehavior = GLEnum.DebugTypeUndefinedBehavior,
+		Portability = GLEnum.DebugTypePortability,
+		Performance = GLEnum.DebugTypePerformance,
+		Marker = GLEnum.DebugTypeMarker,
+		PushGroup = GLEnum.DebugTypePushGroup,
+		PopGroup = GLEnum.DebugTypePopGroup,
+		Other = GLEnum.DebugTypeOther,
 	}
 
 	public enum DebugSeverity
 	{
-		High         = GLEnum.DebugSeverityHigh,
-		Medium       = GLEnum.DebugSeverityMedium,
-		Low          = GLEnum.DebugSeverityLow,
+		High = GLEnum.DebugSeverityHigh,
+		Medium = GLEnum.DebugSeverityMedium,
+		Low = GLEnum.DebugSeverityLow,
 		Notification = GLEnum.DebugSeverityNotification,
 	}
 }
