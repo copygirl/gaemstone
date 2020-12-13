@@ -33,16 +33,13 @@ namespace gaemstone.Client.Graphics
 			texture.Bind();
 
 			var image = Image.Load<Rgba32>(stream);
-			unsafe
-			{
-				{
-					image.Frames[0].TryGetSinglePixelSpan(out Span<Rgba32> result);
-					var pixels = new ReadOnlySpan<Rgba32>(result.ToArray());
-					GFX.GL.TexImage2D(texture.Target, 0, (int)PixelFormat.Rgba,
-									  (uint)image.Width, (uint)image.Height, 0,
-									  PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
-				}
-			}
+			unsafe { {
+				image.Frames[0].TryGetSinglePixelSpan(out Span<Rgba32> result);
+				var pixels = new ReadOnlySpan<Rgba32>(result.ToArray());
+				GFX.GL.TexImage2D(texture.Target, 0, (int)PixelFormat.Rgba,
+				                  (uint)image.Width, (uint)image.Height, 0,
+				                  PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
+			} }
 
 			texture.MagFilter = TextureMagFilter.Nearest;
 			texture.MinFilter = TextureMinFilter.Nearest;
@@ -69,21 +66,20 @@ namespace gaemstone.Client.Graphics
 			// "no" texture is bound, we can still use the texture sampler.
 			var texture = new Texture(TextureTarget.Texture2D, 0);
 			texture.Bind();
-			unsafe
-			{
+			unsafe {
 				Span<byte> pixel = stackalloc byte[4];
 				pixel.Fill(255);
 				fixed (byte* ptr = pixel)
 					GFX.GL.TexImage2D(TextureTarget.Texture2D, 0, (int)PixelFormat.Rgba,
-									  1, 1, 0, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
+					                  1, 1, 0, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
 			}
 			texture.MagFilter = TextureMagFilter.Nearest;
 			texture.MinFilter = TextureMinFilter.Nearest;
 		}
 
-		public void OnUnload() { }
+		public void OnUnload() {  }
 
-		public void OnUpdate(double delta) { }
+		public void OnUpdate(double delta) {  }
 	}
 
 	public class TextureInfo

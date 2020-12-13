@@ -62,7 +62,7 @@ namespace gaemstone.Bloxel.Client
 		private readonly IComponentStore<ChunkPaletteStorage<Block>> _storageStore;
 		private readonly IComponentStore<TextureCoords4> _textureCellStore;
 
-		private ushort[] _indices   = new ushort[STARTING_CAPACITY];
+		private ushort[] _indices = new ushort[STARTING_CAPACITY];
 		private Vector3[] _vertices = new Vector3[STARTING_CAPACITY];
 		private Vector3[] _normals  = new Vector3[STARTING_CAPACITY];
 		private Vector2[] _uvs      = new Vector2[STARTING_CAPACITY];

@@ -11,7 +11,7 @@ namespace gaemstone.Client.Graphics
 		public static Shader CompileFromSource(string label, ShaderType type, string source)
 		{
 			var shader = Create(type);
-			shader.Label = label;
+			shader.Label  = label;
 			shader.Source = source;
 			shader.Compile();
 			return shader;
@@ -22,34 +22,24 @@ namespace gaemstone.Client.Graphics
 
 		private Shader(uint handle) => Handle = handle;
 
-		public ShaderType Type
-		{
-			get
-			{
-				int shaderType;
-				GFX.GL.GetShader(Handle, GLEnum.ShaderType, out shaderType);
-				return (ShaderType)shaderType;
-			}
-		}
+		public ShaderType Type { get {
+			int shaderType;
+			GFX.GL.GetShader(Handle, GLEnum.ShaderType, out shaderType);
+			return (ShaderType)shaderType;
+		} }
 
-		public string Label
-		{
+		public string Label {
 			get => GFX.GetObjectLabel(ObjectLabelIdentifier.Shader, Handle);
 			set => GFX.SetObjectLabel(ObjectLabelIdentifier.Shader, Handle, value);
 		}
 
-		public string Source
-		{
-			get
-			{
-				unsafe
-				{
-					int sourceLength;
-					GFX.GL.GetShader(Handle, GLEnum.ShaderSourceLength, out sourceLength);
-					var source = new string(' ', sourceLength);
-					GFX.GL.GetShaderSource(Handle, (uint)source.Length, (uint*)source.Length, out source);
-					return source;
-				}
+		public string Source {
+			get {
+				int sourceLength;
+				GFX.GL.GetShader(Handle, GLEnum.ShaderSourceLength, out sourceLength);
+				var source = new string(' ', sourceLength);
+				unsafe { GFX.GL.GetShaderSource(Handle, (uint)source.Length, (uint*)source.Length, out source); }
+				return source;
 			}
 			set => GFX.GL.ShaderSource(Handle, value);
 		}

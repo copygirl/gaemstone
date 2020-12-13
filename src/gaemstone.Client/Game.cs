@@ -21,7 +21,7 @@ namespace gaemstone.Client
 
 		public Game()
 		{
-			var options   = WindowOptions.Default;
+			var options = WindowOptions.Default;
 			options.Title = "gæmstone";
 			options.Size  = new Vector2D<int>(1280, 720);
 			options.API   = GraphicsAPI.Default;
@@ -50,6 +50,7 @@ namespace gaemstone.Client
 		protected virtual void OnLoad()
 		{
 			Input = Window.CreateInput();
+
 			GFX.Initialize(Window);
 			GFX.OnDebugOutput += (source, type, id, severity, message) =>
 				Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");
@@ -88,8 +89,7 @@ namespace gaemstone.Client
 		public byte[] GetResourceAsBytes(string name)
 		{
 			using (var stream = GetResourceStream(name))
-			using (var memoryStream = new MemoryStream())
-			{
+			using (var memoryStream = new MemoryStream()) {
 				stream.CopyTo(memoryStream);
 				return memoryStream.ToArray();
 			}

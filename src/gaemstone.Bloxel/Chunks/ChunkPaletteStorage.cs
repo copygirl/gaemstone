@@ -94,7 +94,7 @@ namespace gaemstone.Bloxel.Chunks
 				_palette = new PaletteEntry[2];
 				_usedPalettes  = 1;
 				_indicesLength = 1;
-				_palette[0]    = new PaletteEntry { Value = Default, RefCount = SIZE };
+				_palette[0] = new PaletteEntry { Value = Default, RefCount = SIZE };
 				return;
 			}
 

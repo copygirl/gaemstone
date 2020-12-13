@@ -38,7 +38,7 @@ namespace gaemstone.Client.Graphics
 		public void OnUnload()
 			=> _game.Window.Render -= OnWindowRender;
 
-		public void OnUpdate(double delta) { }
+		public void OnUpdate(double delta) {  }
 
 		public void OnWindowRender(double delta)
 		{
@@ -47,8 +47,7 @@ namespace gaemstone.Client.Graphics
 			GFX.Clear(Color.Indigo);
 			_program.Use();
 
-			Aspect<ICameraAspect>.ForEach(_game, camera =>
-			{
+			Aspect<ICameraAspect>.ForEach(_game, camera => {
 				// Get the camera's transform matrix and invert it.
 				Matrix4x4.Invert(camera.Transform, out var cameraTransform);
 				// Create the camera's projection matrix, either ortho or perspective.
@@ -57,13 +56,12 @@ namespace gaemstone.Client.Graphics
 						camera.Camera.NearPlane, camera.Camera.FarPlane)
 					: Matrix4x4.CreatePerspectiveFieldOfView(
 						camera.Camera.FieldOfView * MathF.PI / 180, // Degrees => Radians
-						(float)size.X / size.Y,            // Aspect Ratio
+						(float)size.X / size.Y,                     // Aspect Ratio
 						camera.Camera.NearPlane, camera.Camera.FarPlane);
 				// Set the uniform to the combined transform and projection.
 				_cameraMatrixUniform.Set(cameraTransform * cameraProjection);
 
-				Aspect<IRenderableAspect>.ForEach(_game, renderable =>
-				{
+				Aspect<IRenderableAspect>.ForEach(_game, renderable => {
 					_modelMatrixUniform.Set(renderable.Transform);
 					// If entity has Texture, bind it now.
 					if (renderable.Texture != null) renderable.Texture.Value.Bind();

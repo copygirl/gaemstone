@@ -12,7 +12,7 @@ namespace gaemstone.Client.Processors
 	public class CameraController
 		: IProcessor
 	{
-		private Game _game    = null!;
+		private Game _game = null!;
 		private IMouse _mouse = null!;
 		private IKeyboard _keyboard = null!;
 
@@ -20,10 +20,10 @@ namespace gaemstone.Client.Processors
 		private Vector2? _mouseGrabbedAt = null;
 		private PointF _mouseMoved;
 
-		private bool _moveLeft     = false; // -X
-		private bool _moveRight    = false; // +X
-		private bool _moveForward  = false; // -Z
-		private bool _moveBack     = false; // +Z
+		private bool _moveLeft    = false; // -X
+		private bool _moveRight   = false; // +X
+		private bool _moveForward = false; // -Z
+		private bool _moveBack    = false; // +Z
 		private bool _fastMovement = false;
 
 		public void OnLoad(Universe universe)
@@ -75,8 +75,7 @@ namespace gaemstone.Client.Processors
 
 		private void OnKeyDown(IKeyboard keyboard, Key key, int code)
 		{
-			switch (key)
-			{
+			switch (key) {
 				case Key.A: _moveLeft    = true; break;
 				case Key.D: _moveRight   = true; break;
 				case Key.W: _moveForward = true; break;
@@ -87,8 +86,7 @@ namespace gaemstone.Client.Processors
 
 		private void OnKeyUp(IKeyboard keyboard, Key key, int code)
 		{
-			switch (key)
-			{
+			switch (key) {
 				case Key.A: _moveLeft    = false; break;
 				case Key.D: _moveRight   = false; break;
 				case Key.W: _moveForward = false; break;
@@ -104,17 +102,14 @@ namespace gaemstone.Client.Processors
 
 			var xMovement = _mouseMoved.X * (float)delta * _mouseSpeed;
 			var yMovement = _mouseMoved.Y * (float)delta * _mouseSpeed;
-			_mouseMoved   = PointF.Empty;
+			_mouseMoved = PointF.Empty;
 
-			if (camera.IsOrthographic)
-			{
+			if (camera.IsOrthographic) {
 				_game.Set(mainCamera, (Transform)(transform * Matrix4x4.CreateTranslation(-xMovement, -yMovement, 0)));
-			}
-			else
-			{
+			} else {
 				var speed = (float)delta * (_fastMovement ? 12 : 4);
-				var forwardMovement = ((_moveForward ? -1 : 0) + (_moveBack ? 1 : 0)) * speed;
-				var sideMovement    = ((_moveLeft ? -1 : 0) + (_moveRight ? 1 : 0)) * speed;
+				var forwardMovement = ((_moveForward ? -1 : 0) + (_moveBack  ? 1 : 0)) * speed;
+				var sideMovement    = ((_moveLeft    ? -1 : 0) + (_moveRight ? 1 : 0)) * speed;
 
 				var yawRotation   = Matrix4x4.CreateRotationY(-xMovement / 100, transform.Value.Translation);
 				var pitchRotation = Matrix4x4.CreateRotationX(-yMovement / 100);
