@@ -6,7 +6,6 @@ using gaemstone.Common.Components;
 using gaemstone.Common.ECS;
 using gaemstone.Common.ECS.Processors;
 using Silk.NET.Input;
-using Silk.NET.Input.Common;
 
 namespace gaemstone.Client.Processors
 {
@@ -18,7 +17,7 @@ namespace gaemstone.Client.Processors
 		private IKeyboard _keyboard = null!;
 
 		private float _mouseSpeed = 4.0F;
-		private PointF? _mouseGrabbedAt = null;
+		private Vector2? _mouseGrabbedAt = null;
 		private PointF _mouseMoved;
 
 		private bool _moveLeft    = false; // -X
@@ -65,7 +64,7 @@ namespace gaemstone.Client.Processors
 			_mouseGrabbedAt = null;
 		}
 
-		private void OnMouseMove(IMouse mouse, PointF position)
+		private void OnMouseMove(IMouse mouse, Vector2 position)
 		{
 			if (_mouseGrabbedAt == null) return;
 			var x = _mouseMoved.X + position.X - _mouseGrabbedAt.Value.X;
@@ -73,7 +72,6 @@ namespace gaemstone.Client.Processors
 			_mouseMoved = new PointF(x, y);
 			mouse.Position = _mouseGrabbedAt.Value;
 		}
-
 
 		private void OnKeyDown(IKeyboard keyboard, Key key, int code)
 		{
@@ -96,7 +94,6 @@ namespace gaemstone.Client.Processors
 				case Key.ShiftLeft: _fastMovement = false; break;
 			}
 		}
-
 
 		public void OnUpdate(double delta)
 		{
@@ -121,5 +118,6 @@ namespace gaemstone.Client.Processors
 				_game.Set(mainCamera, (Transform)(translation * pitchRotation * transform * yawRotation));
 			}
 		}
+
 	}
 }

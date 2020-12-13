@@ -51,7 +51,7 @@ namespace gaemstone.Client.Graphics
 			=> Data<T>((ReadOnlySpan<T>)data, usage);
 		public void Data<T>(ReadOnlySpan<T> data, BufferUsageARB usage)
 		{ unsafe {
-			GFX.GL.BufferData(Target, (uint)(data.Length * Unsafe.SizeOf<T>()),
+			GFX.GL.BufferData((GLEnum)Target, (UIntPtr)(data.Length * Unsafe.SizeOf<T>()),
 			                  Unsafe.AsPointer(ref Unsafe.AsRef(in data[0])), usage);
 		} }
 	}

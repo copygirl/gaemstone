@@ -38,7 +38,7 @@ namespace gaemstone.Client.Graphics
 				int sourceLength;
 				GFX.GL.GetShader(Handle, GLEnum.ShaderSourceLength, out sourceLength);
 				var source = new string(' ', sourceLength);
-				GFX.GL.GetShaderSource(Handle, (uint)source.Length, (uint)source.Length, out source);
+				unsafe { GFX.GL.GetShaderSource(Handle, (uint)source.Length, (uint*)source.Length, out source); }
 				return source;
 			}
 			set => GFX.GL.ShaderSource(Handle, value);

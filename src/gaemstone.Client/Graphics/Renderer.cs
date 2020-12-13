@@ -43,7 +43,7 @@ namespace gaemstone.Client.Graphics
 		public void OnWindowRender(double delta)
 		{
 			var size = _game.Window.Size;
-			GFX.Viewport(size);
+			GFX.Viewport(new Size(size.X, size.Y));
 			GFX.Clear(Color.Indigo);
 			_program.Use();
 
@@ -52,11 +52,11 @@ namespace gaemstone.Client.Graphics
 				Matrix4x4.Invert(camera.Transform, out var cameraTransform);
 				// Create the camera's projection matrix, either ortho or perspective.
 				var cameraProjection = camera.Camera.IsOrthographic
-					? Matrix4x4.CreateOrthographic(size.Width, -size.Height,
+					? Matrix4x4.CreateOrthographic(size.X, -size.Y,
 						camera.Camera.NearPlane, camera.Camera.FarPlane)
 					: Matrix4x4.CreatePerspectiveFieldOfView(
 						camera.Camera.FieldOfView * MathF.PI / 180, // Degrees => Radians
-						(float)size.Width / size.Height,            // Aspect Ratio
+						(float)size.X / size.Y,                     // Aspect Ratio
 						camera.Camera.NearPlane, camera.Camera.FarPlane);
 				// Set the uniform to the combined transform and projection.
 				_cameraMatrixUniform.Set(cameraTransform * cameraProjection);

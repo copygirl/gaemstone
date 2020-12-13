@@ -8,6 +8,7 @@ using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
+using Size = System.Drawing.Size;
 
 namespace gaemstone.Client.Graphics
 {
@@ -32,7 +33,9 @@ namespace gaemstone.Client.Graphics
 			texture.Bind();
 
 			var image = Image.Load<Rgba32>(stream);
-			unsafe { fixed (Rgba32* pixels = image.Frames[0].GetPixelSpan()) {
+			unsafe { {
+				image.Frames[0].TryGetSinglePixelSpan(out Span<Rgba32> result);
+				var pixels = new ReadOnlySpan<Rgba32>(result.ToArray());
 				GFX.GL.TexImage2D(texture.Target, 0, (int)PixelFormat.Rgba,
 				                  (uint)image.Width, (uint)image.Height, 0,
 				                  PixelFormat.Rgba, PixelType.UnsignedByte, pixels);

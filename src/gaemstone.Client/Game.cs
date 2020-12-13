@@ -9,8 +9,8 @@ using gaemstone.Common.Components;
 using gaemstone.Common.ECS;
 using gaemstone.Common.ECS.Stores;
 using Silk.NET.Input;
-using Silk.NET.Input.Common;
-using Silk.NET.Windowing.Common;
+using Silk.NET.Maths;
+using Silk.NET.Windowing;
 
 namespace gaemstone.Client
 {
@@ -23,7 +23,7 @@ namespace gaemstone.Client
 		{
 			var options = WindowOptions.Default;
 			options.Title = "gæmstone";
-			options.Size  = new Size(1280, 720);
+			options.Size  = new Vector2D<int>(1280, 720);
 			options.API   = GraphicsAPI.Default;
 			options.UpdatesPerSecond = 30.0;
 			options.FramesPerSecond  = 60.0;
@@ -51,7 +51,7 @@ namespace gaemstone.Client
 		{
 			Input = Window.CreateInput();
 
-			GFX.Initialize();
+			GFX.Initialize(Window);
 			GFX.OnDebugOutput += (source, type, id, severity, message) =>
 				Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");
 
