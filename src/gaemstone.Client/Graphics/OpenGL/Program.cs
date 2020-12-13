@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Silk.NET.OpenGL;
 
 namespace gaemstone.Client.Graphics
@@ -44,15 +45,15 @@ namespace gaemstone.Client.Graphics
 			=> GFX.GL.DetachShader(Handle, shader.Handle);
 
 
-		public Shader[] GetAttachedShaders()
+		public ICollection<Shader> GetAttachedShaders()
 		{
-			int shaderCount;
-			GFX.GL.GetProgram(Handle, ProgramPropertyARB.AttachedShaders, out shaderCount);
-			var shaders = new Shader[shaderCount];
-			unsafe {
-				fixed (Shader* shadersPtr = &shaders[0])
-					GFX.GL.GetAttachedShaders(Handle, (uint)shaderCount, null, (uint*)shadersPtr);
-			}
+			GFX.GL.GetProgram(Handle, ProgramPropertyARB.AttachedShaders, out var count);
+			Span<uint> countSpan   = stackalloc uint[1];
+			Span<uint> shadersSpan = stackalloc uint[count];
+			GFX.GL.GetAttachedShaders(Handle, (uint)count, countSpan, shadersSpan);
+
+			var shaders = new List<Shader>(count);
+			foreach (var handle in shadersSpan) shaders.Add(new Shader(handle));
 			return shaders;
 		}
 

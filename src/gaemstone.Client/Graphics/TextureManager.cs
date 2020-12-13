@@ -66,13 +66,10 @@ namespace gaemstone.Client.Graphics
 			// "no" texture is bound, we can still use the texture sampler.
 			var texture = new Texture(TextureTarget.Texture2D, 0);
 			texture.Bind();
-			unsafe {
-				Span<byte> pixel = stackalloc byte[4];
-				pixel.Fill(255);
-				fixed (byte* ptr = pixel)
-					GFX.GL.TexImage2D(TextureTarget.Texture2D, 0, (int)PixelFormat.Rgba,
-					                  1, 1, 0, PixelFormat.Rgba, PixelType.UnsignedByte, ptr);
-			}
+			Span<byte> pixel = stackalloc byte[4];
+			pixel.Fill(255);
+			GFX.GL.TexImage2D(TextureTarget.Texture2D, 0, (int)PixelFormat.Rgba,
+			                  1, 1, 0, PixelFormat.Rgba, PixelType.UnsignedByte, pixel[0]);
 			texture.MagFilter = TextureMagFilter.Nearest;
 			texture.MinFilter = TextureMinFilter.Nearest;
 		}

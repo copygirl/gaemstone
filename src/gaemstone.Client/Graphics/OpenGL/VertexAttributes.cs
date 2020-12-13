@@ -53,10 +53,10 @@ namespace gaemstone.Client.Graphics
 
 		public void Pointer(int size, VertexAttribPointerType type,
 		                    bool normalized = false, uint stride = 0, int offset = 0)
-		{ unsafe {
+		{
 			GFX.GL.EnableVertexAttribArray((uint)Location);
-			GFX.GL.VertexAttribPointer((uint)Location, size, (GLEnum)type, normalized, stride, (void*)offset);
-		} }
+			unsafe { GFX.GL.VertexAttribPointer((uint)Location, size, type, normalized, stride, (void*)offset); }
+		}
 
 		public override string ToString()
 			=> $"VertexAttributeInfo '{Name}' {{ Index={Index}, Location={Location}, Size={Size}, Type={Type} }}";

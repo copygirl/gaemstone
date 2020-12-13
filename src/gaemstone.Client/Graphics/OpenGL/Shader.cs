@@ -20,11 +20,10 @@ namespace gaemstone.Client.Graphics
 
 		public uint Handle { get; }
 
-		private Shader(uint handle) => Handle = handle;
+		internal Shader(uint handle) => Handle = handle;
 
 		public ShaderType Type { get {
-			int shaderType;
-			GFX.GL.GetShader(Handle, GLEnum.ShaderType, out shaderType);
+			GFX.GL.GetShader(Handle, GLEnum.ShaderType, out var shaderType);
 			return (ShaderType)shaderType;
 		} }
 
@@ -35,10 +34,9 @@ namespace gaemstone.Client.Graphics
 
 		public string Source {
 			get {
-				int sourceLength;
-				GFX.GL.GetShader(Handle, GLEnum.ShaderSourceLength, out sourceLength);
+				GFX.GL.GetShader(Handle, GLEnum.ShaderSourceLength, out var sourceLength);
 				var source = new string(' ', sourceLength);
-				unsafe { GFX.GL.GetShaderSource(Handle, (uint)source.Length, (uint*)source.Length, out source); }
+				GFX.GL.GetShaderSource(Handle, (uint)source.Length, out _, out source);
 				return source;
 			}
 			set => GFX.GL.ShaderSource(Handle, value);

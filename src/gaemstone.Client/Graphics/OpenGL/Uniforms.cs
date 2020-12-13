@@ -25,9 +25,8 @@ namespace gaemstone.Client.Graphics
 			GFX.GL.GetProgram(program.Handle, ProgramPropertyARB.ActiveUniforms, out var uniformCount);
 			_activeUniforms = new UniformInfo[uniformCount];
 			for (uint uniformIndex = 0; uniformIndex < uniformCount; uniformIndex++) {
-				UniformType type;
 				GFX.GL.GetActiveUniform(program.Handle, uniformIndex, (uint)uniformMaxLength,
-				                        out var length, out var size, out type, out nameBuffer);
+				                        out var length, out var size, out UniformType type, out nameBuffer);
 				var name     = nameBuffer.Substring(0, (int)length);
 				var location = GFX.GL.GetUniformLocation(program.Handle, name);
 				var uniform  = new UniformInfo(uniformIndex, location, size, type, name);

@@ -34,13 +34,13 @@ namespace gaemstone.Client.Graphics
 				Buffer.CreateFromData(vertices.SourceBufferView.Content);
 				GFX.GL.EnableVertexAttribArray(POSITION_ATTRIB_INDEX);
 				GFX.GL.VertexAttribPointer(POSITION_ATTRIB_INDEX, 3,
-					(GLEnum)vertices.Encoding, vertices.Normalized,
+					(VertexAttribPointerType)vertices.Encoding, vertices.Normalized,
 					(uint)vertices.SourceBufferView.ByteStride, (void*)vertices.ByteOffset);
 
 				Buffer.CreateFromData(normals.SourceBufferView.Content);
 				GFX.GL.EnableVertexAttribArray(NORMAL_ATTRIB_INDEX);
 				GFX.GL.VertexAttribPointer(NORMAL_ATTRIB_INDEX, 3,
-					(GLEnum)vertices.Encoding, vertices.Normalized,
+					(VertexAttribPointerType)vertices.Encoding, vertices.Normalized,
 					(uint)vertices.SourceBufferView.ByteStride, (void*)vertices.ByteOffset);
 			}
 
@@ -59,18 +59,18 @@ namespace gaemstone.Client.Graphics
 				Buffer.CreateFromData(vertices);
 				GFX.GL.EnableVertexAttribArray(POSITION_ATTRIB_INDEX);
 				GFX.GL.VertexAttribPointer(POSITION_ATTRIB_INDEX, 3,
-					(GLEnum)VertexAttribType.Float, false, 0, (void*)0);
+					VertexAttribPointerType.Float, false, 0, (void*)0);
 				if (!normals.IsEmpty) {
 					Buffer.CreateFromData(normals);
 					GFX.GL.EnableVertexAttribArray(NORMAL_ATTRIB_INDEX);
 					GFX.GL.VertexAttribPointer(NORMAL_ATTRIB_INDEX, 3,
-						(GLEnum)VertexAttribType.Float, false, 0, (void*)0);
+						VertexAttribPointerType.Float, false, 0, (void*)0);
 				}
 				if (!uvs.IsEmpty) {
 					Buffer.CreateFromData(uvs);
 					GFX.GL.EnableVertexAttribArray(UV_ATTRIB_INDEX);
 					GFX.GL.VertexAttribPointer(UV_ATTRIB_INDEX, 2,
-						(GLEnum)VertexAttribType.Float, false, 0, (void*)0);
+						VertexAttribPointerType.Float, false, 0, (void*)0);
 				}
 			}
 			return new Mesh(vertexArray, indices.Length / 3);
@@ -84,18 +84,18 @@ namespace gaemstone.Client.Graphics
 				Buffer.CreateFromData(vertices);
 				GFX.GL.EnableVertexAttribArray(POSITION_ATTRIB_INDEX);
 				GFX.GL.VertexAttribPointer(POSITION_ATTRIB_INDEX, 3,
-					(GLEnum)VertexAttribType.Float, false, 0, (void*)0);
+					VertexAttribPointerType.Float, false, 0, (void*)0);
 				if (!normals.IsEmpty) {
 					Buffer.CreateFromData(normals);
 					GFX.GL.EnableVertexAttribArray(NORMAL_ATTRIB_INDEX);
 					GFX.GL.VertexAttribPointer(NORMAL_ATTRIB_INDEX, 3,
-						(GLEnum)VertexAttribType.Float, false, 0, (void*)0);
+						VertexAttribPointerType.Float, false, 0, (void*)0);
 				}
 				if (!uvs.IsEmpty) {
 					Buffer.CreateFromData(uvs);
 					GFX.GL.EnableVertexAttribArray(UV_ATTRIB_INDEX);
 					GFX.GL.VertexAttribPointer(UV_ATTRIB_INDEX, 2,
-						(GLEnum)VertexAttribType.Float, false, 0, (void*)0);
+						VertexAttribPointerType.Float, false, 0, (void*)0);
 				}
 			}
 			return new Mesh(vertexArray, vertices.Length / 3, false);
@@ -127,10 +127,10 @@ namespace gaemstone.Client.Graphics
 		{ unsafe {
 			VAO.Bind();
 			if (IsIndexed) GFX.GL.DrawElements(
-				(GLEnum)PrimitiveType.Triangles, (uint)count,
-				(GLEnum)DrawElementsType.UnsignedShort, (void*)start);
+				PrimitiveType.Triangles, (uint)count,
+				DrawElementsType.UnsignedShort, (void*)start);
 			else GFX.GL.DrawArrays(
-				(GLEnum)PrimitiveType.Triangles,
+				PrimitiveType.Triangles,
 				start, (uint)count);
 		} }
 	}
