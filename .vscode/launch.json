@@ -1,42 +1,16 @@
 {
   "version": "0.2.0",
   "configurations": [{
-    // Unfortunately, unlike most other .NET tools, vsdbg is not open source and
-    // only licensed to work with official Microsoft IDEs, which doesn't include
-    // OSS builds of VS Code. (https://aka.ms/VSCode-DotNet-DbgLicense)
-
     "name": "Launch Client (CoreCLR)",
     "type": "coreclr",
     "request": "launch",
     "preLaunchTask": "build",
 
     "cwd": "${workspaceFolder}",
-    "program": "${workspaceFolder}/src/Immersion/bin/Debug/netcoreapp3.0/Immersion.dll",
+    "program": "${workspaceFolder}/src/Immersion/bin/Debug/net5.0/Immersion.dll",
     "args": [],
 
     "console": "internalConsole",
     "stopAtEntry": false,
-  },{
-    // https://github.com/Samsung/netcoredbg
-    // FIXME: Doesn't currently appear to work with this project.
-
-    "name": "Launch Client (netcoredbg)",
-    "type": "coreclr",
-    "request": "launch",
-    "preLaunchTask": "build",
-
-    "cwd": "${workspaceFolder}",
-    "program": "${workspaceFolder}/src/Immersion/bin/Debug/netcoreapp3.0/Immersion.dll",
-    "args": [],
-
-    "console": "internalConsole",
-    "stopAtEntry": false,
-
-    "pipeTransport": {
-      "debuggerPath": "netcoredbg",
-      "pipeCwd": "${workspaceFolder}",
-      "pipeProgram": "bash",
-      "pipeArgs": ["-c"]
-    }
   }]
 }
