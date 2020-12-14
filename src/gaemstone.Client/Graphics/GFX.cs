@@ -9,14 +9,16 @@ namespace gaemstone.Client.Graphics
 {
 	public static class GFX
 	{
-		public static GL GL { get; private set; } = null!;
-		public static bool IsInitialized => (GL != null);
+		private static GL? _gl;
+		public static GL GL => _gl
+			?? throw new InvalidOperationException("OpenGL has not been initialized");
+		public static bool IsInitialized => (_gl != null);
 
 		public static event Action<DebugSource, DebugType, int, DebugSeverity, string>? OnDebugOutput;
 
 		public static void Initialize(IGLContextSource glContextSource)
 		{
-			GL = GL.GetApi(glContextSource);
+			_gl = GL.GetApi(glContextSource);
 
 			GL.Enable(GLEnum.DebugOutput);
 			GL.DebugMessageCallback(

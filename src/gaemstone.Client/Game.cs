@@ -1,5 +1,4 @@
 using System;
-using System.Drawing;
 using System.IO;
 using System.Numerics;
 using gaemstone.Client.Components;
@@ -17,7 +16,10 @@ namespace gaemstone.Client
 	public abstract class Game : Universe
 	{
 		public IWindow Window { get; }
-		public IInputContext Input { get; private set; } = null!;
+
+		private IInputContext? _input;
+		public IInputContext Input => _input
+			?? throw new InvalidOperationException("Cannot access Input before Run has been called");
 
 		public Game()
 		{
@@ -49,7 +51,7 @@ namespace gaemstone.Client
 
 		protected virtual void OnLoad()
 		{
-			Input = Window.CreateInput();
+			_input = Window.CreateInput();
 
 			GFX.Initialize(Window);
 			GFX.OnDebugOutput += (source, type, id, severity, message) =>

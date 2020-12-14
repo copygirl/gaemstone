@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using gaemstone.Common.ECS;
 using gaemstone.Common.ECS.Processors;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
-using SixLabors.ImageSharp.Advanced;
 using SixLabors.ImageSharp.PixelFormats;
 using Size = System.Drawing.Size;
 
