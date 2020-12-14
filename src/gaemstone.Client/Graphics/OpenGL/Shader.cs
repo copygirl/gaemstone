@@ -28,8 +28,8 @@ namespace gaemstone.Client.Graphics
 		} }
 
 		public string Label {
-			get => GFX.GetObjectLabel(ObjectLabelIdentifier.Shader, Handle);
-			set => GFX.SetObjectLabel(ObjectLabelIdentifier.Shader, Handle, value);
+			get => GFX.GetObjectLabel(ObjectIdentifier.Shader, Handle);
+			set => GFX.SetObjectLabel(ObjectIdentifier.Shader, Handle, value);
 		}
 
 		public string Source {

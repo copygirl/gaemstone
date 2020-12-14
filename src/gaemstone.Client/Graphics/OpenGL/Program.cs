@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Silk.NET.OpenGL;
 
 namespace gaemstone.Client.Graphics
@@ -25,8 +26,8 @@ namespace gaemstone.Client.Graphics
 		private Program(uint handle) => Handle = handle;
 
 		public string Label {
-			get => GFX.GetObjectLabel(ObjectLabelIdentifier.Program, Handle);
-			set => GFX.SetObjectLabel(ObjectLabelIdentifier.Program, Handle, value);
+			get => GFX.GetObjectLabel(ObjectIdentifier.Program, Handle);
+			set => GFX.SetObjectLabel(ObjectIdentifier.Program, Handle, value);
 		}
 
 
@@ -48,20 +49,16 @@ namespace gaemstone.Client.Graphics
 		public ICollection<Shader> GetAttachedShaders()
 		{
 			GFX.GL.GetProgram(Handle, ProgramPropertyARB.AttachedShaders, out var count);
-			Span<uint> countSpan   = stackalloc uint[1];
-			Span<uint> shadersSpan = stackalloc uint[count];
-			GFX.GL.GetAttachedShaders(Handle, (uint)count, countSpan, shadersSpan);
-
-			var shaders = new List<Shader>(count);
-			foreach (var handle in shadersSpan) shaders.Add(new Shader(handle));
-			return shaders;
+			var shaders = new uint[count];
+			GFX.GL.GetAttachedShaders(Handle, (uint)count, out var _, out shaders[0]);
+			return shaders.Select(handle => new Shader(handle)).ToArray();
 		}
 
 		public void DetachAndDeleteShaders()
 		{
-			var shaders = GetAttachedShaders();
-			foreach (var shader in shaders) Detach(shader);
-			foreach (var shader in shaders) shader.Delete();
+			// var shaders = GetAttachedShaders();
+			// foreach (var shader in shaders) Detach(shader);
+			// foreach (var shader in shaders) shader.Delete();
 		}
 
 

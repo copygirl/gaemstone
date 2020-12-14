@@ -19,14 +19,12 @@ namespace gaemstone.Client.Graphics
 			GL = GL.GetApi(glContextSource);
 
 			GL.Enable(GLEnum.DebugOutput);
-			unsafe {
-				GL.DebugMessageCallback(
-					(source, type, id, severity, length, message, userParam) =>
-						OnDebugOutput?.Invoke(
-							(DebugSource)source, (DebugType)type, id,
-							(DebugSeverity)severity, Marshal.PtrToStringAnsi(message)!),
-					null);
-			}
+			GL.DebugMessageCallback(
+				(source, type, id, severity, length, message, userParam) =>
+					OnDebugOutput?.Invoke(
+						(DebugSource)source, (DebugType)type, id,
+						(DebugSeverity)severity, Marshal.PtrToStringAnsi(message)),
+				ReadOnlySpan<byte>.Empty);
 
 			GL.Enable(EnableCap.CullFace);
 			GL.CullFace(CullFaceMode.Back);
@@ -56,64 +54,17 @@ namespace gaemstone.Client.Graphics
 
 		private static int MAX_LABEL_LENGTH;
 		private static string? LABEL_BUFFER;
-		public static string GetObjectLabel(ObjectLabelIdentifier identifier, uint handle)
+		public static string GetObjectLabel(ObjectIdentifier identifier, uint handle)
 		{
 			if (MAX_LABEL_LENGTH == 0) {
 				// One-time initialization.
 				MAX_LABEL_LENGTH = GL.GetInteger(GLEnum.MaxLabelLength);
 				LABEL_BUFFER     = new string(' ', MAX_LABEL_LENGTH);
 			}
-			GL.GetObjectLabel((GLEnum)identifier, handle, (uint)MAX_LABEL_LENGTH, out var length, out LABEL_BUFFER);
+			GL.GetObjectLabel(identifier, handle, (uint)MAX_LABEL_LENGTH, out var length, out LABEL_BUFFER);
 			return LABEL_BUFFER.Substring(0, (int)length);
 		}
-		public static void SetObjectLabel(ObjectLabelIdentifier identifier, uint handle, string label)
-			=> GL.ObjectLabel((GLEnum)identifier, handle, (uint)label.Length, label);
-	}
-
-	public enum ObjectLabelIdentifier
-	{
-		Buffer            = GLEnum.Buffer,
-		Shader            = GLEnum.Shader,
-		Program           = GLEnum.Program,
-		// FIXME: GLEnum.VertexArray doesn't exist.
-		// VertexArray       = GLEnum.VertexArray,
-		Query             = GLEnum.Query,
-		ProgramPipeline   = GLEnum.ProgramPipeline,
-		TransformFeedback = GLEnum.TransformFeedback,
-		Sampler           = GLEnum.Sampler,
-		Texture           = GLEnum.Texture,
-		Renderbuffer      = GLEnum.Renderbuffer,
-		Framebuffer       = GLEnum.Framebuffer
-	}
-
-	public enum DebugSource
-	{
-		Api            = GLEnum.DebugSourceApi,
-		WindowSystem   = GLEnum.DebugSourceWindowSystem,
-		ShaderCompiler = GLEnum.DebugSourceShaderCompiler,
-		ThirdParty     = GLEnum.DebugSourceThirdParty,
-		Application    = GLEnum.DebugSourceApplication,
-		Other          = GLEnum.DebugSourceOther,
-	}
-
-	public enum DebugType
-	{
-		Error              = GLEnum.DebugTypeError,
-		DeprecatedBehavior = GLEnum.DebugTypeDeprecatedBehavior,
-		UndefinedBehavior  = GLEnum.DebugTypeUndefinedBehavior,
-		Portability        = GLEnum.DebugTypePortability,
-		Performance        = GLEnum.DebugTypePerformance,
-		Marker             = GLEnum.DebugTypeMarker,
-		PushGroup          = GLEnum.DebugTypePushGroup,
-		PopGroup           = GLEnum.DebugTypePopGroup,
-		Other              = GLEnum.DebugTypeOther,
-	}
-
-	public enum DebugSeverity
-	{
-		High         = GLEnum.DebugSeverityHigh,
-		Medium       = GLEnum.DebugSeverityMedium,
-		Low          = GLEnum.DebugSeverityLow,
-		Notification = GLEnum.DebugSeverityNotification,
+		public static void SetObjectLabel(ObjectIdentifier identifier, uint handle, string label)
+			=> GL.ObjectLabel(identifier, handle, (uint)label.Length, label);
 	}
 }
