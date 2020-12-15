@@ -6,15 +6,17 @@ namespace gaemstone.Common.ECS
 {
 	public class Universe
 	{
-		public EntityManager Entities { get; }
+		public EntityManager    Entities   { get; }
 		public ComponentManager Components { get; }
 		public ProcessorManager Processors { get; }
+		public QueryManager     Queries    { get; }
 
 		public Universe()
 		{
 			Entities   = new EntityManager();
 			Components = new ComponentManager(Entities);
 			Processors = new ProcessorManager(this);
+			Queries    = new QueryManager(this);
 		}
 
 		public T Get<T>(Entity entity)

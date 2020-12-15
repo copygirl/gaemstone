@@ -9,6 +9,20 @@ using Silk.NET.OpenGL;
 
 namespace gaemstone.Client.Graphics
 {
+	public interface ICamera
+	{
+		Camera Camera { get; }
+		Transform Transform { get; set; }
+	}
+
+	public interface IRenderable
+	{
+		Mesh Mesh { get; }
+		Transform Transform { get; }
+		Texture? Texture { get; }
+		SpriteIndex? SpriteIndex { get; }
+	}
+
 	public class Renderer : IProcessor
 	{
 		private Game _game = null!;
@@ -47,7 +61,7 @@ namespace gaemstone.Client.Graphics
 			GFX.Clear(Color.Indigo);
 			_program.Use();
 
-			Aspect<ICameraAspect>.ForEach(_game, camera => {
+			_game.Queries.Run<ICamera>(camera => {
 				// Get the camera's transform matrix and invert it.
 				Matrix4x4.Invert(camera.Transform, out var cameraTransform);
 				// Create the camera's projection matrix, either ortho or perspective.
@@ -61,7 +75,7 @@ namespace gaemstone.Client.Graphics
 				// Set the uniform to the combined transform and projection.
 				_cameraMatrixUniform.Set(cameraTransform * cameraProjection);
 
-				Aspect<IRenderableAspect>.ForEach(_game, renderable => {
+				_game.Queries.Run<IRenderable>(renderable => {
 					_modelMatrixUniform.Set(renderable.Transform);
 					// If entity has Texture, bind it now.
 					if (renderable.Texture != null) renderable.Texture.Value.Bind();
@@ -80,19 +94,5 @@ namespace gaemstone.Client.Graphics
 
 			VertexArray.Unbind();
 		}
-	}
-
-	public interface ICameraAspect
-	{
-		Camera Camera { get; }
-		Transform Transform { get; set; }
-	}
-
-	public interface IRenderableAspect
-	{
-		Mesh Mesh { get; }
-		Transform Transform { get; }
-		Texture? Texture { get; }
-		SpriteIndex? SpriteIndex { get; }
 	}
 }
