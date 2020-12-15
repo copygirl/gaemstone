@@ -25,6 +25,9 @@ namespace gaemstone.Common.ECS.Stores
 			return entry.Value;
 		}
 
+		public bool Has(uint entityID)
+			=> _dict.TryGetEntry(GetBehavior.Default, entityID).HasValue;
+
 		public bool TryGet(uint entityID, out T value)
 		{
 			ref var entry = ref _dict.TryGetEntry(GetBehavior.Default, entityID);

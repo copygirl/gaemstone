@@ -10,6 +10,7 @@ namespace gaemstone.Common.ECS.Stores
 		event ComponentAddedHandler? ComponentAdded;
 		event ComponentRemovedHandler? ComponentRemoved;
 
+		bool Has(uint entityID);
 		void Remove(uint entityID);
 
 		Enumerator GetEnumerator();

@@ -107,6 +107,9 @@ namespace gaemstone.Common.ECS.Stores
 		public ref T GetRef(uint entityID)
 			=> ref _components[FindIndexOrThrow(entityID)];
 
+		public bool Has(uint entityID)
+			=> TryFindIndex(entityID, out _);
+
 		public void Set(uint entityID, T value)
 			=> this[GetOrCreateIndex(entityID)] = value;
 
