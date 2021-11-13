@@ -56,9 +56,9 @@ namespace gaemstone.Client.Graphics
 
 		public void DetachAndDeleteShaders()
 		{
-			// var shaders = GetAttachedShaders();
-			// foreach (var shader in shaders) Detach(shader);
-			// foreach (var shader in shaders) shader.Delete();
+			var shaders = GetAttachedShaders();
+			foreach (var shader in shaders) Detach(shader);
+			foreach (var shader in shaders) shader.Delete();
 		}
 
 

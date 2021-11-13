@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using gaemstone.Common.Collections;
 using gaemstone.Common.Utility;
 
@@ -18,22 +19,15 @@ namespace gaemstone.Common.ECS.Stores
 		public event ComponentChangedHandler<T>? ComponentChanged;
 
 
-		public T Get(uint entityID)
-		{
-			ref var entry = ref _dict.TryGetEntry(GetBehavior.Default, entityID);
-			if (!entry.HasValue) throw new ComponentNotFoundException(this, entityID);
-			return entry.Value;
-		}
-
-		public bool Has(uint entityID)
-			=> _dict.TryGetEntry(GetBehavior.Default, entityID).HasValue;
-
-		public bool TryGet(uint entityID, out T value)
+		public bool TryGet(uint entityID, [NotNullWhen(true)] out T value)
 		{
 			ref var entry = ref _dict.TryGetEntry(GetBehavior.Default, entityID);
 			value = (entry.HasValue ? entry.Value : default(T)!);
 			return entry.HasValue;
 		}
+
+		public bool Has(uint entityID)
+			=> _dict.TryGetEntry(GetBehavior.Default, entityID).HasValue;
 
 		public void Set(uint entityID, T value)
 		{
@@ -46,15 +40,15 @@ namespace gaemstone.Common.ECS.Stores
 			entry.Value = value;
 		}
 
-		public void Remove(uint entityID)
+		public bool Remove(uint entityID)
 		{
 			var previousCount = _dict.Count;
 			ref var entry = ref _dict.TryGetEntry(GetBehavior.Remove, entityID);
 			if (_dict.Count < previousCount) {
 				ComponentRemoved?.Invoke(entityID);
 				ComponentChanged?.Invoke(entityID, ref entry.Value, ref RefHelper.Null<T>());
-			}
-			else throw new ComponentNotFoundException(this, entityID);
+				return true;
+			} else return false;
 		}
 
 
@@ -70,8 +64,9 @@ namespace gaemstone.Common.ECS.Stores
 			public Enumerator(RefDictionary<uint, T> dict)
 				=> _dictEnumerator = dict.GetEnumerator();
 
+			object IComponentStore.Enumerator.CurrentComponent => _dictEnumerator.Current.Value!;
+			public T CurrentComponent => _dictEnumerator.Current.Value!;
 			public uint CurrentEntityID => _dictEnumerator.Current.Key;
-			public T CurrentComponent => _dictEnumerator.Current.Value;
 			public bool MoveNext() => _dictEnumerator.MoveNext();
 		}
 	}

@@ -1,9 +1,16 @@
 using System;
 using System.Collections.Generic;
-using gaemstone.Common.Utility;
+using System.Diagnostics;
 
 namespace gaemstone.Common.Collections
 {
+	public enum GetBehavior
+	{
+		Default,
+		Create,
+		Remove,
+	}
+
 	public class RefDictionary<TKey, TValue>
 		where TKey : struct
 	{
@@ -57,7 +64,7 @@ namespace gaemstone.Common.Collections
 
 		private void Initialize(int capacity)
 		{
-			int size = HashHelper.GetPrime(capacity);
+			int size = HashHelpers.GetPrime(capacity);
 			_buckets = new int[size];
 			_entries = new Entry[size];
 			ArrayFill(_buckets, -1);
@@ -68,7 +75,7 @@ namespace gaemstone.Common.Collections
 		{
 			if (_count == 0) return;
 			ArrayFill(_buckets!, -1);
-			Array.Clear(_entries, 0, _count);
+			Array.Clear(_entries!, 0, _count);
 			_count     =  0;
 			_freeEntry = -1;
 			_freeCount =  0;
@@ -76,7 +83,7 @@ namespace gaemstone.Common.Collections
 		}
 
 		private void Resize()
-			=> Resize(HashHelper.ExpandPrime(_count));
+			=> Resize(HashHelpers.ExpandPrime(_count));
 
 		private void Resize(int newSize)
 		{
@@ -212,12 +219,60 @@ namespace gaemstone.Common.Collections
 
 			public ref Entry Current => ref _dict._entries![_index];
 		}
-	}
 
-	public enum GetBehavior
-	{
-		Default,
-		Create,
-		Remove,
+
+		static class HashHelpers
+		{
+			// CoreLib => System.Collections.HashHelpers
+			// https://github.com/dotnet/coreclr/blob/master/src/System.Private.CoreLib/shared/System/Collections/HashHelpers.cs
+
+			public const int MAX_PRIME_ARRAY_LENGTH = 0x7FEFFFFD;
+
+			public const int HASH_PRIME = 101;
+
+			private static readonly int[] _primes = {
+				3, 7, 11, 17, 23, 29, 37, 47, 59, 71, 89, 107, 131, 163, 197, 239, 293, 353, 431, 521, 631, 761, 919,
+				1103, 1327, 1597, 1931, 2333, 2801, 3371, 4049, 4861, 5839, 7013, 8419, 10103, 12143, 14591, 17519,
+				21023, 25229, 30293, 36353, 43627, 52361, 62851, 75431, 90523, 108631, 130363, 156437, 187751, 225307,
+				270371, 324449, 389357, 467237, 560689, 672827, 807403, 968897, 1162687, 1395263, 1674319, 2009191,
+				2411033, 2893249, 3471899, 4166287, 4999559, 5999471, 7199369
+			};
+
+			public static bool IsPrime(int candidate)
+			{
+				if ((candidate & 1) != 0) {
+					int limit = (int)Math.Sqrt(candidate);
+					for (int divisor = 3; divisor <= limit; divisor += 2)
+						if ((candidate % divisor) == 0)
+							return false;
+					return true;
+				}
+				return (candidate == 2);
+			}
+
+			public static int GetPrime(int min)
+			{
+				if (min < 0) throw new ArgumentOutOfRangeException(nameof(min));
+				for (int i = 0; i < _primes.Length; i++) {
+					int prime = _primes[i];
+					if (prime >= min)
+						return prime;
+				}
+				for (int i = (min | 1); i < int.MaxValue; i += 2)
+					if (IsPrime(i) && ((i - 1) % HASH_PRIME != 0))
+						return i;
+				return min;
+			}
+
+			public static int ExpandPrime(int oldSize)
+			{
+				int newSize = 2 * oldSize;
+				if (((uint)newSize > MAX_PRIME_ARRAY_LENGTH) && (MAX_PRIME_ARRAY_LENGTH > oldSize)) {
+					Debug.Assert(MAX_PRIME_ARRAY_LENGTH == GetPrime(MAX_PRIME_ARRAY_LENGTH), "Invalid MaxPrimeArrayLength");
+					return MAX_PRIME_ARRAY_LENGTH;
+				}
+				return GetPrime(newSize);
+			}
+		}
 	}
 }

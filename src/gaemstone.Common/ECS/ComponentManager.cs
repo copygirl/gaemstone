@@ -44,7 +44,9 @@ namespace gaemstone.Common.ECS
 		public IComponentStore GetStore(int storeIndex)
 			=> _stores[storeIndex];
 		public IComponentStore GetStore(Type componentType)
-			=> GetStore(_byType[componentType]);
+			=> _byType.TryGetValue(componentType, out var index)
+				? _stores[index] : throw new InvalidOperationException(
+					$"No IComponentStore for type {componentType}");
 		public IComponentStore<T> GetStore<T>()
 			=> (IComponentStore<T>)GetStore(typeof(T));
 

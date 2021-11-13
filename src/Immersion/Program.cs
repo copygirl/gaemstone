@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using gaemstone.Bloxel;
 using gaemstone.Bloxel.Chunks;
 using gaemstone.Bloxel.Client;
 using gaemstone.Client;
@@ -27,7 +26,7 @@ namespace Immersion
 			Window.Title = "gæmstone: Immersion";
 			Components.AddStore(new PackedArrayStore<TextureCoords4>());
 			Components.AddStore(new LookupDictionaryStore<ChunkPos, Chunk>(chunk => chunk.Position));
-			Components.AddStore(new DictionaryStore<ChunkPaletteStorage<Block>>());
+			Components.AddStore(new DictionaryStore<ChunkPaletteStorage<Prototype>>());
 		}
 
 
@@ -64,15 +63,15 @@ namespace Immersion
 			void CreateChunk(ChunkPos pos)
 			{
 				var chunk = Entities.New();
-				var storage = new ChunkPaletteStorage<Block>(default(Block));
+				var storage = new ChunkPaletteStorage<Prototype>(default(Prototype));
 				for (var x = 0; x < 16; x++)
 				for (var y = 0; y < 16; y++)
 				for (var z = 0; z < 16; z++) {
 					var yy = (pos.Y << 4) | y;
 					if (RND.NextBool(0.5 - yy / 48.0))
-						storage[x, y, z] = new Block((yy >  16) ? grass
-						                           : (yy > -16) ? dirt
-						                                        : stone);
+						storage[x, y, z] = new Prototype((yy >  16) ? grass
+						                               : (yy > -16) ? dirt
+						                                            : stone);
 				}
 
 				Set(chunk, new Chunk(pos));

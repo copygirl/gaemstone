@@ -5,6 +5,7 @@ using gaemstone.Bloxel.Chunks;
 using gaemstone.Client;
 using gaemstone.Client.Graphics;
 using gaemstone.Common.ECS.Stores;
+using gaemstone.Common.Components;
 
 namespace gaemstone.Bloxel.Client
 {
@@ -59,7 +60,7 @@ namespace gaemstone.Bloxel.Client
 		private readonly Game _game;
 		private readonly MeshManager _meshManager;
 		private readonly LookupDictionaryStore<ChunkPos, Chunk> _chunkStore;
-		private readonly IComponentStore<ChunkPaletteStorage<Block>> _storageStore;
+		private readonly IComponentStore<ChunkPaletteStorage<Prototype>> _storageStore;
 		private readonly IComponentStore<TextureCoords4> _textureCellStore;
 
 		private ushort[] _indices = new ushort[STARTING_CAPACITY];
@@ -72,13 +73,13 @@ namespace gaemstone.Bloxel.Client
 			_game = game;
 			_meshManager = game.Processors.GetOrThrow<MeshManager>();
 			_chunkStore       = (LookupDictionaryStore<ChunkPos, Chunk>)game.Components.GetStore<Chunk>();
-			_storageStore     = game.Components.GetStore<ChunkPaletteStorage<Block>>();
+			_storageStore     = game.Components.GetStore<ChunkPaletteStorage<Prototype>>();
 			_textureCellStore = game.Components.GetStore<TextureCoords4>();
 		}
 
 		public Mesh? Generate(ChunkPos chunkPos)
 		{
-			var storages = new ChunkPaletteStorage<Block>[3, 3, 3];
+			var storages = new ChunkPaletteStorage<Prototype>[3, 3, 3];
 			foreach (var (x, y, z) in Neighbors.ALL.Prepend(Neighbor.None))
 				if (_chunkStore.TryGetEntityID(chunkPos.Add(x, y, z), out var neighborID))
 					if (_storageStore.TryGet(neighborID, out var storage))
@@ -90,11 +91,11 @@ namespace gaemstone.Bloxel.Client
 			for (var x = 0; x < 16; x++)
 			for (var y = 0; y < 16; y++)
 			for (var z = 0; z < 16; z++) {
-				var block = centerStorage[x, y, z];
-				if (block.Prototype.IsNone) continue;
+				var block = centerStorage[x, y, z].Value;
+				if (block.IsNone) continue;
 
 				var blockVertex = new Vector3(x, y, z);
-				var textureCell = _textureCellStore.Get(block.Prototype.ID);
+				_textureCellStore.TryGet(block.ID, out var textureCell);
 
 				foreach (var facing in BlockFacings.ALL) {
 					if (!IsNeighborEmpty(storages, x, y, z, facing)) continue;
@@ -135,7 +136,7 @@ namespace gaemstone.Bloxel.Client
 		}
 
 		private bool IsNeighborEmpty(
-			ChunkPaletteStorage<Block>[,,] storages,
+			ChunkPaletteStorage<Prototype>[,,] storages,
 			int x, int y, int z, BlockFacing facing)
 		{
 			var cx = 1; var cy = 1; var cz = 1;
@@ -147,7 +148,7 @@ namespace gaemstone.Bloxel.Client
 				case BlockFacing.South : z += 1; if (z >= 16) cz += 1; break;
 				case BlockFacing.North : z -= 1; if (z <   0) cz -= 1; break;
 			}
-			return storages[cx, cy, cz]?[x & 0b1111, y & 0b1111, z & 0b1111].Prototype.IsNone ?? true;
+			return storages[cx, cy, cz]?[x & 0b1111, y & 0b1111, z & 0b1111].Value.IsNone ?? true;
 		}
 	}
 }

@@ -7,7 +7,7 @@
     "preLaunchTask": "build",
 
     "cwd": "${workspaceFolder}",
-    "program": "${workspaceFolder}/src/Immersion/bin/Debug/net5.0/Immersion.dll",
+    "program": "${workspaceFolder}/src/Immersion/bin/Debug/net6.0/Immersion.dll",
     "args": [],
 
     "console": "internalConsole",

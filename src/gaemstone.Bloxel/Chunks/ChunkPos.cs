@@ -52,7 +52,7 @@ namespace gaemstone.Bloxel.Chunks
 			=> (obj is ChunkPos) && Equals((ChunkPos)obj);
 
 		public override int GetHashCode()
-			=> HashHelper.Combine(X, Y, Z);
+			=> HashCode.Combine(X, Y, Z);
 		public override string ToString()
 			=> $"ChunkPos ({X}:{Y}:{Z})";
 		public string ToShortString()

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace gaemstone.Common.ECS.Stores
 {
@@ -10,13 +11,15 @@ namespace gaemstone.Common.ECS.Stores
 		event ComponentAddedHandler? ComponentAdded;
 		event ComponentRemovedHandler? ComponentRemoved;
 
+		bool TryGet(uint entityID, out object value);
 		bool Has(uint entityID);
-		void Remove(uint entityID);
+		bool Remove(uint entityID);
 
 		Enumerator GetEnumerator();
 
 		interface Enumerator
 		{
+			object CurrentComponent { get; }
 			uint CurrentEntityID { get; }
 			bool MoveNext();
 		}
@@ -25,21 +28,28 @@ namespace gaemstone.Common.ECS.Stores
 	public interface IComponentStore<T>
 		: IComponentStore
 	{
-		T Get(uint entityID);
-		bool TryGet(uint entityID, out T value);
+		bool TryGet(uint entityID, [NotNullWhen(true)] out T value);
 		void Set(uint entityID, T value);
+
+		bool IComponentStore.TryGet(uint entityID, [NotNullWhen(true)] out object value)
+		{
+			var result = TryGet(entityID, out var _value);
+			value = _value!;
+			return result;
+		}
 
 		new Enumerator GetEnumerator();
 
 		new interface Enumerator
 			: IComponentStore.Enumerator
 		{
-			T CurrentComponent { get; }
+			new T CurrentComponent { get; }
 		}
 	}
 
 	public interface IComponentRefStore<T>
-		: IComponentStore<T>
+			: IComponentStore<T>
+		where T : struct
 	{
 		ref T GetRef(uint entityID);
 
@@ -55,16 +65,4 @@ namespace gaemstone.Common.ECS.Stores
 	public delegate void ComponentAddedHandler(uint entityID);
 	public delegate void ComponentRemovedHandler(uint entityID);
 	public delegate void ComponentChangedHandler<T>(uint entityID, ref T oldValue, ref T newValue);
-
-
-	public class ComponentNotFoundException
-		: InvalidOperationException
-	{
-		public IComponentStore Store { get; }
-		public uint EntityID { get; }
-
-		public ComponentNotFoundException(IComponentStore store, uint entityID)
-			: base($"No component associated with entity ID {entityID}")
-				=> (Store, EntityID) = (store, entityID);
-	}
 }

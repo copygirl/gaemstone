@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace gaemstone.Common.ECS
 {
 	public interface IEntityRef
@@ -8,14 +10,30 @@ namespace gaemstone.Common.ECS
 		bool IsAlive
 			=> Universe.Entities.IsAlive(Entity);
 
+		bool TryGet<T>([NotNullWhen(true)] out T value)
+			=> Universe.TryGet<T>(Entity, out value);
 		T Get<T>()
-			=> Universe.Get<T>(Entity);
+			=> TryGet<T>(out var value) ? value
+				: throw new ComponentNotFoundException(typeof(T), this);
 		bool Has<T>(Entity entity)
-			=> Universe.Has<T>(Entity);
+			=> TryGet<T>(out _);
+
 		void Set<T>(Entity entity, T value)
 			=> Universe.Set<T>(Entity, value);
 
 		void Destroy()
 			=> Universe.Entities.Destroy(Entity);
+	}
+
+	public readonly struct SimpleEntityRef
+	{
+		public Universe Universe { get; }
+		public Entity Entity { get; }
+
+		public SimpleEntityRef(Universe universe, Entity entity)
+		{
+			Universe = universe;
+			Entity   = entity;
+		}
 	}
 }

@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using gaemstone.Common.Utility;
 
 namespace gaemstone.Common.ECS.Stores
 {
@@ -73,9 +75,6 @@ namespace gaemstone.Common.ECS.Stores
 			=> _indices.TryGetValue(entityID, out index);
 		public int? FindIndex(uint entityID)
 			=> _indices.TryGetValue(entityID, out var index) ? index : (int?)null;
-		public int FindIndexOrThrow(uint entityID)
-			=> _indices.TryGetValue(entityID, out var index) ? index
-				: throw new ComponentNotFoundException(this, entityID);
 
 		public int GetOrCreateIndex(uint entityID)
 		{
@@ -94,10 +93,7 @@ namespace gaemstone.Common.ECS.Stores
 		}
 
 
-		public T Get(uint entityID)
-			=> this[FindIndexOrThrow(entityID)];
-
-		public bool TryGet(uint entityID, out T value)
+		public bool TryGet(uint entityID, [NotNullWhen(true)] out T value)
 		{
 			var found = TryFindIndex(entityID, out var index);
 			value = (found ? this[index] : default(T));
@@ -105,7 +101,11 @@ namespace gaemstone.Common.ECS.Stores
 		}
 
 		public ref T GetRef(uint entityID)
-			=> ref _components[FindIndexOrThrow(entityID)];
+		{
+			if (TryFindIndex(entityID, out var index))
+				return ref _components[index];
+			else return ref RefHelper.Null<T>();
+		}
 
 		public bool Has(uint entityID)
 			=> TryFindIndex(entityID, out _);
@@ -113,8 +113,13 @@ namespace gaemstone.Common.ECS.Stores
 		public void Set(uint entityID, T value)
 			=> this[GetOrCreateIndex(entityID)] = value;
 
-		public void Remove(uint entityID)
-			=> RemoveByIndex(FindIndexOrThrow(entityID));
+		public bool Remove(uint entityID)
+		{
+			if (TryFindIndex(entityID, out var index)) {
+				RemoveByIndex(index);
+				return true;
+			} else return false;
+		}
 
 
 		private void Resize(int newCapacity)
@@ -152,9 +157,10 @@ namespace gaemstone.Common.ECS.Stores
 			public Enumerator(PackedArrayStore<T> store)
 				=> (_store, _index) = (store, -1);
 
-			public uint CurrentEntityID => _store._entityIDs[_index];
-			public ref T CurrentComponent => ref _store._components[_index];
+			object IComponentStore.Enumerator.CurrentComponent => _store._components[_index];
 			T IComponentStore<T>.Enumerator.CurrentComponent => _store._components[_index];
+			public ref T CurrentComponent => ref _store._components[_index];
+			public uint CurrentEntityID => _store._entityIDs[_index];
 			public bool MoveNext() => (++_index < _store.Count);
 		}
 	}

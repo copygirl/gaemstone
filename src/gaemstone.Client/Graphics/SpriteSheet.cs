@@ -29,7 +29,7 @@ namespace gaemstone.Client.Graphics
 			while (reader.Read()) {
 				if (reader.TokenType == JsonTokenType.EndObject) break;
 				Expect(ref reader, JsonTokenType.PropertyName);
-				var spriteName = reader.GetString();
+				var spriteName = reader.GetString()!;
 
 				Point? location = null;
 				Size?  size     = null;

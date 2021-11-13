@@ -62,11 +62,11 @@ namespace gaemstone.Bloxel
 
 		public bool Equals(BlockPos other)
 			=> (X == other.X) && (Y == other.Y) && (Z == other.Z);
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 			=> (obj is BlockPos) && Equals((BlockPos)obj);
 
 		public override int GetHashCode()
-			=> HashHelper.Combine(X, Y, Z);
+			=> HashCode.Combine(X, Y, Z);
 		public override string ToString()
 			=> $"BlockPos ({X}:{Y}:{Z})";
 		public string ToShortString()

@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using Microsoft.DotNet.PlatformAbstractions;
 using Silk.NET.Core.Contexts;
 using Silk.NET.OpenGL;
 
@@ -10,8 +12,8 @@ namespace gaemstone.Client.Graphics
 	public static class GFX
 	{
 		private static GL? _gl;
-		public static GL GL => _gl
-			?? throw new InvalidOperationException("OpenGL has not been initialized");
+		public static GL GL => _gl ?? throw new InvalidOperationException(
+			"OpenGL has not been initialized");
 		public static bool IsInitialized => (_gl != null);
 
 		public static event Action<DebugSource, DebugType, int, DebugSeverity, string>? OnDebugOutput;
@@ -20,13 +22,16 @@ namespace gaemstone.Client.Graphics
 		{
 			_gl = GL.GetApi(glContextSource);
 
-			GL.Enable(GLEnum.DebugOutput);
-			GL.DebugMessageCallback(
-				(source, type, id, severity, length, message, userParam) =>
-					OnDebugOutput?.Invoke(
-						(DebugSource)source, (DebugType)type, id,
-						(DebugSeverity)severity, Marshal.PtrToStringAnsi(message)),
-				ReadOnlySpan<byte>.Empty);
+			// FIXME: Debugger currently doesn't like us specifying a callback.
+			if (!Debugger.IsAttached) {
+				GL.Enable(GLEnum.DebugOutput);
+				GL.DebugMessageCallback(
+					(source, type, id, severity, length, message, userParam) =>
+						OnDebugOutput?.Invoke(
+							(DebugSource)source, (DebugType)type, id,
+							(DebugSeverity)severity, Marshal.PtrToStringAnsi(message, length)),
+					false);
+			}
 
 			GL.Enable(EnableCap.CullFace);
 			GL.CullFace(CullFaceMode.Back);

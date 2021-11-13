@@ -113,10 +113,10 @@ namespace gaemstone.Bloxel.Chunks
 		// public void FitPalette() {
 		// 	if (_usedPalettes > Mathf.NearestPo2(_usedPalettes) / 2) return;
 
-		// 	// decode all indices
-		// 	int[] indices = new int[size];
-		// 	for(int i = 0; i < indices.length; i++) {
-		// 	indices[i] = data.get(i * indicesLength, indicesLength);
+		// 		// decode all indices
+		// 		int[] indices = new int[size];
+		// 		for(int i = 0; i < indices.length; i++) {
+		// 		indices[i] = data.get(i * indicesLength, indicesLength);
 		// 	}
 
 		// 	// Create new palette, halfing it in size
@@ -126,15 +126,15 @@ namespace gaemstone.Bloxel.Chunks
 		// 	// We gotta compress the palette entries!
 		// 	int paletteCounter = 0;
 		// 	for(int pi = 0; pi < palette.length; pi++, paletteCounter++) {
-		// 	PaletteEntry entry = newPalette[paletteCounter] = palette[pi];
+		// 		PaletteEntry entry = newPalette[paletteCounter] = palette[pi];
 
-		// 	// Re-encode the indices (find and replace; with limit)
-		// 	for(int di = 0, fc = 0; di < indices.length && fc < entry.refcount; di++) {
-		// 		if(pi == indices[di]) {
-		// 		indices[di] = paletteCounter;
-		// 		fc += 1;
+		// 		// Re-encode the indices (find and replace; with limit)
+		// 		for(int di = 0, fc = 0; di < indices.length && fc < entry.refcount; di++) {
+		// 			if(pi == indices[di]) {
+		// 				indices[di] = paletteCounter;
+		// 				fc += 1;
+		// 			}
 		// 		}
-		// 	}
 		// 	}
 
 		// 	// Allocate new BitBuffer

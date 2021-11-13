@@ -9,22 +9,22 @@ using Silk.NET.OpenGL;
 
 namespace gaemstone.Client.Graphics
 {
-	public interface ICamera
-	{
-		Camera Camera { get; }
-		Transform Transform { get; set; }
-	}
-
-	public interface IRenderable
-	{
-		Mesh Mesh { get; }
-		Transform Transform { get; }
-		Texture? Texture { get; }
-		SpriteIndex? SpriteIndex { get; }
-	}
-
 	public class Renderer : IProcessor
 	{
+		struct CameraQuery
+		{
+			public Camera Camera { get; }
+			public Transform Transform { get; }
+		}
+
+		struct RenderableQuery
+		{
+			public Mesh Mesh { get; }
+			public Transform Transform { get; }
+			public Texture? Texture { get; }
+			public SpriteIndex? SpriteIndex { get; }
+		}
+
 		private Game _game = null!;
 		private Program _program;
 		private UniformMatrix4x4 _cameraMatrixUniform;
@@ -61,34 +61,34 @@ namespace gaemstone.Client.Graphics
 			GFX.Clear(Color.Indigo);
 			_program.Use();
 
-			_game.Queries.Run<ICamera>(camera => {
+			_game.Queries.Run((ref CameraQuery e) => {
 				// Get the camera's transform matrix and invert it.
-				Matrix4x4.Invert(camera.Transform, out var cameraTransform);
+				Matrix4x4.Invert(e.Transform, out var cameraTransform);
 				// Create the camera's projection matrix, either ortho or perspective.
-				var cameraProjection = camera.Camera.IsOrthographic
+				var cameraProjection = e.Camera.IsOrthographic
 					? Matrix4x4.CreateOrthographic(size.X, -size.Y,
-						camera.Camera.NearPlane, camera.Camera.FarPlane)
+						e.Camera.NearPlane, e.Camera.FarPlane)
 					: Matrix4x4.CreatePerspectiveFieldOfView(
-						camera.Camera.FieldOfView * MathF.PI / 180, // Degrees => Radians
-						(float)size.X / size.Y,                     // Aspect Ratio
-						camera.Camera.NearPlane, camera.Camera.FarPlane);
-				// Set the uniform to the combined transform and projection.
+						e.Camera.FieldOfView * MathF.PI / 180, // Degrees => Radians
+						(float)size.X / size.Y,              // Aspect Ratio
+						e.Camera.NearPlane, e.Camera.FarPlane);
+				// Set the uniform to thequery. combined transform and projection.
 				_cameraMatrixUniform.Set(cameraTransform * cameraProjection);
 
-				_game.Queries.Run<IRenderable>(renderable => {
-					_modelMatrixUniform.Set(renderable.Transform);
+				_game.Queries.Run((ref RenderableQuery e) => {
+					_modelMatrixUniform.Set(e.Transform);
 					// If entity has Texture, bind it now.
-					if (renderable.Texture != null) renderable.Texture.Value.Bind();
+					if (e.Texture.HasValue) e.Texture.Value.Bind();
 
 					// If entity has SpriteIndex, only render two
 					// triangles out of the mesh specified by that index.
-					if (renderable.SpriteIndex != null)
-						renderable.Mesh.Draw(renderable.SpriteIndex.Value * 6, 6);
+					if (e.SpriteIndex.HasValue)
+						e.Mesh.Draw(e.SpriteIndex.Value * 6, 6);
 					// Otherwise just render the entire mesh like usual.
-					renderable.Mesh.Draw();
+					e.Mesh.Draw();
 
 					// If entity has Texture, unbind it after it has been rendered.
-					if (renderable.Texture != null) renderable.Texture.Value.Unbind();
+					if (e.Texture.HasValue) e.Texture.Value.Unbind();
 				});
 			});
 

@@ -22,17 +22,29 @@ namespace gaemstone.Common.ECS.Processors
 		}
 
 
-		public void Start(IProcessor processor)
+		private void Start(Type type, IProcessor processor)
 		{
-			_processors.Add(processor.GetType(), processor);
+			_processors.Add(type, processor);
 			processor.OnLoad(_universe);
 			ProcessorLoaded?.Invoke(processor);
 		}
+		// public T Start<T>(Type type)
+		// 	where T : IProcessor
+		// {
+		// 	if (type.IsAbstract || type.IsInterface) throw new ArgumentException(
+		// 		$"Type {type} is not a concrete type that can be instanciated");
+		// 	if (type.GetConstructor(Type.EmptyTypes) == null) throw new ArgumentException(
+		// 		$"Type {type} does not have a parameterless constructor");
+
+		// 	var processor = new T();
+		// 	Start(typeof(T), processor);
+		// 	return processor;
+		// }
 		public T Start<T>()
 			where T : IProcessor, new()
 		{
 			var processor = new T();
-			Start(processor);
+			Start(typeof(T), processor);
 			return processor;
 		}
 

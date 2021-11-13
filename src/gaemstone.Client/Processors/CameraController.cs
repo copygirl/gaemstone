@@ -1,5 +1,5 @@
+using System;
 using System.Drawing;
-using System.Linq;
 using System.Numerics;
 using gaemstone.Client.Components;
 using gaemstone.Common.Components;
@@ -95,29 +95,36 @@ namespace gaemstone.Client.Processors
 			}
 		}
 
-		public void OnUpdate(double delta)
+		struct CameraQuery
 		{
-			var (mainCamera, camera) = _game.GetAll<Camera>().First();
-			var transform = _game.Get<Transform>(mainCamera);
-
-			var xMovement = _mouseMoved.X * (float)delta * _mouseSpeed;
-			var yMovement = _mouseMoved.Y * (float)delta * _mouseSpeed;
-			_mouseMoved = PointF.Empty;
-
-			if (camera.IsOrthographic) {
-				_game.Set(mainCamera, (Transform)(transform * Matrix4x4.CreateTranslation(-xMovement, -yMovement, 0)));
-			} else {
-				var speed = (float)delta * (_fastMovement ? 12 : 4);
-				var forwardMovement = ((_moveForward ? -1 : 0) + (_moveBack  ? 1 : 0)) * speed;
-				var sideMovement    = ((_moveLeft    ? -1 : 0) + (_moveRight ? 1 : 0)) * speed;
-
-				var yawRotation   = Matrix4x4.CreateRotationY(-xMovement / 100, transform.Value.Translation);
-				var pitchRotation = Matrix4x4.CreateRotationX(-yMovement / 100);
-				var translation   = Matrix4x4.CreateTranslation(sideMovement, 0, forwardMovement);
-
-				_game.Set(mainCamera, (Transform)(translation * pitchRotation * transform * yawRotation));
-			}
+			public Camera Camera { get; }
+			public Transform Transform { get; set; }
 		}
 
+		public void OnUpdate(double delta)
+		{
+			_game.Queries.Run((Span<CameraQuery> query) => {
+				if (query.Length == 0) return; // No cameras.
+				ref var e = ref query[0]; // Only first camera found is affected.
+
+				var xMovement = _mouseMoved.X * (float)delta * _mouseSpeed;
+				var yMovement = _mouseMoved.Y * (float)delta * _mouseSpeed;
+				_mouseMoved = PointF.Empty;
+
+				if (e.Camera.IsOrthographic) {
+					e.Transform *= Matrix4x4.CreateTranslation(-xMovement, -yMovement, 0);
+				} else {
+					var speed = (float)delta * (_fastMovement ? 12 : 4);
+					var forwardMovement = ((_moveForward ? -1 : 0) + (_moveBack  ? 1 : 0)) * speed;
+					var sideMovement    = ((_moveLeft    ? -1 : 0) + (_moveRight ? 1 : 0)) * speed;
+
+					var yawRotation   = Matrix4x4.CreateRotationY(-xMovement / 100, e.Transform.Translation);
+					var pitchRotation = Matrix4x4.CreateRotationX(-yMovement / 100);
+					var translation   = Matrix4x4.CreateTranslation(sideMovement, 0, forwardMovement);
+
+					e.Transform = translation * pitchRotation * e.Transform * yawRotation;
+				}
+			});
+		}
 	}
 }

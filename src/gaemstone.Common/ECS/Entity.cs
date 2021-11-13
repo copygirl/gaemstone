@@ -18,13 +18,13 @@ namespace gaemstone.Common.ECS
 
 		public bool Equals(Entity other)
 			=> (ID == other.ID) && (Generation == other.Generation);
-		public override bool Equals(object obj)
+		public override bool Equals(object? obj)
 			=> (obj is Entity other) && Equals(other);
 
 		public override int GetHashCode()
-			=> unchecked(HashHelper.Combine((int)ID, (int)Generation));
+			=> HashCode.Combine(ID, Generation);
 		public override string ToString()
-			=> $"Entity(0x{ID:X8}, Generation={Generation})";
+			=> $"Entity(0x{ID:X8}, Gen={Generation})";
 
 		public static bool operator ==(Entity left, Entity right)
 			=> left.Equals(right);
