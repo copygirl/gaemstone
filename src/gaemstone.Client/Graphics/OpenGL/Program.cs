@@ -8,7 +8,7 @@ namespace gaemstone.Client.Graphics
 	public readonly struct Program
 	{
 		public static Program Create()
-			=> new Program(GFX.GL.CreateProgram());
+			=> new(GFX.GL.CreateProgram());
 
 		public static Program LinkFromShaders(string label, params Shader[] shaders)
 		{
@@ -23,7 +23,7 @@ namespace gaemstone.Client.Graphics
 
 		public uint Handle { get; }
 
-		private Program(uint handle) => Handle = handle;
+		Program(uint handle) => Handle = handle;
 
 		public string Label {
 			get => GFX.GetObjectLabel(ObjectIdentifier.Program, Handle);
@@ -62,17 +62,10 @@ namespace gaemstone.Client.Graphics
 		}
 
 
-		public Uniforms GetActiveUniforms()
-			=> new Uniforms(this);
+		public Uniforms GetActiveUniforms() => new(this);
+		public VertexAttributes GetActiveAttributes() => new(this);
 
-		public VertexAttributes GetActiveAttributes()
-			=> new VertexAttributes(this);
-
-
-		public void Use()
-			=> GFX.GL.UseProgram(Handle);
-
-		public void Delete()
-			=> GFX.GL.DeleteProgram(Handle);
+		public void Use() => GFX.GL.UseProgram(Handle);
+		public void Delete() => GFX.GL.DeleteProgram(Handle);
 	}
 }

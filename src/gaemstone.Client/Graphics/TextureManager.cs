@@ -13,16 +13,13 @@ namespace gaemstone.Client.Graphics
 	public class TextureManager
 		: IProcessor
 	{
-		private readonly Dictionary<Texture, TextureInfo> _byTexture
-			= new Dictionary<Texture, TextureInfo>();
-		private readonly Dictionary<string, TextureInfo> _bySourceFile
-			= new Dictionary<string, TextureInfo>();
-
+		readonly Dictionary<Texture, TextureInfo> _byTexture = new();
+		readonly Dictionary<string, TextureInfo> _bySourceFile = new();
 
 		public Texture Load(Game game, string name)
 		{
-			using (var stream = game.GetResourceStream(name))
-				return CreateFromStream(stream, name);
+			using var stream = game.GetResourceStream(name);
+			return CreateFromStream(stream, name);
 		}
 
 		public Texture CreateFromStream(Stream stream, string? sourceFile = null)
@@ -42,7 +39,7 @@ namespace gaemstone.Client.Graphics
 			texture.MagFilter = TextureMagFilter.Nearest;
 			texture.MinFilter = TextureMinFilter.Nearest;
 
-			var info = new TextureInfo(texture, sourceFile, new Size(image.Width, image.Height));
+			var info = new TextureInfo(texture, sourceFile, new(image.Width, image.Height));
 			_byTexture.Add(texture, info);
 			if (sourceFile != null) _bySourceFile.Add(sourceFile, info);
 

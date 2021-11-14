@@ -15,11 +15,10 @@ namespace Immersion
 {
 	public class Program : Game
 	{
-		private static void Main(string[] args)
-			=> new Program().Run();
+		static void Main() => new Program().Run();
 
 
-		public Random RND { get; } = new Random();
+		public Random RND { get; } = new();
 
 		public Program()
 		{
@@ -63,15 +62,15 @@ namespace Immersion
 			void CreateChunk(ChunkPos pos)
 			{
 				var chunk = Entities.New();
-				var storage = new ChunkPaletteStorage<Prototype>(default(Prototype));
+				var storage = new ChunkPaletteStorage<Prototype>(default);
 				for (var x = 0; x < 16; x++)
 				for (var y = 0; y < 16; y++)
 				for (var z = 0; z < 16; z++) {
 					var yy = (pos.Y << 4) | y;
 					if (RND.NextBool(0.5 - yy / 48.0))
-						storage[x, y, z] = new Prototype((yy >  16) ? grass
-						                               : (yy > -16) ? dirt
-						                                            : stone);
+						storage[x, y, z] = new((yy >  16) ? grass
+						                     : (yy > -16) ? dirt
+						                                  : stone);
 				}
 
 				Set(chunk, new Chunk(pos));
@@ -83,7 +82,7 @@ namespace Immersion
 			var chunkStore = (LookupDictionaryStore<ChunkPos, Chunk>)Components.GetStore<Chunk>();
 			void GenerateChunkMesh(ChunkPos pos)
 			{
-				var chunk = Entities.GetByID(chunkStore.GetEntityID(pos))!.Value;
+				var chunk = Entities.Lookup(chunkStore.GetEntityID(pos))!.Value;
 				var chunkMesh = chunkMeshGenerator.Generate(pos);
 				if (chunkMesh == null) return;
 				Set(chunk, chunkMesh.Value);
@@ -93,12 +92,12 @@ namespace Immersion
 			for (var x = -6; x < 6; x++)
 			for (var y = -2; y < 2; y++)
 			for (var z = -6; z < 6; z++)
-				CreateChunk(new ChunkPos(x, y, z));
+				CreateChunk(new(x, y, z));
 
 			for (var x = -6; x < 6; x++)
 			for (var y = -2; y < 2; y++)
 			for (var z = -6; z < 6; z++)
-				GenerateChunkMesh(new ChunkPos(x, y, z));
+				GenerateChunkMesh(new(x, y, z));
 		}
 
 

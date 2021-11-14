@@ -14,7 +14,7 @@ namespace gaemstone.Common.ECS
 		public delegate void QuerySpan<T>(Span<T> span);
 		public delegate void QueryRef<T>(ref T element);
 
-		private readonly Universe _universe;
+		readonly Universe _universe;
 
 		public QueryManager(Universe universe)
 			=> _universe = universe;
@@ -31,7 +31,7 @@ namespace gaemstone.Common.ECS
 			where T : struct
 		{
 			// Lazily initialized to contain information about the fields of type T.
-			private static IFieldWrapper[]? _fields;
+			static IFieldWrapper[]? _fields;
 
 			public static void Run(Universe universe, QuerySpan<T> action)
 			{

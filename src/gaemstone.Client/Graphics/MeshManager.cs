@@ -10,16 +10,16 @@ namespace gaemstone.Client.Graphics
 	public class MeshManager
 		: IProcessor
 	{
-		private const uint POSITION_ATTRIB_INDEX = 0;
-		private const uint NORMAL_ATTRIB_INDEX   = 1;
-		private const uint UV_ATTRIB_INDEX       = 2;
+		const uint POSITION_ATTRIB_INDEX = 0;
+		const uint NORMAL_ATTRIB_INDEX   = 1;
+		const uint UV_ATTRIB_INDEX       = 2;
 
 
 		public Mesh Load(Game game, string name)
 		{ unsafe {
 			ModelRoot root;
 			using (var stream = game.GetResourceStream(name))
-				root = ModelRoot.ReadGLB(stream, new SharpGLTF.Schema2.ReadSettings());
+				root = ModelRoot.ReadGLB(stream, new());
 			var primitive = root.LogicalMeshes[0].Primitives[0];
 
 			var indices  = primitive.IndexAccessor;
@@ -44,9 +44,8 @@ namespace gaemstone.Client.Graphics
 					(uint)vertices.SourceBufferView.ByteStride, (void*)vertices.ByteOffset);
 			}
 
-			var numVertices  = vertices.Count;
 			var numTriangles = primitive.IndexAccessor.Count / 3;
-			return new Mesh(vertexArray, numTriangles);
+			return new(vertexArray, numTriangles);
 		} }
 
 		public Mesh Create(
@@ -73,7 +72,7 @@ namespace gaemstone.Client.Graphics
 						VertexAttribPointerType.Float, false, 0, (void*)0);
 				}
 			}
-			return new Mesh(vertexArray, indices.Length / 3);
+			return new(vertexArray, indices.Length / 3);
 		} }
 
 		public Mesh Create(ReadOnlySpan<Vector3> vertices,
@@ -98,7 +97,7 @@ namespace gaemstone.Client.Graphics
 						VertexAttribPointerType.Float, false, 0, (void*)0);
 				}
 			}
-			return new Mesh(vertexArray, vertices.Length / 3, false);
+			return new(vertexArray, vertices.Length / 3, false);
 		} }
 
 

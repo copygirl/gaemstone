@@ -7,9 +7,8 @@ namespace gaemstone.Client.Graphics
 	public class VertexAttributes
 		: IReadOnlyList<VertexAttributeInfo>
 	{
-		private readonly VertexAttributeInfo[] _activeAttribs;
-		private readonly Dictionary<string, VertexAttributeInfo> _attribsByName
-			= new Dictionary<string, VertexAttributeInfo>();
+		readonly VertexAttributeInfo[] _activeAttribs;
+		readonly Dictionary<string, VertexAttributeInfo> _attribsByName = new();
 
 		public int Count => _activeAttribs.Length;
 
@@ -25,7 +24,7 @@ namespace gaemstone.Client.Graphics
 			for (uint attribIndex = 0; attribIndex < attribCount; attribIndex++) {
 				GFX.GL.GetActiveAttrib(program.Handle, attribIndex, (uint)attribMaxLength,
 				                       out var length, out var size, out AttributeType type, out nameBuffer);
-				var name     = nameBuffer.Substring(0, (int)length);
+				var name     = nameBuffer[..(int)length];
 				var location = GFX.GL.GetAttribLocation(program.Handle, name);
 				var attrib   = new VertexAttributeInfo(attribIndex, location, size, type, name);
 				_activeAttribs[attribIndex] = attrib;

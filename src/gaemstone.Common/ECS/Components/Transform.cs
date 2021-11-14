@@ -11,9 +11,7 @@ namespace gaemstone.Common.Components
 			set => Value.Translation = value;
 		}
 
-		public static implicit operator Transform(in Matrix4x4 value)
-			=> new Transform { Value = value };
-		public static implicit operator Matrix4x4(in Transform transform)
-			=> transform.Value;
+		public static implicit operator Transform(in Matrix4x4 value) => new(){ Value = value };
+		public static implicit operator Matrix4x4(in Transform transform) => transform.Value;
 	}
 }

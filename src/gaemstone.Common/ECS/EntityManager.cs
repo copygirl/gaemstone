@@ -5,22 +5,22 @@ namespace gaemstone.Common.ECS
 {
 	public class EntityManager
 	{
-		private const int STARTING_CAPACITY = 1024;
+		const int STARTING_CAPACITY = 1024;
 
-		private uint _nextUnusedID = 1;
-		private Entry[] _entities = new Entry[STARTING_CAPACITY];
-		private Queue<uint> _unusedEntityIDs = new Queue<uint>();
+		uint _nextUnusedID = 1;
+		Entry[] _entities = new Entry[STARTING_CAPACITY];
+		readonly Queue<uint> _unusedEntityIDs = new();
 		// TODO: Attempt to keep Generation low by prioritizing smallest Generation?
 
 		public int Count { get; private set; }
 		public int Capacity => _entities.Length;
 
-		public event Action<Entity>? OnEntityCreated;
-		public event Action<Entity>? OnEntityDestroyed;
+		public event Action<EcsId>? OnEntityCreated;
+		public event Action<EcsId>? OnEntityDestroyed;
 		public event Action<int>? OnCapacityChanged;
 
 
-		public Entity New()
+		public EcsId New()
 		{
 			// Try to reuse a previously used entity ID.
 			if (!_unusedEntityIDs.TryDequeue(out var entityID)) {
@@ -36,12 +36,12 @@ namespace gaemstone.Common.ECS
 			entry.Generation++;
 			Count++;
 
-			var entity = new Entity(entityID, entry.Generation);
+			var entity = new EcsId(entityID, entry.Generation);
 			OnEntityCreated?.Invoke(entity);
 			return entity;
 		}
 
-		public void Destroy(Entity entity)
+		public void Destroy(EcsId entity)
 		{
 			if (entity.ID >= _nextUnusedID) throw new InvalidOperationException(
 				$"Entity {entity} is not alive (ID not yet assigned)");
@@ -57,15 +57,15 @@ namespace gaemstone.Common.ECS
 		}
 
 
-		public Entity? GetByID(uint entityID)
+		public EcsId? Lookup(uint entityID)
 		{
 			if ((entityID == 0) || (entityID >= _nextUnusedID)) return null;
 			ref var entry = ref _entities[entityID];
 			if (!entry.Occupied) return null;
-			return new Entity(entityID, entry.Generation);
+			return new(entityID, entry.Generation);
 		}
 
-		public bool IsAlive(Entity entity)
+		public bool IsAlive(EcsId entity)
 		{
 			if (entity.ID >= _nextUnusedID) return false;
 			ref var entry = ref _entities[entity.ID];
@@ -73,7 +73,7 @@ namespace gaemstone.Common.ECS
 		}
 
 
-		private void Resize(int newCapacity)
+		void Resize(int newCapacity)
 		{
 			if (newCapacity < Capacity) throw new ArgumentOutOfRangeException(
 				nameof(newCapacity), newCapacity, "New capacity must be larger than previous");
@@ -83,9 +83,9 @@ namespace gaemstone.Common.ECS
 		}
 
 
-		private struct Entry
+		struct Entry
 		{
-			public uint Generation;
+			public ushort Generation;
 			public bool Occupied;
 		}
 	}

@@ -6,7 +6,7 @@ namespace gaemstone.Client.Graphics
 	public readonly struct Shader
 	{
 		public static Shader Create(ShaderType type)
-			=> new Shader(GFX.GL.CreateShader(type));
+			=> new(GFX.GL.CreateShader(type));
 
 		public static Shader CompileFromSource(string label, ShaderType type, string source)
 		{

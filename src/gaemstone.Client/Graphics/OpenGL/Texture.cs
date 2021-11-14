@@ -6,7 +6,7 @@ namespace gaemstone.Client.Graphics
 	public readonly struct Texture
 	{
 		public static Texture Gen(TextureTarget target)
-			=> new Texture(target, GFX.GL.GenTexture());
+			=> new(target, GFX.GL.GenTexture());
 
 
 		public TextureTarget Target { get; }
@@ -19,7 +19,7 @@ namespace gaemstone.Client.Graphics
 		public UnbindOnDispose Bind()
 		{
 			GFX.GL.BindTexture(Target, Handle);
-			return new UnbindOnDispose(Target);
+			return new(Target);
 		}
 
 		public void Unbind()
@@ -31,10 +31,8 @@ namespace gaemstone.Client.Graphics
 			: IDisposable
 		{
 			public TextureTarget Target { get; }
-			public UnbindOnDispose(TextureTarget target)
-				=> Target = target;
-			public void Dispose()
-				=> GFX.GL.BindTexture(Target, 0);
+			public UnbindOnDispose(TextureTarget target) => Target = target;
+			public void Dispose() => GFX.GL.BindTexture(Target, 0);
 		}
 
 

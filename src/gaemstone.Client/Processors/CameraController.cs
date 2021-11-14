@@ -12,19 +12,19 @@ namespace gaemstone.Client.Processors
 	public class CameraController
 		: IProcessor
 	{
-		private Game _game = null!;
-		private IMouse _mouse = null!;
-		private IKeyboard _keyboard = null!;
+		Game _game = null!;
+		IMouse _mouse = null!;
+		IKeyboard _keyboard = null!;
 
-		private float _mouseSpeed = 4.0F;
-		private Vector2? _mouseGrabbedAt = null;
-		private PointF _mouseMoved;
+		float _mouseSpeed = 4.0F;
+		Vector2? _mouseGrabbedAt = null;
+		PointF _mouseMoved;
 
-		private bool _moveLeft    = false; // -X
-		private bool _moveRight   = false; // +X
-		private bool _moveForward = false; // -Z
-		private bool _moveBack    = false; // +Z
-		private bool _fastMovement = false;
+		bool _moveLeft    = false; // -X
+		bool _moveRight   = false; // +X
+		bool _moveForward = false; // -Z
+		bool _moveBack    = false; // +Z
+		bool _fastMovement = false;
 
 		public void OnLoad(Universe universe)
 		{
@@ -52,28 +52,28 @@ namespace gaemstone.Client.Processors
 		}
 
 
-		private void OnMouseDown(IMouse mouse, MouseButton button)
+		void OnMouseDown(IMouse mouse, MouseButton button)
 		{
 			if (button != MouseButton.Right) return;
 			_mouseGrabbedAt = mouse.Position;
 		}
 
-		private void OnMouseUp(IMouse mouse, MouseButton button)
+		void OnMouseUp(IMouse mouse, MouseButton button)
 		{
 			if (button != MouseButton.Right) return;
 			_mouseGrabbedAt = null;
 		}
 
-		private void OnMouseMove(IMouse mouse, Vector2 position)
+		void OnMouseMove(IMouse mouse, Vector2 position)
 		{
 			if (_mouseGrabbedAt == null) return;
 			var x = _mouseMoved.X + position.X - _mouseGrabbedAt.Value.X;
 			var y = _mouseMoved.Y + position.Y - _mouseGrabbedAt.Value.Y;
-			_mouseMoved = new PointF(x, y);
+			_mouseMoved = new(x, y);
 			mouse.Position = _mouseGrabbedAt.Value;
 		}
 
-		private void OnKeyDown(IKeyboard keyboard, Key key, int code)
+		void OnKeyDown(IKeyboard keyboard, Key key, int code)
 		{
 			switch (key) {
 				case Key.A: _moveLeft    = true; break;
@@ -84,7 +84,7 @@ namespace gaemstone.Client.Processors
 			}
 		}
 
-		private void OnKeyUp(IKeyboard keyboard, Key key, int code)
+		void OnKeyUp(IKeyboard keyboard, Key key, int code)
 		{
 			switch (key) {
 				case Key.A: _moveLeft    = false; break;

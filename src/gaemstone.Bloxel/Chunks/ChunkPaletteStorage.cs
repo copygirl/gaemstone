@@ -9,14 +9,14 @@ namespace gaemstone.Bloxel.Chunks
 	// https://www.reddit.com/r/VoxelGameDev/comments/9yu8qy/palettebased_compression_for_chunked_discrete/
 	public class ChunkPaletteStorage<T>
 	{
-		private const int SIZE = 16 * 16 * 16;
-		private static readonly EqualityComparer<T> COMPARER
+		const int SIZE = 16 * 16 * 16;
+		static readonly EqualityComparer<T> COMPARER
 			= EqualityComparer<T>.Default;
 
-		private BitArray? _data;
-		private PaletteEntry[]? _palette;
-		private int _usedPalettes;
-		private int _indicesLength;
+		BitArray? _data;
+		PaletteEntry[]? _palette;
+		int _usedPalettes;
+		int _indicesLength;
 
 
 		public T Default { get; }
@@ -27,7 +27,7 @@ namespace gaemstone.Bloxel.Chunks
 		}
 
 		public IEnumerable<T> Blocks
-			=> _palette?.Where(entry => !COMPARER.Equals(entry.Value, default(T)!))
+			=> _palette?.Where(entry => !COMPARER.Equals(entry.Value, default!))
 			            .Select(entry => entry.Value!)
 				?? Enumerable.Empty<T>();
 
@@ -36,14 +36,14 @@ namespace gaemstone.Bloxel.Chunks
 			=> Default = @default;
 
 
-		private T Get(int x, int y, int z)
+		T Get(int x, int y, int z)
 		{
 			if (_palette == null) return Default;
 			var entry = _palette[GetPaletteIndex(x, y, z)];
-			return !COMPARER.Equals(entry.Value, default(T)!) ? entry.Value : Default;
+			return !COMPARER.Equals(entry.Value, default!) ? entry.Value : Default;
 		}
 
-		private void Set(int x, int y, int z, T value)
+		void Set(int x, int y, int z, T value)
 		{
 			if (_palette == null) {
 				if (COMPARER.Equals(value, Default)) return;
@@ -76,7 +76,7 @@ namespace gaemstone.Bloxel.Chunks
 			_usedPalettes++;
 		}
 
-		private int NewPaletteEntry()
+		int NewPaletteEntry()
 		{
 			if (_palette != null) {
 				int firstFree = Array.FindIndex(_palette, entry =>
@@ -88,9 +88,9 @@ namespace gaemstone.Bloxel.Chunks
 			return NewPaletteEntry();
 		}
 
-		private void GrowPalette() {
+		void GrowPalette() {
 			if (_palette == null) {
-				_data    = new BitArray(SIZE);
+				_data    = new(SIZE);
 				_palette = new PaletteEntry[2];
 				_usedPalettes  = 1;
 				_indicesLength = 1;
@@ -147,9 +147,9 @@ namespace gaemstone.Bloxel.Chunks
 		// }
 
 
-		private int GetPaletteIndex(int x, int y, int z)
+		int GetPaletteIndex(int x, int y, int z)
 			=> GetPaletteIndex(GetIndex(x, y, z));
-		private int GetPaletteIndex(int index)
+		int GetPaletteIndex(int index)
 		{
 			var paletteIndex = 0;
 			for (var i = 0; i < _indicesLength; i++)
@@ -157,19 +157,19 @@ namespace gaemstone.Bloxel.Chunks
 			return paletteIndex;
 		}
 
-		private void SetPaletteIndex(int x, int y, int z, int paletteIndex)
+		void SetPaletteIndex(int x, int y, int z, int paletteIndex)
 			=> SetPaletteIndex(GetIndex(x, y, z), paletteIndex);
-		private void SetPaletteIndex(int index, int paletteIndex)
+		void SetPaletteIndex(int index, int paletteIndex)
 		{
 			for (var i = 0; i < _indicesLength; i++)
 				_data!.Set(index + i, ((paletteIndex >> i) & 0b1) == 0b1);
 		}
 
-		private int GetIndex(int x, int y, int z)
+		int GetIndex(int x, int y, int z)
 			=> (x | (y << 4) | (z << 8)) * _indicesLength;
 
 
-		private struct PaletteEntry
+		struct PaletteEntry
 		{
 			public T Value { get; set; }
 			public int RefCount { get; set; }

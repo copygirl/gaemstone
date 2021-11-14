@@ -25,10 +25,10 @@ namespace gaemstone.Client.Graphics
 			public SpriteIndex? SpriteIndex { get; }
 		}
 
-		private Game _game = null!;
-		private Program _program;
-		private UniformMatrix4x4 _cameraMatrixUniform;
-		private UniformMatrix4x4 _modelMatrixUniform;
+		Game _game = null!;
+		Program _program;
+		UniformMatrix4x4 _cameraMatrixUniform;
+		UniformMatrix4x4 _modelMatrixUniform;
 
 		public void OnLoad(Universe universe)
 		{

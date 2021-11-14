@@ -9,10 +9,8 @@ namespace gaemstone.Client.Graphics
 	public class SpriteSheet
 		: IReadOnlyList<SpriteSheet.Sprite>
 	{
-		private readonly List<Sprite> _byIndex
-			= new List<Sprite>();
-		private readonly Dictionary<string, Sprite> _byName
-			= new Dictionary<string, Sprite>();
+		readonly List<Sprite> _byIndex = new();
+		readonly Dictionary<string, Sprite> _byName = new();
 
 		public int Count => _byIndex.Count;
 		public Sprite this[int index] => _byIndex[index];
@@ -42,15 +40,15 @@ namespace gaemstone.Client.Graphics
 					switch (propertyName) {
 						case nameof(location):
 							var (x, y) = GetTwoInts(ref reader);
-							location = new Point(x, y);
+							location = new(x, y);
 							break;
 						case nameof(size):
 							var (width, height) = GetTwoInts(ref reader);
-							size = new Size(width, height);
+							size = new(width, height);
 							break;
 						case nameof(center):
 							var (cx, cy) = GetTwoInts(ref reader);
-							center = new Point(cx, cy);
+							center = new(cx, cy);
 							break;
 					}
 				}
@@ -62,7 +60,7 @@ namespace gaemstone.Client.Graphics
 				if (center == null) center = (Point)(size / 2);
 
 				var sprite = new Sprite(sheet, sheet._byIndex.Count, spriteName,
-					new Rectangle(location.Value, size.Value), center.Value);
+					new(location.Value, size.Value), center.Value);
 				sheet._byIndex.Add(sprite);
 				sheet._byName.Add(spriteName, sprite);
 			}
@@ -147,12 +145,8 @@ namespace gaemstone.Client.Graphics
 	public readonly struct SpriteIndex
 	{
 		public readonly int Value;
-		private SpriteIndex(int value)
-			=> Value = value;
-
-		public static implicit operator SpriteIndex(in int value)
-			=> new SpriteIndex(value);
-		public static implicit operator int(in SpriteIndex transform)
-			=> transform.Value;
+		SpriteIndex(int value) => Value = value;
+		public static implicit operator SpriteIndex(in int value) => new(value);
+		public static implicit operator int(in SpriteIndex transform) => transform.Value;
 	}
 }

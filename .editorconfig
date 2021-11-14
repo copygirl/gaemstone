@@ -1,0 +1,20 @@
+root = true
+
+[*]
+end_of_line  = lf
+indent_style = space
+indent_size  = 2
+insert_final_newline     = true
+trim_trailing_whitespace = true
+
+[*.cs]
+indent_style = tab
+indent_size  = 4
+# IDE0005: Using directive is unnecessary
+dotnet_diagnostic.IDE0005.severity = suggestion
+# IDE0047: Parentheses can be removed
+dotnet_diagnostic.IDE0047.severity = none
+
+[*.md]
+# Allows placing double-space at end of lines.
+trim_trailing_whitespace = false

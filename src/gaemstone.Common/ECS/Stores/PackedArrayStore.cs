@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using gaemstone.Common.Utility;
+using System.Runtime.CompilerServices;
 
 namespace gaemstone.Common.ECS.Stores
 {
@@ -9,18 +9,17 @@ namespace gaemstone.Common.ECS.Stores
 			: IComponentRefStore<T>
 		where T : struct
 	{
-		private const int STARTING_CAPACITY = 256;
+		const int STARTING_CAPACITY = 256;
 
-		private readonly Dictionary<uint, int> _indices
-			= new Dictionary<uint, int>();
-		private uint[] _entityIDs;
-		private T[] _components;
+		readonly Dictionary<uint, int> _indices = new();
+		uint[] _entityIDs;
+		T[] _components;
 
 		protected IReadOnlyDictionary<uint, int> Indices { get; }
 		protected uint[] EntityIDs => _entityIDs;
 		protected T[] Components => _components;
 
-		public Type ComponentType { get; } = typeof(T);
+		public Type ComponentType => typeof(T);
 		public int Count { get; private set; }
 
 		public int Capacity {
@@ -96,7 +95,7 @@ namespace gaemstone.Common.ECS.Stores
 		public bool TryGet(uint entityID, [NotNullWhen(true)] out T value)
 		{
 			var found = TryFindIndex(entityID, out var index);
-			value = (found ? this[index] : default(T));
+			value = (found ? this[index] : default);
 			return found;
 		}
 
@@ -104,7 +103,7 @@ namespace gaemstone.Common.ECS.Stores
 		{
 			if (TryFindIndex(entityID, out var index))
 				return ref _components[index];
-			else return ref RefHelper.Null<T>();
+			else return ref Unsafe.NullRef<T>();
 		}
 
 		public bool Has(uint entityID)
@@ -122,7 +121,7 @@ namespace gaemstone.Common.ECS.Stores
 		}
 
 
-		private void Resize(int newCapacity)
+		void Resize(int newCapacity)
 		{
 			if (newCapacity < 0) throw new ArgumentOutOfRangeException(
 				nameof(newCapacity), newCapacity, "Capacity must be 0 or positive");
@@ -141,24 +140,21 @@ namespace gaemstone.Common.ECS.Stores
 		}
 
 
-		public IComponentRefStore<T>.Enumerator GetEnumerator()
-			=> new Enumerator(this);
-		IComponentStore<T>.Enumerator IComponentStore<T>.GetEnumerator()
-			=> new Enumerator(this);
-		IComponentStore.Enumerator IComponentStore.GetEnumerator()
-			=> new Enumerator(this);
+		public IComponentRefStore<T>.IEnumerator GetEnumerator() => new Enumerator(this);
+		IComponentStore<T>.IEnumerator IComponentStore<T>.GetEnumerator() => new Enumerator(this);
+		IComponentStore.IEnumerator IComponentStore.GetEnumerator() => new Enumerator(this);
 
-		private struct Enumerator
-			: IComponentRefStore<T>.Enumerator
+		struct Enumerator
+			: IComponentRefStore<T>.IEnumerator
 		{
-			private readonly PackedArrayStore<T> _store;
-			private int _index;
+			readonly PackedArrayStore<T> _store;
+			int _index;
 
 			public Enumerator(PackedArrayStore<T> store)
 				=> (_store, _index) = (store, -1);
 
-			object IComponentStore.Enumerator.CurrentComponent => _store._components[_index];
-			T IComponentStore<T>.Enumerator.CurrentComponent => _store._components[_index];
+			object IComponentStore.IEnumerator.CurrentComponent => _store._components[_index];
+			T IComponentStore<T>.IEnumerator.CurrentComponent => _store._components[_index];
 			public ref T CurrentComponent => ref _store._components[_index];
 			public uint CurrentEntityID => _store._entityIDs[_index];
 			public bool MoveNext() => (++_index < _store.Count);

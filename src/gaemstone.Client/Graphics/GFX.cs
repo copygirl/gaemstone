@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using Microsoft.DotNet.PlatformAbstractions;
 using Silk.NET.Core.Contexts;
 using Silk.NET.OpenGL;
 
@@ -11,9 +10,9 @@ namespace gaemstone.Client.Graphics
 {
 	public static class GFX
 	{
-		private static GL? _gl;
-		public static GL GL => _gl ?? throw new InvalidOperationException(
-			"OpenGL has not been initialized");
+		static GL? _gl;
+		public static GL GL => _gl
+			?? throw new InvalidOperationException("OpenGL has not been initialized");
 		public static bool IsInitialized => (_gl != null);
 
 		public static event Action<DebugSource, DebugType, int, DebugSeverity, string>? OnDebugOutput;
@@ -59,17 +58,17 @@ namespace gaemstone.Client.Graphics
 		public static void Viewport(Rectangle rectangle)
 			=> GL.Viewport(rectangle);
 
-		private static int MAX_LABEL_LENGTH;
-		private static string? LABEL_BUFFER;
+		static int MAX_LABEL_LENGTH;
+		static string? LABEL_BUFFER;
 		public static string GetObjectLabel(ObjectIdentifier identifier, uint handle)
 		{
 			if (MAX_LABEL_LENGTH == 0) {
 				// One-time initialization.
 				MAX_LABEL_LENGTH = GL.GetInteger(GLEnum.MaxLabelLength);
-				LABEL_BUFFER     = new string(' ', MAX_LABEL_LENGTH);
+				LABEL_BUFFER     = new(' ', MAX_LABEL_LENGTH);
 			}
 			GL.GetObjectLabel(identifier, handle, (uint)MAX_LABEL_LENGTH, out var length, out LABEL_BUFFER);
-			return LABEL_BUFFER.Substring(0, (int)length);
+			return LABEL_BUFFER[..(int)length];
 		}
 		public static void SetObjectLabel(ObjectIdentifier identifier, uint handle, string label)
 			=> GL.ObjectLabel(identifier, handle, (uint)label.Length, label);

@@ -8,11 +8,9 @@ namespace gaemstone.Common.ECS
 	{
 		public static readonly int MAX_COMPONENT_TYPES = 32;
 
-		private int[] _components = null!; // Set in the first call to Resize.
-		private List<IComponentStore> _stores
-			= new List<IComponentStore>(MAX_COMPONENT_TYPES);
-		private Dictionary<Type, int> _byType
-			= new Dictionary<Type, int>(MAX_COMPONENT_TYPES);
+		readonly List<IComponentStore> _stores = new(MAX_COMPONENT_TYPES);
+		readonly Dictionary<Type, int> _byType = new(MAX_COMPONENT_TYPES);
+		int[] _components = null!; // Set in the first call to Resize.
 
 		public int Count => _stores.Count;
 
@@ -70,14 +68,14 @@ namespace gaemstone.Common.ECS
 			=> Unset(entityID, _byType[typeof(T)]);
 
 
-		private void Resize(int newCapacity)
+		void Resize(int newCapacity)
 		{
 			if (newCapacity < _components.Length) throw new ArgumentOutOfRangeException(
 				nameof(newCapacity), newCapacity, "New capacity must be larger than previous");
 			Array.Resize(ref _components, newCapacity);
 		}
 
-		private void Clear(Entity entity)
+		void Clear(EcsId entity)
 		{
 			var flags = GetFlags(entity.ID);
 			for (var i = 0; i < _stores.Count; i++) {

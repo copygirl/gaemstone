@@ -15,9 +15,9 @@ namespace gaemstone.Common.ECS.Stores
 		bool Has(uint entityID);
 		bool Remove(uint entityID);
 
-		Enumerator GetEnumerator();
+		IEnumerator GetEnumerator();
 
-		interface Enumerator
+		interface IEnumerator
 		{
 			object CurrentComponent { get; }
 			uint CurrentEntityID { get; }
@@ -38,10 +38,10 @@ namespace gaemstone.Common.ECS.Stores
 			return result;
 		}
 
-		new Enumerator GetEnumerator();
+		new IEnumerator GetEnumerator();
 
-		new interface Enumerator
-			: IComponentStore.Enumerator
+		new interface IEnumerator
+			: IComponentStore.IEnumerator
 		{
 			new T CurrentComponent { get; }
 		}
@@ -53,10 +53,10 @@ namespace gaemstone.Common.ECS.Stores
 	{
 		ref T GetRef(uint entityID);
 
-		new Enumerator GetEnumerator();
+		new IEnumerator GetEnumerator();
 
-		new interface Enumerator
-			: IComponentStore<T>.Enumerator
+		new interface IEnumerator
+			: IComponentStore<T>.IEnumerator
 		{
 			new ref T CurrentComponent { get; }
 		}

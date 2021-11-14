@@ -9,7 +9,7 @@ namespace gaemstone.Common.ECS
 
 		public static string BuildMessage(Type componentType, object entity)
 		{
-			if (entity is uint id) entity = $"entity 0x{id:X8}";
+			if (entity is uint id) entity = $"entity 0x{id:X}";
 			return $"Component {componentType} not found on {entity}";
 		}
 

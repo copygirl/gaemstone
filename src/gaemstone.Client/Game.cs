@@ -8,7 +8,6 @@ using gaemstone.Common.Components;
 using gaemstone.Common.ECS;
 using gaemstone.Common.ECS.Stores;
 using Silk.NET.Input;
-using Silk.NET.Maths;
 using Silk.NET.Windowing;
 
 namespace gaemstone.Client
@@ -17,7 +16,7 @@ namespace gaemstone.Client
 	{
 		public IWindow Window { get; }
 
-		private IInputContext? _input;
+		IInputContext? _input;
 		public IInputContext Input => _input
 			?? throw new InvalidOperationException("Cannot access Input before Run has been called");
 
@@ -25,7 +24,7 @@ namespace gaemstone.Client
 		{
 			var options = WindowOptions.Default;
 			options.Title = "gæmstone";
-			options.Size  = new Vector2D<int>(1280, 720);
+			options.Size  = new(1280, 720);
 			options.API   = GraphicsAPI.Default;
 			options.UpdatesPerSecond = 30.0;
 			options.FramesPerSecond  = 60.0;
@@ -83,18 +82,17 @@ namespace gaemstone.Client
 
 		public string GetResourceAsString(string name)
 		{
-			using (var stream = GetResourceStream(name))
-			using (var reader = new StreamReader(stream))
-				return reader.ReadToEnd();
+			using var stream = GetResourceStream(name);
+			using var reader = new StreamReader(stream);
+			return reader.ReadToEnd();
 		}
 
 		public byte[] GetResourceAsBytes(string name)
 		{
-			using (var stream = GetResourceStream(name))
-			using (var memoryStream = new MemoryStream()) {
-				stream.CopyTo(memoryStream);
-				return memoryStream.ToArray();
-			}
+			using var stream = GetResourceStream(name);
+			using var memoryStream = new MemoryStream();
+			stream.CopyTo(memoryStream);
+			return memoryStream.ToArray();
 		}
 	}
 }

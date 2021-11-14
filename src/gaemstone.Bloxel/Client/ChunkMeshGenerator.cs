@@ -12,65 +12,33 @@ namespace gaemstone.Bloxel.Client
 	// TODO: Turn into an IProcessor.
 	public class ChunkMeshGenerator
 	{
-		private const int STARTING_CAPACITY = 1024;
+		const int STARTING_CAPACITY = 1024;
 
-		private static readonly Vector3[][] OFFSET_PER_FACING = {
-			new Vector3[]{ // East  (+X)
-				new Vector3(1, 1, 1),
-				new Vector3(1, 0, 1),
-				new Vector3(1, 0, 0),
-				new Vector3(1, 1, 0),
-			},
-			new Vector3[]{ // West  (-X)
-				new Vector3(0, 1, 0),
-				new Vector3(0, 0, 0),
-				new Vector3(0, 0, 1),
-				new Vector3(0, 1, 1),
-			},
-			new Vector3[]{ // Up    (+Y)
-				new Vector3(1, 1, 0),
-				new Vector3(0, 1, 0),
-				new Vector3(0, 1, 1),
-				new Vector3(1, 1, 1),
-			},
-			new Vector3[]{ // Down  (-Y)
-				new Vector3(1, 0, 1),
-				new Vector3(0, 0, 1),
-				new Vector3(0, 0, 0),
-				new Vector3(1, 0, 0),
-			},
-			new Vector3[]{ // South (+Z)
-				new Vector3(0, 1, 1),
-				new Vector3(0, 0, 1),
-				new Vector3(1, 0, 1),
-				new Vector3(1, 1, 1),
-			},
-			new Vector3[]{ // North (-Z)
-				new Vector3(1, 1, 0),
-				new Vector3(1, 0, 0),
-				new Vector3(0, 0, 0),
-				new Vector3(0, 1, 0),
-			},
+		static readonly Vector3[][] OFFSET_PER_FACING = {
+			new Vector3[]{ new(1,1,1), new(1,0,1), new(1,0,0), new(1,1,0) }, // East  (+X)
+			new Vector3[]{ new(0,1,0), new(0,0,0), new(0,0,1), new(0,1,1) }, // West  (-X)
+			new Vector3[]{ new(1,1,0), new(0,1,0), new(0,1,1), new(1,1,1) }, // Up    (+Y)
+			new Vector3[]{ new(1,0,1), new(0,0,1), new(0,0,0), new(1,0,0) }, // Down  (-Y)
+			new Vector3[]{ new(0,1,1), new(0,0,1), new(1,0,1), new(1,1,1) }, // South (+Z)
+			new Vector3[]{ new(1,1,0), new(1,0,0), new(0,0,0), new(0,1,0) }  // North (-Z)
 		};
 
-		private static readonly int[] TRIANGLE_INDICES
+		static readonly int[] TRIANGLE_INDICES
 			= { 0, 1, 3,  1, 2, 3 };
 
 
-		private readonly Game _game;
-		private readonly MeshManager _meshManager;
-		private readonly LookupDictionaryStore<ChunkPos, Chunk> _chunkStore;
-		private readonly IComponentStore<ChunkPaletteStorage<Prototype>> _storageStore;
-		private readonly IComponentStore<TextureCoords4> _textureCellStore;
+		readonly MeshManager _meshManager;
+		readonly LookupDictionaryStore<ChunkPos, Chunk> _chunkStore;
+		readonly IComponentStore<ChunkPaletteStorage<Prototype>> _storageStore;
+		readonly IComponentStore<TextureCoords4> _textureCellStore;
 
-		private ushort[] _indices = new ushort[STARTING_CAPACITY];
-		private Vector3[] _vertices = new Vector3[STARTING_CAPACITY];
-		private Vector3[] _normals  = new Vector3[STARTING_CAPACITY];
-		private Vector2[] _uvs      = new Vector2[STARTING_CAPACITY];
+		ushort[] _indices   = new ushort[STARTING_CAPACITY];
+		Vector3[] _vertices = new Vector3[STARTING_CAPACITY];
+		Vector3[] _normals  = new Vector3[STARTING_CAPACITY];
+		Vector2[] _uvs      = new Vector2[STARTING_CAPACITY];
 
 		public ChunkMeshGenerator(Game game)
 		{
-			_game = game;
 			_meshManager = game.Processors.GetOrThrow<MeshManager>();
 			_chunkStore       = (LookupDictionaryStore<ChunkPos, Chunk>)game.Components.GetStore<Chunk>();
 			_storageStore     = game.Components.GetStore<ChunkPaletteStorage<Prototype>>();
@@ -135,7 +103,7 @@ namespace gaemstone.Bloxel.Client
 				: (Mesh?)null;
 		}
 
-		private bool IsNeighborEmpty(
+		static bool IsNeighborEmpty(
 			ChunkPaletteStorage<Prototype>[,,] storages,
 			int x, int y, int z, BlockFacing facing)
 		{

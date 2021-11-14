@@ -17,7 +17,7 @@ namespace gaemstone.Common.Utility
 		public static bool IsNullable(this ParameterInfo parameter) =>
 			IsNullable(parameter.ParameterType, parameter.Member, parameter.CustomAttributes);
 
-		private static bool IsNullable(Type memberType, MemberInfo? declaringType, IEnumerable<CustomAttributeData> customAttributes)
+		static bool IsNullable(Type memberType, MemberInfo? declaringType, IEnumerable<CustomAttributeData> customAttributes)
 		{
 			if (memberType.IsValueType) return (Nullable.GetUnderlyingType(memberType) != null);
 

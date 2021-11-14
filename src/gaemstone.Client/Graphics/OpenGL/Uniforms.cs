@@ -9,9 +9,8 @@ namespace gaemstone.Client.Graphics
 	public class Uniforms
 		: IReadOnlyList<UniformInfo>
 	{
-		private readonly UniformInfo[] _activeUniforms;
-		private readonly Dictionary<string, UniformInfo> _uniformsByName
-			= new Dictionary<string, UniformInfo>();
+		readonly UniformInfo[] _activeUniforms;
+		readonly Dictionary<string, UniformInfo> _uniformsByName = new();
 
 		public int Count => _activeUniforms.Length;
 
@@ -27,7 +26,7 @@ namespace gaemstone.Client.Graphics
 			for (uint uniformIndex = 0; uniformIndex < uniformCount; uniformIndex++) {
 				GFX.GL.GetActiveUniform(program.Handle, uniformIndex, (uint)uniformMaxLength,
 				                        out var length, out var size, out UniformType type, out nameBuffer);
-				var name     = nameBuffer.Substring(0, (int)length);
+				var name     = nameBuffer[..(int)length];
 				var location = GFX.GL.GetUniformLocation(program.Handle, name);
 				var uniform  = new UniformInfo(uniformIndex, location, size, type, name);
 				_activeUniforms[uniformIndex] = uniform;
@@ -53,25 +52,19 @@ namespace gaemstone.Client.Graphics
 		internal UniformInfo(uint index, int location, int size, UniformType type, string name)
 			=> (Index, Location, Size, Type, Name) = (index, location, size, type, name);
 
-		private int Ensure(int size, UniformType type, string convert)
+		int Ensure(int size, UniformType type, string convert)
 		{
 			if ((size != Size) || (type != Type)) throw new InvalidOperationException(
 				$"Incompatible size and/or type to access as {convert} ({size} / {type})");
 			return Location;
 		}
 
-		public UniformBool Bool
-			=> new UniformBool(Ensure(1, UniformType.Bool, "bool"));
-		public UniformInt Int
-			=> new UniformInt(Ensure(1, UniformType.Int, "int"));
-		public UniformFloat Float
-			=> new UniformFloat(Ensure(1, UniformType.Float, "float"));
-		public UniformVector3 Vector3
-			=> new UniformVector3(Ensure(1, UniformType.FloatVec3, "Vector3"));
-		public UniformVector3 Vector4
-			=> new UniformVector3(Ensure(1, UniformType.FloatVec4, "Vector4"));
-		public UniformMatrix4x4 Matrix4x4
-			=> new UniformMatrix4x4(Ensure(1, UniformType.FloatMat4, "Matrix4x4"));
+		public UniformBool Bool => new(Ensure(1, UniformType.Bool, "bool"));
+		public UniformInt  Int  => new(Ensure(1, UniformType.Int, "int"));
+		public UniformFloat Float => new(Ensure(1, UniformType.Float, "float"));
+		public UniformVector3 Vector3 => new(Ensure(1, UniformType.FloatVec3, "Vector3"));
+		public UniformVector3 Vector4 => new(Ensure(1, UniformType.FloatVec4, "Vector4"));
+		public UniformMatrix4x4 Matrix4x4 => new(Ensure(1, UniformType.FloatMat4, "Matrix4x4"));
 	}
 
 	public readonly struct UniformBool

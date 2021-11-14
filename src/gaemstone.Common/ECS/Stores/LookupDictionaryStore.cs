@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using gaemstone.Common.Utility;
+using System.Runtime.CompilerServices;
 
 namespace gaemstone.Common.ECS.Stores
 {
@@ -7,9 +7,8 @@ namespace gaemstone.Common.ECS.Stores
 			: DictionaryStore<T>
 		where TKey : struct
 	{
-		private readonly Dictionary<TKey, uint> _lookup
-			= new Dictionary<TKey, uint>();
-		private readonly KeyLookupFunc _lookupFunc;
+		readonly Dictionary<TKey, uint> _lookup = new();
+		readonly KeyLookupFunc _lookupFunc;
 
 		public LookupDictionaryStore(KeyLookupFunc lookupFunc)
 		{
@@ -19,11 +18,11 @@ namespace gaemstone.Common.ECS.Stores
 
 		public void OnComponentChanged(uint entityID, ref T oldValue, ref T newValue)
 		{
-			if (!RefHelper.IsNull(ref oldValue)) {
+			if (!Unsafe.IsNullRef(ref oldValue)) {
 				var key = _lookupFunc(oldValue);
 				_lookup.Remove(key);
 			}
-			if (!RefHelper.IsNull(ref newValue)) {
+			if (!Unsafe.IsNullRef(ref newValue)) {
 				var key = _lookupFunc(newValue);
 				_lookup.Add(key, entityID);
 			}

@@ -51,7 +51,7 @@ namespace gaemstone.Bloxel
 	{
 		public static readonly ImmutableHashSet<Neighbor> HORIZONTALS
 			= ImmutableHashSet.Create(Neighbor.East , Neighbor.West ,
-			                        Neighbor.South, Neighbor.North);
+			                          Neighbor.South, Neighbor.North);
 
 		public static readonly ImmutableHashSet<Neighbor> VERTICALS
 			= ImmutableHashSet.Create(Neighbor.Up, Neighbor.Down);
@@ -83,11 +83,10 @@ namespace gaemstone.Bloxel
 
 	public static class NeighborExtensions
 	{
-		private const int X_SET_BIT = 0b000010, X_VALUE_BIT = 0b000001;
-		private const int Y_SET_BIT = 0b001000, Y_VALUE_BIT = 0b000100;
-		private const int Z_SET_BIT = 0b100000, Z_VALUE_BIT = 0b010000;
-		public static void Deconstruct(this Neighbor self,
-		                               out int x, out int y, out int z)
+		const int X_SET_BIT = 0b000010, X_VALUE_BIT = 0b000001;
+		const int Y_SET_BIT = 0b001000, Y_VALUE_BIT = 0b000100;
+		const int Z_SET_BIT = 0b100000, Z_VALUE_BIT = 0b010000;
+		public static void Deconstruct(this Neighbor self, out int x, out int y, out int z)
 		{
 			x = (((int)self & X_SET_BIT) != 0) ? ((((int)self & X_VALUE_BIT) != 0) ? 1 : -1) : 0;
 			y = (((int)self & Y_SET_BIT) != 0) ? ((((int)self & Y_VALUE_BIT) != 0) ? 1 : -1) : 0;
@@ -140,7 +139,7 @@ namespace gaemstone.Bloxel
 				Neighbor.South => BlockFacing.South,
 				Neighbor.North => BlockFacing.North,
 				_ => throw new ArgumentException(
-					$"'{self}' can#t be converted to a valid BlockFacing", nameof(self))
+					$"'{self}' can't be converted to a valid BlockFacing", nameof(self))
 			};
 
 
@@ -173,10 +172,10 @@ namespace gaemstone.Bloxel
 
 
 		public static BlockPos ToProperPos(this Neighbor self)
-			{ var (x, y, z) = self; return new BlockPos(x, y, z); }
+			{ var (x, y, z) = self; return new(x, y, z); }
 
 		public static Vector3 ToVector3(this Neighbor self)
-			{ var (x, y, z) = self; return new Vector3(x, y, z); }
+			{ var (x, y, z) = self; return new(x, y, z); }
 
 
 		public static bool IsNone(this Neighbor self)

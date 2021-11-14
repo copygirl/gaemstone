@@ -1,15 +1,14 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using gaemstone.Common.Collections;
-using gaemstone.Common.Utility;
 
 namespace gaemstone.Common.ECS.Stores
 {
 	public class DictionaryStore<T>
 		: IComponentStore<T>
 	{
-		private RefDictionary<uint, T> _dict { get; }
-			= new RefDictionary<uint, T>();
+		readonly RefDictionary<uint, T> _dict = new();
 
 		public Type ComponentType { get; } = typeof(T);
 		public int Count => _dict.Count;
@@ -20,51 +19,45 @@ namespace gaemstone.Common.ECS.Stores
 
 
 		public bool TryGet(uint entityID, [NotNullWhen(true)] out T value)
-		{
-			ref var entry = ref _dict.TryGetEntry(GetBehavior.Default, entityID);
-			value = (entry.HasValue ? entry.Value : default(T)!);
-			return entry.HasValue;
-		}
+			=> _dict.TryGetValue(entityID, out value!);
 
 		public bool Has(uint entityID)
-			=> _dict.TryGetEntry(GetBehavior.Default, entityID).HasValue;
+			=> _dict.ContainsKey(entityID);
 
 		public void Set(uint entityID, T value)
 		{
 			var previousCount = _dict.Count;
-			ref var entry = ref _dict.TryGetEntry(GetBehavior.Create, entityID);
+			ref var entry = ref _dict.GetRef(GetBehavior.Create, entityID);
 			var entryAdded = (_dict.Count > previousCount);
 			if (entryAdded) ComponentAdded?.Invoke(entityID);
-			ref var oldValue = ref (entryAdded ? ref RefHelper.Null<T>() : ref entry.Value);
+			ref var oldValue = ref (entryAdded ? ref Unsafe.NullRef<T>() : ref value);
 			ComponentChanged?.Invoke(entityID, ref oldValue, ref value);
-			entry.Value = value;
+			entry = value;
 		}
 
 		public bool Remove(uint entityID)
 		{
 			var previousCount = _dict.Count;
-			ref var entry = ref _dict.TryGetEntry(GetBehavior.Remove, entityID);
+			ref var entry = ref _dict.GetRef(GetBehavior.Remove, entityID);
 			if (_dict.Count < previousCount) {
 				ComponentRemoved?.Invoke(entityID);
-				ComponentChanged?.Invoke(entityID, ref entry.Value, ref RefHelper.Null<T>());
+				ComponentChanged?.Invoke(entityID, ref entry, ref Unsafe.NullRef<T>());
 				return true;
 			} else return false;
 		}
 
 
-		public IComponentStore<T>.Enumerator GetEnumerator()
-			=> new Enumerator(_dict);
-		IComponentStore.Enumerator IComponentStore.GetEnumerator()
-			=> new Enumerator(_dict);
+		public IComponentStore<T>.IEnumerator GetEnumerator() => new Enumerator(_dict);
+		IComponentStore.IEnumerator IComponentStore.GetEnumerator() => new Enumerator(_dict);
 
-		private struct Enumerator
-			: IComponentStore<T>.Enumerator
+		struct Enumerator
+			: IComponentStore<T>.IEnumerator
 		{
-			private RefDictionary<uint, T>.Enumerator _dictEnumerator;
+			RefDictionary<uint, T>.Enumerator _dictEnumerator;
 			public Enumerator(RefDictionary<uint, T> dict)
 				=> _dictEnumerator = dict.GetEnumerator();
 
-			object IComponentStore.Enumerator.CurrentComponent => _dictEnumerator.Current.Value!;
+			object IComponentStore.IEnumerator.CurrentComponent => _dictEnumerator.Current.Value!;
 			public T CurrentComponent => _dictEnumerator.Current.Value!;
 			public uint CurrentEntityID => _dictEnumerator.Current.Key;
 			public bool MoveNext() => _dictEnumerator.MoveNext();

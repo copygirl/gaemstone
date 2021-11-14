@@ -1,19 +1,4 @@
 {
-  "editor.rulers": [ 80 ],
-  "editor.tabSize": 2,
-  "editor.insertSpaces": true,
-  "files.trimTrailingWhitespace": true,
-
-  "[csharp]": {
-    "editor.tabSize": 3,
-    "editor.insertSpaces": false
-  },
-
-  "[markdown]": {
-    // Allows to put double-space at end of lines.
-    "files.trimTrailingWhitespace": false,
-  },
-
   "files.exclude": {
     "**/.git": true,
     "**/.DS_Store": true,

@@ -7,8 +7,8 @@ namespace gaemstone.Common.ECS.Processors
 	public class ProcessorManager
 		: IReadOnlyCollection<IProcessor>
 	{
-		private readonly Universe _universe;
-		private readonly Dictionary<Type, IProcessor> _processors;
+		readonly Universe _universe;
+		readonly Dictionary<Type, IProcessor> _processors = new();
 
 		public int Count => _processors.Count;
 
@@ -16,13 +16,10 @@ namespace gaemstone.Common.ECS.Processors
 		public event Action<IProcessor>? ProcessorUnloaded;
 
 		public ProcessorManager(Universe universe)
-		{
-			_universe   = universe;
-			_processors = new Dictionary<Type, IProcessor>();
-		}
+			=> _universe = universe;
 
 
-		private void Start(Type type, IProcessor processor)
+		void Start(Type type, IProcessor processor)
 		{
 			_processors.Add(type, processor);
 			processor.OnLoad(_universe);
