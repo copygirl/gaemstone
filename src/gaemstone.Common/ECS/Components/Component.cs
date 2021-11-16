@@ -1,11 +1,13 @@
 using System;
+using gaemstone.Common.ECS.Stores;
 
 namespace gaemstone.Common.ECS
 {
 	public readonly struct Component
 	{
 		public readonly Type Type;
-		public Component(Type value) => Type = value;
-		public static Component Of<T>() => new(typeof(T));
+		public readonly IComponentStore Store;
+		public Component(Type type, IComponentStore store)
+			{ Type = type; Store = store; }
 	}
 }

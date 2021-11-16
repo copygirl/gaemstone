@@ -3,15 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using gaemstone.Common.Components;
 using gaemstone.Common.ECS.Processors;
-using gaemstone.Common.ECS.Stores;
 
 namespace gaemstone.Common.ECS
 {
 	public class Universe
 	{
-		public static readonly EcsId COMPONENT_ID  = new(0x01);
-		public static readonly EcsId IDENTIFIER_ID = new(0x02);
-
 		public static readonly EcsId IsA     = new(0x100);
 		public static readonly EcsId ChildOf = new(0x101);
 
@@ -20,14 +16,10 @@ namespace gaemstone.Common.ECS
 		public ProcessorManager Processors { get; }
 		public QueryManager     Queries    { get; }
 
-		IComponentStore<Prototype>? _prototypes;
-		IComponentStore<Prototype> Prototypes
-			=> _prototypes ??= Components.GetStore<Prototype>();
-
 		public Universe()
 		{
-			Entities   = new();
-			Components = new(Entities);
+			Entities   = new(this);
+			Components = new(this);
 			Processors = new(this);
 			Queries    = new(this);
 		}
@@ -62,7 +54,7 @@ namespace gaemstone.Common.ECS
 		public void Set<T>(EcsId entity, T value)
 		{
 			EnsureEntityIsAlive(entity);
-			Components.GetStore<T>().Set(entity.ID, value);
+			Components.GetStore<T>().Set(entity.ID, value, out _);
 		}
 
 
@@ -82,9 +74,10 @@ namespace gaemstone.Common.ECS
 
 		IEnumerable<EcsId> GetPrototypeChain(EcsId entity)
 		{
+			var prototypes = Components.GetStore<Prototype>();
 			while (true) {
 				yield return entity;
-				if (!Prototypes.TryGet(entity.ID, out var prototype)
+				if (!prototypes.TryGet(entity.ID, out var prototype)
 					|| !Entities.IsAlive(prototype.Value)) break;
 				entity = prototype.Value;
 			}

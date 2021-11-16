@@ -19,6 +19,8 @@ namespace gaemstone.Common.ECS
 		public event Action<EcsId>? OnEntityDestroyed;
 		public event Action<int>? OnCapacityChanged;
 
+		public EntityManager(Universe universe) {  }
+
 
 		public EcsId New()
 		{
@@ -26,11 +28,23 @@ namespace gaemstone.Common.ECS
 			if (!_unusedEntityIDs.TryDequeue(out var entityID)) {
 				// If none are available, get the next fresh entity ID.
 				// And resize the entities array if necessary.
-				if (_nextUnusedID >= Capacity)
-					Resize(Capacity << 1);
-				entityID = _nextUnusedID++;
+				do {
+					if (_nextUnusedID >= Capacity)
+						Resize(Capacity << 1);
+					entityID = _nextUnusedID++;
+				} while (Lookup(entityID) != null);
 			}
-
+			return UnsafeNew(entityID);
+		}
+		public EcsId New(uint entityID)
+		{
+			var existing = Lookup(entityID);
+			if (existing != null) throw new InvalidOperationException(
+				$"Entity {existing} already exists and is alive");
+			return UnsafeNew(entityID);
+		}
+		EcsId UnsafeNew(uint entityID)
+		{
 			ref var entry  = ref _entities[entityID];
 			entry.Occupied = true;
 			entry.Generation++;

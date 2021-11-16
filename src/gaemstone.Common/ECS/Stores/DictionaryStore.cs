@@ -13,37 +13,35 @@ namespace gaemstone.Common.ECS.Stores
 		public Type ComponentType { get; } = typeof(T);
 		public int Count => _dict.Count;
 
-		public event ComponentAddedHandler? ComponentAdded;
-		public event ComponentRemovedHandler? ComponentRemoved;
-		public event ComponentChangedHandler<T>? ComponentChanged;
-
-
-		public bool TryGet(uint entityID, [NotNullWhen(true)] out T value)
-			=> _dict.TryGetValue(entityID, out value!);
 
 		public bool Has(uint entityID)
 			=> _dict.ContainsKey(entityID);
 
-		public void Set(uint entityID, T value)
+		public bool TryGet(uint entityID, [NotNullWhen(true)] out T value)
+			=> _dict.TryGetValue(entityID, out value!);
+
+		public bool TryAdd(uint entityID, T value)
 		{
-			var previousCount = _dict.Count;
-			ref var entry = ref _dict.GetRef(GetBehavior.Create, entityID);
-			var entryAdded = (_dict.Count > previousCount);
-			if (entryAdded) ComponentAdded?.Invoke(entityID);
-			ref var oldValue = ref (entryAdded ? ref Unsafe.NullRef<T>() : ref value);
-			ComponentChanged?.Invoke(entityID, ref oldValue, ref value);
+			ref var entry = ref _dict.GetRef(GetBehavior.Add, entityID);
+			if (Unsafe.IsNullRef(ref entry)) return false;
 			entry = value;
+			return true;
 		}
 
-		public bool Remove(uint entityID)
+		public bool Set(uint entityID, T value, [NotNullWhen(true)] out T previous)
 		{
-			var previousCount = _dict.Count;
-			ref var entry = ref _dict.GetRef(GetBehavior.Remove, entityID);
-			if (_dict.Count < previousCount) {
-				ComponentRemoved?.Invoke(entityID);
-				ComponentChanged?.Invoke(entityID, ref entry, ref Unsafe.NullRef<T>());
-				return true;
-			} else return false;
+			var previousCount = Count;
+			ref var entry = ref _dict.GetRef(GetBehavior.Create, entityID);
+			previous = entry;
+			entry = value;
+			return (Count == previousCount);
+		}
+
+		public bool TryRemove(uint entityID, [NotNullWhen(true)] out T previous)
+		{
+			var previousCount = Count;
+			previous = _dict.GetRef(GetBehavior.Remove, entityID);
+			return (Count == previousCount);
 		}
 
 

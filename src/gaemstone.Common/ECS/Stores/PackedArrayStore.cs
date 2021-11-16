@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 namespace gaemstone.Common.ECS.Stores
 {
 	public class PackedArrayStore<T>
-			: IComponentRefStore<T>
+		: IComponentRefStore<T>
 		where T : struct
 	{
 		const int STARTING_CAPACITY = 256;
@@ -32,9 +32,6 @@ namespace gaemstone.Common.ECS.Stores
 			set => _components[index] = value;
 		}
 
-		public event ComponentAddedHandler? ComponentAdded;
-		public event ComponentRemovedHandler? ComponentRemoved;
-
 		public PackedArrayStore()
 		{
 			Indices     = _indices;
@@ -49,7 +46,6 @@ namespace gaemstone.Common.ECS.Stores
 		public uint GetEntityIDByIndex(int index)
 			=> _entityIDs[index];
 
-
 		public void RemoveByIndex(int index)
 		{
 			if ((index < 0) || (index >= Count)) throw new ArgumentOutOfRangeException(nameof(index));
@@ -57,8 +53,6 @@ namespace gaemstone.Common.ECS.Stores
 			var entityID = _entityIDs[index];
 			if (!_indices.Remove(entityID)) throw new InvalidOperationException(
 				$"{_entityIDs[index]} not found in Indices"); // Shouldn't occur.
-
-			ComponentRemoved?.Invoke(entityID);
 
 			if (index == --Count) {
 				_entityIDs[index]  = default;
@@ -73,13 +67,11 @@ namespace gaemstone.Common.ECS.Stores
 		public bool TryFindIndex(uint entityID, out int index)
 			=> _indices.TryGetValue(entityID, out index);
 		public int? FindIndex(uint entityID)
-			=> _indices.TryGetValue(entityID, out var index) ? index : (int?)null;
+			=> _indices.TryGetValue(entityID, out var index) ? index : null;
 
 		public int GetOrCreateIndex(uint entityID)
 		{
-			var added = false;
 			if (!TryFindIndex(entityID, out var index)) {
-				added = true;
 				index = Count++;
 				// Ensure we have the capacity to add another entry.
 				if (Count > Capacity) Resize(Capacity << 1);
@@ -87,10 +79,12 @@ namespace gaemstone.Common.ECS.Stores
 				_entityIDs[index] = entityID;
 			}
 			_indices[entityID] = index;
-			if (added) ComponentAdded?.Invoke(entityID);
 			return index;
 		}
 
+
+		public bool Has(uint entityID)
+			=> TryFindIndex(entityID, out _);
 
 		public bool TryGet(uint entityID, [NotNullWhen(true)] out T value)
 		{
@@ -99,25 +93,46 @@ namespace gaemstone.Common.ECS.Stores
 			return found;
 		}
 
-		public ref T GetRef(uint entityID)
+		public ref T TryGetRef(uint entityID)
+			=> ref TryFindIndex(entityID, out var index)
+				? ref _components[index] : ref Unsafe.NullRef<T>();
+
+		public ref T GetOrCreateRef(uint entityID)
 		{
-			if (TryFindIndex(entityID, out var index))
-				return ref _components[index];
-			else return ref Unsafe.NullRef<T>();
+			// Must be two lines because _components
+			// might be resized by GetOrCreateIndex.
+			var index = GetOrCreateIndex(entityID);
+			return ref _components[index];
 		}
 
-		public bool Has(uint entityID)
-			=> TryFindIndex(entityID, out _);
+		public bool TryAdd(uint entityID, T value)
+		{
+			var previousCount = Count;
+			ref var entry = ref GetOrCreateRef(entityID);
+			if (Count > previousCount) return false;
+			entry = value;
+			return true;
+		}
 
-		public void Set(uint entityID, T value)
-			=> this[GetOrCreateIndex(entityID)] = value;
+		public bool Set(uint entityID, T value, [NotNullWhen(true)] out T previous)
+		{
+			var previousCount = Count;
+			ref var entry = ref GetOrCreateRef(entityID);
+			previous = entry;
+			entry = value;
+			return (Count == previousCount);
+		}
 
-		public bool Remove(uint entityID)
+		public bool TryRemove(uint entityID, [NotNullWhen(true)] out T previous)
 		{
 			if (TryFindIndex(entityID, out var index)) {
+				previous = _components[index];
 				RemoveByIndex(index);
 				return true;
-			} else return false;
+			} else {
+				previous = default;
+				return false;
+			}
 		}
 
 
@@ -125,15 +140,14 @@ namespace gaemstone.Common.ECS.Stores
 		{
 			if (newCapacity < 0) throw new ArgumentOutOfRangeException(
 				nameof(newCapacity), newCapacity, "Capacity must be 0 or positive");
-
-			if (newCapacity < Count) {
-				for (int i = newCapacity; i < Count; i++) {
-					var entityID = _entityIDs[i];
-					_indices.Remove(entityID);
-					ComponentRemoved?.Invoke(entityID);
-				}
-				Count = newCapacity;
-			}
+			if (newCapacity < Count)
+				throw new ArgumentOutOfRangeException(
+					nameof(newCapacity), newCapacity, "Capacity must be greater or equal to Count");
+			// for (int i = newCapacity; i < Count; i++) {
+			// 	var entityID = _entityIDs[i];
+			// 	_indices.Remove(entityID);
+			// }
+			// Count = newCapacity;
 
 			Array.Resize(ref _entityIDs, newCapacity);
 			Array.Resize(ref _components, newCapacity);

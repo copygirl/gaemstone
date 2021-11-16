@@ -146,7 +146,7 @@ namespace gaemstone.Common.ECS
 					=> GeneratedSetAction(ref element, (TValue)value);
 
 				public void Write(uint entityID, in T element)
-					=> Store.Set(entityID, GeneratedGetAction!(element));
+					=> Store.Set(entityID, GeneratedGetAction!(element), out _);
 			}
 		}
 	}

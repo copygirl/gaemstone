@@ -8,12 +8,11 @@ namespace gaemstone.Common.ECS.Stores
 		Type ComponentType { get; }
 		int Count { get; }
 
-		event ComponentAddedHandler? ComponentAdded;
-		event ComponentRemovedHandler? ComponentRemoved;
-
-		bool TryGet(uint entityID, out object value);
 		bool Has(uint entityID);
-		bool Remove(uint entityID);
+		bool TryGet(uint entityID, [NotNullWhen(true)] out object? value);
+		bool TryAdd(uint entityID, object value);
+		bool Set(uint entityID, object value, [NotNullWhen(true)] out object? previous);
+		bool TryRemove(uint entityID, [NotNullWhen(true)] out object? previous);
 
 		IEnumerator GetEnumerator();
 
@@ -29,14 +28,17 @@ namespace gaemstone.Common.ECS.Stores
 		: IComponentStore
 	{
 		bool TryGet(uint entityID, [NotNullWhen(true)] out T value);
-		void Set(uint entityID, T value);
+		bool TryAdd(uint entityID, T value);
+		bool Set(uint entityID, T value, [NotNullWhen(true)] out T previous);
+		bool TryRemove(uint entityID, [NotNullWhen(true)] out T previous);
 
-		bool IComponentStore.TryGet(uint entityID, [NotNullWhen(true)] out object value)
-		{
-			var result = TryGet(entityID, out var _value);
-			value = _value!;
-			return result;
-		}
+		bool IComponentStore.TryGet(uint entityID, [NotNullWhen(true)] out object? value)
+			{ var found = TryGet(entityID, out var _value); value = _value; return found; }
+		bool IComponentStore.TryAdd(uint entityID, object value) => TryAdd(entityID, (T)value);
+		bool IComponentStore.Set(uint entityID, object value, [NotNullWhen(true)] out object? previous)
+			{ var found = Set(entityID, (T)value, out var _prev); previous = _prev; return found; }
+		bool IComponentStore.TryRemove(uint entityID, [NotNullWhen(true)] out object? previous)
+			{ var found = TryRemove(entityID, out var _prev); previous = _prev; return found; }
 
 		new IEnumerator GetEnumerator();
 
@@ -48,10 +50,11 @@ namespace gaemstone.Common.ECS.Stores
 	}
 
 	public interface IComponentRefStore<T>
-			: IComponentStore<T>
+		: IComponentStore<T>
 		where T : struct
 	{
-		ref T GetRef(uint entityID);
+		ref T TryGetRef(uint entityID);
+		ref T GetOrCreateRef(uint entityID);
 
 		new IEnumerator GetEnumerator();
 
@@ -61,8 +64,4 @@ namespace gaemstone.Common.ECS.Stores
 			new ref T CurrentComponent { get; }
 		}
 	}
-
-	public delegate void ComponentAddedHandler(uint entityID);
-	public delegate void ComponentRemovedHandler(uint entityID);
-	public delegate void ComponentChangedHandler<T>(uint entityID, ref T oldValue, ref T newValue);
 }

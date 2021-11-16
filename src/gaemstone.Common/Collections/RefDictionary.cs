@@ -16,7 +16,7 @@ namespace gaemstone.Common.Collections
 		Remove,
 		/// <summary> Returns entry if existant, creates and returns newEntry if not. </summary>
 		Create,
-		/// <summary> Throws if existant, creates and returns newEntry if not. </summary>
+		/// <summary> Returns null ref if existant, creates and returns newEntry if not. </summary>
 		Add,
 	}
 
@@ -149,7 +149,7 @@ namespace gaemstone.Common.Collections
 		ref Entry GetEntryRef(GetBehavior behavior, TKey key)
 		{
 			if (_buckets == null) {
-				if (behavior != GetBehavior.Create)
+				if (behavior < GetBehavior.Create)
 					return ref Unsafe.NullRef<Entry>();
 				Initialize(0);
 			}
@@ -162,7 +162,8 @@ namespace gaemstone.Common.Collections
 				ref var entry = ref _entries![i];
 				if ((entry.HashCode == hashCode) && _comparer.Equals(entry.Key, key)) {
 					if (behavior == GetBehavior.Add)
-						throw new ArgumentException("An element with the same key already exists", nameof(key));
+						return ref Unsafe.NullRef<Entry>();
+
 					if (behavior == GetBehavior.Remove) {
 						if (last < 0) bucket = entry._next + 1;
 						else _entries[last]._next = entry._next;
@@ -177,6 +178,7 @@ namespace gaemstone.Common.Collections
 						_freeCount++;
 						_version++;
 					}
+
 					return ref entry;
 				}
 				last = i;
