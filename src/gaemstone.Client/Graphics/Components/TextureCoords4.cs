@@ -4,7 +4,7 @@ using gaemstone.Common.Stores;
 
 namespace gaemstone.Client.Graphics
 {
-	[Store(typeof(PackedArrayStore<>))]
+	[Store(default)]
 	public readonly struct TextureCoords4
 	{
 		public Vector2 TopLeft { get; }

@@ -2,7 +2,7 @@ using gaemstone.Common.Stores;
 
 namespace gaemstone.Common
 {
-	[Store(typeof(PackedArrayStore<>))]
+	[Store]
 	public readonly struct Prototype
 	{
 		public readonly EcsId Value { get; }

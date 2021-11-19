@@ -4,7 +4,7 @@ using Silk.NET.OpenGL;
 
 namespace gaemstone.Client.Graphics
 {
-	[Store(typeof(PackedArrayStore<>))]
+	[Store]
 	public readonly struct Texture
 	{
 		public static Texture Gen(TextureTarget target)

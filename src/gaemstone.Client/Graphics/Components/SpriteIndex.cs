@@ -2,7 +2,7 @@ using gaemstone.Common.Stores;
 
 namespace gaemstone.Client.Graphics
 {
-	[Store(typeof(PackedArrayStore<>))]
+	[Store]
 	public readonly struct SpriteIndex
 	{
 		public readonly int Value;

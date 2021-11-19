@@ -3,7 +3,7 @@ using Silk.NET.OpenGL;
 
 namespace gaemstone.Client.Graphics
 {
-	[Store(typeof(PackedArrayStore<>))]
+	[Store]
 	public readonly struct Mesh
 	{
 		public VertexArray VAO { get; }

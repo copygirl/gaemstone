@@ -7,8 +7,9 @@ namespace gaemstone.Common.Stores
 	{
 		public Type Type { get; }
 
-		public StoreAttribute(Type type)
+		public StoreAttribute(Type? type = null)
 		{
+			if (type == null) type = typeof(PackedArrayStore<>);
 			if (!typeof(IComponentStore).IsAssignableFrom(type)) throw new ArgumentException(
 				$"The specified type {type} is not an IComponentStore");
 			if (type.GetConstructor(Type.EmptyTypes) == null) throw new ArgumentException(
