@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace gaemstone.Common.Collections
+namespace gaemstone.Common.Utility
 {
 	public enum GetBehavior
 	{

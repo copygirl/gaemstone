@@ -8,10 +8,9 @@ using System.Threading;
 using gaemstone.Bloxel.Chunks;
 using gaemstone.Bloxel.Client;
 using gaemstone.Client;
-using gaemstone.Client.Components;
 using gaemstone.Client.Graphics;
-using gaemstone.Common.Components;
-using gaemstone.Common.ECS.Stores;
+using gaemstone.Common;
+using gaemstone.Common.Stores;
 using gaemstone.Common.Utility;
 
 namespace Immersion
@@ -31,7 +30,6 @@ namespace Immersion
 			CultureInfo.DefaultThreadCurrentCulture = culture;
 
 			Window.Title = "gæmstone: Immersion";
-			Components.AddStore(new PackedArrayStore<TextureCoords4>());
 			Components.AddStore(new LookupDictionaryStore<ChunkPos, Chunk>(chunk => chunk.Position));
 			Components.AddStore(new DictionaryStore<ChunkPaletteStorage<Prototype>>());
 

@@ -4,10 +4,10 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
-using gaemstone.Common.ECS.Stores;
+using gaemstone.Common.Stores;
 using gaemstone.Common.Utility;
 
-namespace gaemstone.Common.ECS
+namespace gaemstone.Common
 {
 	public class QueryManager
 	{

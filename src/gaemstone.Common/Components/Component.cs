@@ -1,7 +1,7 @@
 using System;
-using gaemstone.Common.ECS.Stores;
+using gaemstone.Common.Stores;
 
-namespace gaemstone.Common.ECS
+namespace gaemstone.Common
 {
 	public readonly struct Component
 	{

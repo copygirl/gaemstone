@@ -1,9 +1,9 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using gaemstone.Common.Collections;
+using gaemstone.Common.Utility;
 
-namespace gaemstone.Common.ECS.Stores
+namespace gaemstone.Common.Stores
 {
 	public class DictionaryStore<T>
 		: IComponentStore<T>

@@ -4,8 +4,8 @@ using System.Numerics;
 using gaemstone.Bloxel.Chunks;
 using gaemstone.Client;
 using gaemstone.Client.Graphics;
-using gaemstone.Common.ECS.Stores;
-using gaemstone.Common.Components;
+using gaemstone.Common;
+using gaemstone.Common.Stores;
 
 namespace gaemstone.Bloxel.Client
 {

@@ -1,7 +1,8 @@
-using gaemstone.Common.ECS;
+using gaemstone.Common.Stores;
 
-namespace gaemstone.Common.Components
+namespace gaemstone.Common
 {
+	[Store(typeof(PackedArrayStore<>))]
 	public readonly struct Prototype
 	{
 		public readonly EcsId Value { get; }

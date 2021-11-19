@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace gaemstone.Common.ECS.Stores
+namespace gaemstone.Common.Stores
 {
 	public class LookupDictionaryStore<TKey, T>
 		: IComponentStore<T>

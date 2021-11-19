@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace gaemstone.Common.ECS
+namespace gaemstone.Common
 {
 	public class EntityManager
 	{

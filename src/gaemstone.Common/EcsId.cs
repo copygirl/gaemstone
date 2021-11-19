@@ -2,7 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace gaemstone.Common.ECS
+namespace gaemstone.Common
 {
 	// Reserved for Components (?)
 	//   |    Regular Entities

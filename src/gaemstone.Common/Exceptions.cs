@@ -1,6 +1,6 @@
 using System;
 
-namespace gaemstone.Common.ECS
+namespace gaemstone.Common
 {
 	public class ComponentNotFoundException : Exception
 	{

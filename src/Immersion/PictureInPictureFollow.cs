@@ -1,9 +1,8 @@
 using System.Linq;
 using System.Numerics;
-using gaemstone.Client.Components;
-using gaemstone.Common.Components;
-using gaemstone.Common.ECS;
-using gaemstone.Common.ECS.Processors;
+using gaemstone.Client;
+using gaemstone.Common;
+using gaemstone.Common.Processors;
 
 namespace Immersion
 {

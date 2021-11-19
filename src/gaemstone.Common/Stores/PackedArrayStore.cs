@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
-namespace gaemstone.Common.ECS.Stores
+namespace gaemstone.Common.Stores
 {
 	public class PackedArrayStore<T>
 		: IComponentRefStore<T>

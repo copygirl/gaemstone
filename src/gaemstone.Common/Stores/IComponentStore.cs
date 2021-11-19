@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace gaemstone.Common.ECS.Stores
+namespace gaemstone.Common.Stores
 {
 	public interface IComponentStore
 	{

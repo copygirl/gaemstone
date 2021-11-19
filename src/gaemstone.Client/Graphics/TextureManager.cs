@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using gaemstone.Common.ECS;
-using gaemstone.Common.ECS.Processors;
+using gaemstone.Common;
+using gaemstone.Common.Processors;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;

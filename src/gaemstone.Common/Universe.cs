@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using gaemstone.Common.Components;
-using gaemstone.Common.ECS.Processors;
+using gaemstone.Common.Processors;
 
-namespace gaemstone.Common.ECS
+namespace gaemstone.Common
 {
 	public class Universe
 	{

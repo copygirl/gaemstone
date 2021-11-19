@@ -1,12 +1,9 @@
 using System;
 using System.IO;
 using System.Numerics;
-using gaemstone.Client.Components;
 using gaemstone.Client.Graphics;
 using gaemstone.Client.Processors;
-using gaemstone.Common.Components;
-using gaemstone.Common.ECS;
-using gaemstone.Common.ECS.Stores;
+using gaemstone.Common;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
 
@@ -33,12 +30,6 @@ namespace gaemstone.Client
 			Window.Load    += OnLoad;
 			Window.Update  += OnUpdate;
 			Window.Closing += OnClosing;
-
-			Components.AddStore(new PackedArrayStore<Transform>());
-			Components.AddStore(new PackedArrayStore<Mesh>());
-			Components.AddStore(new PackedArrayStore<Texture>());
-			Components.AddStore(new PackedArrayStore<SpriteIndex>());
-			Components.AddStore(new DictionaryStore<Camera>());
 		}
 
 		public void Run()

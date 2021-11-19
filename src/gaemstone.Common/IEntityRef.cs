@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace gaemstone.Common.ECS
+namespace gaemstone.Common
 {
 	public interface IEntityRef
 	{

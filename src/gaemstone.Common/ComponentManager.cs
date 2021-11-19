@@ -1,8 +1,8 @@
 using System;
-using gaemstone.Common.Components;
-using gaemstone.Common.ECS.Stores;
+using System.Reflection;
+using gaemstone.Common.Stores;
 
-namespace gaemstone.Common.ECS
+namespace gaemstone.Common
 {
 	public class ComponentManager
 	{
@@ -23,15 +23,31 @@ namespace gaemstone.Common.ECS
 			GetStore<Identifier>().TryAdd(COMPONENT_ID, new(nameof(Component)));
 			GetStore<Identifier>().TryAdd(IDENTIFIER_ID, new(nameof(Identifier)));
 
-			AddStore(new PackedArrayStore<Prototype>());
-
 			universe.Entities.OnEntityDestroyed += Clear;
 		}
 
 		public IComponentStore GetStore(Type componentType)
-			=> _components.TryGetEntityID(componentType, out var entityID)
-			&& _components.TryGet(entityID, out var component) ? component.Store
-				: throw new InvalidOperationException($"No IComponentStore for type {componentType}");
+		{
+			if (!_components.TryGetEntityID(componentType, out var entityID)) {
+				// When the component does not yet have a
+				if (componentType.GetCustomAttribute<StoreAttribute>() is not StoreAttribute attr)
+					throw new InvalidOperationException($"No IComponentStore for type {componentType}");
+
+				// Allow for shorthand specifying a generic type definition in StoreAttribute,
+				// for example `PackedArrayStore<>` instead of `PackedArrayStore<Component>`.
+				var storeType = attr.Type.IsGenericTypeDefinition
+					? attr.Type.MakeGenericType(componentType) : attr.Type;
+
+				var store = (IComponentStore)Activator.CreateInstance(storeType)!;
+				if (store.ComponentType != componentType) throw new InvalidOperationException(
+					$"StoreAttribute specified for {componentType} produced IComponentStore with mismatching ComponentType");
+				AddStore(store);
+				return store;
+			}
+			return _components.TryGet(entityID, out var component) ? component.Store
+				: throw new InvalidOperationException(); // Should not occur.
+		}
+
 		public IComponentStore<T> GetStore<T>()
 			=> (IComponentStore<T>)GetStore(typeof(T));
 
