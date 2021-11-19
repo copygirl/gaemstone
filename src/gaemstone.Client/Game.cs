@@ -25,10 +25,9 @@ namespace gaemstone.Client
 			var options = WindowOptions.Default;
 			options.Title = "gæmstone";
 			options.Size  = new(1280, 720);
-			options.API   = GraphicsAPI.Default;
 			options.UpdatesPerSecond = 30.0;
 			options.FramesPerSecond  = 60.0;
-			options.ShouldSwapAutomatically = true;
+			options.PreferredDepthBufferBits = 24;
 
 			Window = Silk.NET.Windowing.Window.Create(options);
 			Window.Load    += OnLoad;

@@ -16,10 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.0-alpha0020" />
-    <PackageReference Include="Silk.NET" Version="2.0.0-preview4" />
-    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.2" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="5.0.0" />
+    <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.0-alpha0023" />
+    <PackageReference Include="Silk.NET" Version="2.10.1" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
   </ItemGroup>
 
 </Project>
