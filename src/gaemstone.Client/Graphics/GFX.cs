@@ -50,7 +50,23 @@ namespace gaemstone.Client.Graphics
 		public static void Clear(Vector4 color)
 		{
 			GL.ClearColor(color.X, color.Y, color.Z, color.W);
-			GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
+			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+		}
+		public static void Clear(Color color, Rectangle area)
+		{
+			GL.Enable(EnableCap.ScissorTest);
+			GL.Scissor(area.X, area.Y, (uint)area.Width, (uint)area.Height);
+			GL.ClearColor(color);
+			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+			GL.Disable(EnableCap.ScissorTest);
+		}
+		public static void Clear(Vector4 color, Rectangle area)
+		{
+			GL.Enable(EnableCap.ScissorTest);
+			GL.Scissor(area.X, area.Y, (uint)area.Width, (uint)area.Height);
+			GL.ClearColor(color.X, color.Y, color.Z, color.W);
+			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+			GL.Disable(EnableCap.ScissorTest);
 		}
 
 		public static void Viewport(Size size)

@@ -11,20 +11,6 @@ namespace gaemstone.Client.Graphics
 {
 	public class Renderer : IProcessor
 	{
-		struct CameraQuery
-		{
-			public Camera Camera { get; }
-			public Transform Transform { get; }
-		}
-
-		struct RenderableQuery
-		{
-			public Mesh Mesh { get; }
-			public Transform Transform { get; }
-			public Texture? Texture { get; }
-			public SpriteIndex? SpriteIndex { get; }
-		}
-
 		Game _game = null!;
 		Program _program;
 		UniformMatrix4x4 _cameraMatrixUniform;
@@ -54,23 +40,43 @@ namespace gaemstone.Client.Graphics
 
 		public void OnUpdate(double delta) {  }
 
+		struct CameraQuery
+		{
+			public Camera Camera { get; }
+			public Transform Transform { get; }
+		}
+
+		struct RenderableQuery
+		{
+			public Mesh Mesh { get; }
+			public Transform Transform { get; }
+			public Texture? Texture { get; }
+			public SpriteIndex? SpriteIndex { get; }
+		}
+
 		public void OnWindowRender(double delta)
 		{
-			var size = _game.Window.Size;
-			GFX.Viewport(new Size(size.X, size.Y));
+			var windowSize = _game.Window.Size;
+			// GFX.Viewport(new Size(windowSize.X, windowSize.Y));
 			GFX.Clear(Color.Indigo);
 			_program.Use();
 
 			_game.Queries.Run((ref CameraQuery e) => {
+				var clearColor = e.Camera.ClearColor ?? Color.Indigo;
+				var viewport   = e.Camera.Viewport ?? new(0, 0, windowSize.X, windowSize.Y);
+				GFX.Viewport(viewport);
+				GFX.Clear(clearColor, viewport);
+
 				// Get the camera's transform matrix and invert it.
 				Matrix4x4.Invert(e.Transform, out var cameraTransform);
 				// Create the camera's projection matrix, either ortho or perspective.
 				var cameraProjection = e.Camera.IsOrthographic
-					? Matrix4x4.CreateOrthographic(size.X, -size.Y,
+					? Matrix4x4.CreateOrthographic(
+						viewport.Size.Width, -viewport.Size.Height,
 						e.Camera.NearPlane, e.Camera.FarPlane)
 					: Matrix4x4.CreatePerspectiveFieldOfView(
-						e.Camera.FieldOfView * MathF.PI / 180, // Degrees => Radians
-						(float)size.X / size.Y,              // Aspect Ratio
+						e.Camera.FieldOfView * MathF.PI / 180,             // Degrees => Radians
+						(float)viewport.Size.Width / viewport.Size.Height, // Aspect Ratio
 						e.Camera.NearPlane, e.Camera.FarPlane);
 				// Set the uniform to thequery. combined transform and projection.
 				_cameraMatrixUniform.Set(cameraTransform * cameraProjection);

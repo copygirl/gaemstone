@@ -1,7 +1,10 @@
 using System;
+using System.Drawing;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Threading;
 using gaemstone.Bloxel.Chunks;
 using gaemstone.Bloxel.Client;
 using gaemstone.Client;
@@ -22,18 +25,23 @@ namespace Immersion
 
 		public Program()
 		{
+			// Fix the damn locale / culture for the entire program.
+			var culture = CultureInfo.InvariantCulture;
+			Thread.CurrentThread.CurrentCulture     = culture;
+			CultureInfo.DefaultThreadCurrentCulture = culture;
+
 			Window.Title = "gæmstone: Immersion";
 			Components.AddStore(new PackedArrayStore<TextureCoords4>());
 			Components.AddStore(new LookupDictionaryStore<ChunkPos, Chunk>(chunk => chunk.Position));
 			Components.AddStore(new DictionaryStore<ChunkPaletteStorage<Prototype>>());
+
+			Processors.Start<PictureInPictureFollow>();
 		}
 
 
 		protected override void OnLoad()
 		{
 			base.OnLoad();
-			var (mainCamera, _) = GetAll<Camera>().First();
-			Set(mainCamera, (Transform)Matrix4x4.CreateTranslation(0, 26, 0));
 
 			var meshManager = Processors.GetOrThrow<MeshManager>();
 			var heartMesh = meshManager.Load(this, "heart.glb");
@@ -42,11 +50,19 @@ namespace Immersion
 			for (var x = -12; x <= 12; x++)
 			for (var z = -12; z <= 12; z++) {
 				var entity   = Entities.New();
-				var position = Matrix4x4.CreateTranslation(x * 2, 24, z * 2);
+				var position = Matrix4x4.CreateTranslation(x * 2, 25, z * 2);
 				var rotation = Matrix4x4.CreateRotationY(RND.NextFloat(MathF.PI * 2));
 				Set(entity, (Transform)(rotation * position));
 				Set(entity, RND.Pick(heartMesh, swordMesh));
 			}
+
+			var (mainCamera, _) = GetAll<Camera>().First();
+			Set(mainCamera, (Transform)Matrix4x4.CreateTranslation(0, 26, 0));
+			Set(mainCamera, heartMesh);
+
+			var smallCamera = Entities.New();
+			Set(smallCamera, Camera.Create3D(90.0F,
+				clearColor: Color.Black, viewport: new(8, 8, 320, 180)));
 
 			var textureManager = Processors.GetOrThrow<TextureManager>();
 			var texture = textureManager.Load(this, "terrain.png");
@@ -89,14 +105,17 @@ namespace Immersion
 				Set(chunk, texture);
 			}
 
-			for (var x = -6; x < 6; x++)
-			for (var y = -2; y < 2; y++)
-			for (var z = -6; z < 6; z++)
+			var sizeH = 4;
+			var sizeY = 2;
+
+			for (var x = -sizeH; x < sizeH; x++)
+			for (var y = -sizeY; y < sizeY; y++)
+			for (var z = -sizeH; z < sizeH; z++)
 				CreateChunk(new(x, y, z));
 
-			for (var x = -6; x < 6; x++)
-			for (var y = -2; y < 2; y++)
-			for (var z = -6; z < 6; z++)
+			for (var x = -sizeH; x < sizeH; x++)
+			for (var y = -sizeY; y < sizeY; y++)
+			for (var z = -sizeH; z < sizeH; z++)
 				GenerateChunkMesh(new(x, y, z));
 		}
 

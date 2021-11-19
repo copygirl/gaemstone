@@ -69,9 +69,8 @@ namespace gaemstone.Common.Collections
 		public RefDictionary(int capacity, IEqualityComparer<TKey> comparer)
 		{
 			if (capacity < 0) throw new ArgumentOutOfRangeException(nameof(capacity));
-			if (comparer == null) throw new ArgumentNullException(nameof(comparer));
+			_comparer = comparer ?? throw new ArgumentNullException(nameof(comparer));
 			if (capacity > 0) Initialize(capacity);
-			_comparer = comparer;
 		}
 
 
