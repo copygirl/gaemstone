@@ -32,8 +32,6 @@ namespace Immersion
 			Window.Title = "gæmstone: Immersion";
 			Components.AddStore(new LookupDictionaryStore<ChunkPos, Chunk>(chunk => chunk.Position));
 			Components.AddStore(new DictionaryStore<ChunkPaletteStorage<Prototype>>());
-
-			Processors.Start<PictureInPictureFollow>();
 		}
 
 
@@ -57,10 +55,6 @@ namespace Immersion
 			var (mainCamera, _) = GetAll<Camera>().First();
 			Set(mainCamera, (Transform)Matrix4x4.CreateTranslation(0, 26, 0));
 			Set(mainCamera, heartMesh);
-
-			var smallCamera = Entities.New();
-			Set(smallCamera, Camera.Create3D(90.0F,
-				clearColor: Color.Black, viewport: new(8, 8, 320, 180)));
 
 			var textureManager = Processors.GetOrThrow<TextureManager>();
 			var texture = textureManager.Load(this, "terrain.png");
@@ -115,6 +109,8 @@ namespace Immersion
 			for (var y = -sizeY; y < sizeY; y++)
 			for (var z = -sizeH; z < sizeH; z++)
 				GenerateChunkMesh(new(x, y, z));
+
+			Processors.Start<PictureInPictureFollow>();
 		}
 
 
