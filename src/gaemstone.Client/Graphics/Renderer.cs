@@ -9,18 +9,18 @@ namespace gaemstone.Client.Graphics
 {
 	public class Renderer : IProcessor
 	{
-		Game _game = null!;
+		public Game Game { get; } = null!;
+
 		Program _program;
 		UniformMatrix4x4 _cameraMatrixUniform;
 		UniformMatrix4x4 _modelMatrixUniform;
 
-		public void OnLoad(Universe universe)
+		public void OnLoad()
 		{
-			_game = (Game)universe;
-			_game.Window.Render += OnWindowRender;
+			Game.Window.Render += OnWindowRender;
 
-			var vertexShaderSource   = _game.GetResourceAsString("default.vs.glsl");
-			var fragmentShaderSource = _game.GetResourceAsString("default.fs.glsl");
+			var vertexShaderSource   = Game.GetResourceAsString("default.vs.glsl");
+			var fragmentShaderSource = Game.GetResourceAsString("default.fs.glsl");
 
 			_program = Program.LinkFromShaders("main",
 				Shader.CompileFromSource("vertex", ShaderType.VertexShader, vertexShaderSource),
@@ -34,7 +34,7 @@ namespace gaemstone.Client.Graphics
 		}
 
 		public void OnUnload()
-			=> _game.Window.Render -= OnWindowRender;
+			=> Game.Window.Render -= OnWindowRender;
 
 		public void OnUpdate(double delta) {  }
 
@@ -54,12 +54,12 @@ namespace gaemstone.Client.Graphics
 
 		public void OnWindowRender(double delta)
 		{
-			var windowSize = _game.Window.Size;
+			var windowSize = Game.Window.Size;
 			// GFX.Viewport(new Size(windowSize.X, windowSize.Y));
 			GFX.Clear(Color.Indigo);
 			_program.Use();
 
-			_game.Queries.Run((ref CameraQuery e) => {
+			Game.Queries.Run((ref CameraQuery e) => {
 				var clearColor = e.Camera.ClearColor ?? Color.Indigo;
 				var viewport   = e.Camera.Viewport ?? new(0, 0, windowSize.X, windowSize.Y);
 				GFX.Viewport(viewport);
@@ -79,7 +79,7 @@ namespace gaemstone.Client.Graphics
 				// Set the uniform to thequery. combined transform and projection.
 				_cameraMatrixUniform.Set(cameraTransform * cameraProjection);
 
-				_game.Queries.Run((ref RenderableQuery e) => {
+				Game.Queries.Run((ref RenderableQuery e) => {
 					_modelMatrixUniform.Set(e.Transform);
 					// If entity has Texture, bind it now.
 					if (e.Texture.HasValue) e.Texture.Value.Bind();

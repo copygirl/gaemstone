@@ -1,6 +1,5 @@
 using System;
 using System.Numerics;
-using gaemstone.Common;
 using gaemstone.Common.Processors;
 using Silk.NET.OpenGL;
 using ModelRoot = SharpGLTF.Schema2.ModelRoot;
@@ -104,10 +103,8 @@ namespace gaemstone.Client.Graphics
 		// IProcessor implementation
 		// (currently not used for anything)
 
-		public void OnLoad(Universe universe) {  }
-
+		public void OnLoad() {  }
 		public void OnUnload() {  }
-
 		public void OnUpdate(double delta) {  }
 	}
 }

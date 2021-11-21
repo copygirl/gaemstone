@@ -4,6 +4,7 @@ using System.Numerics;
 using gaemstone.Client.Graphics;
 using gaemstone.Client.Processors;
 using gaemstone.Common;
+using gaemstone.Common.Utility;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
 
@@ -30,6 +31,19 @@ namespace gaemstone.Client
 			Window.Load    += OnLoad;
 			Window.Update  += OnUpdate;
 			Window.Closing += OnClosing;
+
+			Processors.ProcessorLoadedPre += processor => {
+				var property = processor.GetType().GetProperty(nameof(Game));
+				if (property?.PropertyType == typeof(Game))
+					TypeWrapper.For(processor.GetType()).GetFieldForAutoProperty(property)
+						.ClassSetter.Invoke(processor, this);
+			};
+			Processors.ProcessorUnloadedPost += processor => {
+				var property = processor.GetType().GetProperty(nameof(Game));
+				if (property?.PropertyType == typeof(Game))
+					TypeWrapper.For(processor.GetType()).GetFieldForAutoProperty(property)
+						.ClassSetter.Invoke(processor, null);
+			};
 		}
 
 		public void Run()

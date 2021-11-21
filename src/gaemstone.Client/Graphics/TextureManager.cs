@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using gaemstone.Common;
 using gaemstone.Common.Processors;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
@@ -55,7 +54,7 @@ namespace gaemstone.Client.Graphics
 
 		// IProcessor implementation
 
-		public void OnLoad(Universe universe)
+		public void OnLoad()
 		{
 			// Upload single-pixel white texture into texture slot 0, so when
 			// "no" texture is bound, we can still use the texture sampler.

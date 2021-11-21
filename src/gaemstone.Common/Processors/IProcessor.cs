@@ -4,7 +4,7 @@ namespace gaemstone.Common.Processors
 	{
 		// TODO: Dependencies on other processors.
 
-		void OnLoad(Universe universe);
+		void OnLoad();
 		void OnUnload();
 
 		void OnUpdate(double delta);

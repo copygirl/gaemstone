@@ -1,29 +1,46 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using gaemstone.Common.Utility;
 
 namespace gaemstone.Common.Processors
 {
 	public class ProcessorManager
 		: IReadOnlyCollection<IProcessor>
 	{
-		readonly Universe _universe;
 		readonly Dictionary<Type, IProcessor> _processors = new();
 
 		public int Count => _processors.Count;
 
-		public event Action<IProcessor>? ProcessorLoaded;
-		public event Action<IProcessor>? ProcessorUnloaded;
+		public event Action<IProcessor>? ProcessorLoadedPre;
+		public event Action<IProcessor>? ProcessorLoadedPost;
+		public event Action<IProcessor>? ProcessorUnloadedPre;
+		public event Action<IProcessor>? ProcessorUnloadedPost;
 
 		public ProcessorManager(Universe universe)
-			=> _universe = universe;
+		{
+			ProcessorLoadedPre += processor => {
+				var property = processor.GetType().GetProperty(nameof(Universe));
+				if (property?.PropertyType == typeof(Universe))
+					TypeWrapper.For(processor.GetType()).GetFieldForAutoProperty(property)
+						.ClassSetter.Invoke(processor, universe);
+			};
+
+			ProcessorUnloadedPost += processor => {
+				var property = processor.GetType().GetProperty(nameof(Universe));
+				if (property?.PropertyType == typeof(Universe))
+					TypeWrapper.For(processor.GetType()).GetFieldForAutoProperty(property)
+						.ClassSetter.Invoke(processor, null);
+			};
+		}
 
 
 		void Start(Type type, IProcessor processor)
 		{
+			ProcessorLoadedPre?.Invoke(processor);
 			_processors.Add(type, processor);
-			processor.OnLoad(_universe);
-			ProcessorLoaded?.Invoke(processor);
+			processor.OnLoad();
+			ProcessorLoadedPost?.Invoke(processor);
 		}
 		// public T Start<T>(Type type)
 		// 	where T : IProcessor
@@ -49,9 +66,10 @@ namespace gaemstone.Common.Processors
 			where T : IProcessor
 		{
 			var processor = GetOrThrow<T>();
+			ProcessorUnloadedPre?.Invoke(processor);
 			_processors.Remove(typeof(T));
 			processor.OnUnload();
-			ProcessorUnloaded?.Invoke(processor);
+			ProcessorUnloadedPost?.Invoke(processor);
 		}
 
 

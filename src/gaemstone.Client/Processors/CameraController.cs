@@ -10,7 +10,8 @@ namespace gaemstone.Client.Processors
 	public class CameraController
 		: IProcessor
 	{
-		Game _game = null!;
+		public Game Game { get; } = null!;
+
 		IMouse _mouse = null!;
 		IKeyboard _keyboard = null!;
 
@@ -24,12 +25,10 @@ namespace gaemstone.Client.Processors
 		bool _moveBack    = false; // +Z
 		bool _fastMovement = false;
 
-		public void OnLoad(Universe universe)
+		public void OnLoad()
 		{
-			_game = (Game)universe;
-
-			_mouse    = _game.Input.Mice[0];
-			_keyboard = _game.Input.Keyboards[0];
+			_mouse    = Game.Input.Mice[0];
+			_keyboard = Game.Input.Keyboards[0];
 
 			_mouse.MouseDown += OnMouseDown;
 			_mouse.MouseUp   += OnMouseUp;
@@ -101,7 +100,7 @@ namespace gaemstone.Client.Processors
 
 		public void OnUpdate(double delta)
 		{
-			_game.Queries.Run((Span<CameraQuery> query) => {
+			Game.Queries.Run((Span<CameraQuery> query) => {
 				if (query.Length == 0) return; // No cameras.
 				ref var e = ref query[0]; // Only first camera found is affected.
 
