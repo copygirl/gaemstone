@@ -36,5 +36,8 @@ namespace gaemstone.Client
 			get => (FieldOfView == 0.0F);
 			set => FieldOfView = (value ? 0.0F : Default3D.FieldOfView);
 		}
+
+		public override string ToString()
+			=> $"Camera {{ FieldOfView={FieldOfView}, NearPlane={NearPlane}, FarPlane={FarPlane} }}";
 	}
 }

@@ -15,6 +15,9 @@ namespace gaemstone.Client.Graphics
 		UniformMatrix4x4 _cameraMatrixUniform;
 		UniformMatrix4x4 _modelMatrixUniform;
 
+		IQuery? _cameraQuery;
+		IQuery? _renderableQuery;
+
 		public void OnLoad()
 		{
 			Game.Window.Render += OnWindowRender;
@@ -31,6 +34,9 @@ namespace gaemstone.Client.Graphics
 			var uniforms = _program.GetActiveUniforms();
 			_cameraMatrixUniform = uniforms["cameraMatrix"].Matrix4x4;
 			_modelMatrixUniform  = uniforms["modelMatrix"].Matrix4x4;
+
+			_cameraQuery     = Game.Queries.New("QueryRenderCamera").Execute(RenderCamera).Build();
+			_renderableQuery = Game.Queries.New("QueryRenderEntity").Execute(RenderEntity).Build();
 		}
 
 		public void OnUnload()
@@ -38,65 +44,59 @@ namespace gaemstone.Client.Graphics
 
 		public void OnUpdate(double delta) {  }
 
-		struct CameraQuery
-		{
-			public Camera Camera { get; }
-			public Transform Transform { get; }
-		}
-
-		struct RenderableQuery
-		{
-			public Mesh Mesh { get; }
-			public Transform Transform { get; }
-			public Texture? Texture { get; }
-			public SpriteIndex? SpriteIndex { get; }
-		}
-
 		public void OnWindowRender(double delta)
 		{
-			var windowSize = Game.Window.Size;
-			// GFX.Viewport(new Size(windowSize.X, windowSize.Y));
 			GFX.Clear(Color.Indigo);
 			_program.Use();
 
-			Game.Queries.Run((ref CameraQuery e) => {
-				var clearColor = e.Camera.ClearColor ?? Color.Indigo;
-				var viewport   = e.Camera.Viewport ?? new(0, 0, windowSize.X, windowSize.Y);
-				GFX.Viewport(viewport);
-				GFX.Clear(clearColor, viewport);
-
-				// Get the camera's transform matrix and invert it.
-				Matrix4x4.Invert(e.Transform, out var cameraTransform);
-				// Create the camera's projection matrix, either ortho or perspective.
-				var cameraProjection = e.Camera.IsOrthographic
-					? Matrix4x4.CreateOrthographic(
-						viewport.Size.Width, -viewport.Size.Height,
-						e.Camera.NearPlane, e.Camera.FarPlane)
-					: Matrix4x4.CreatePerspectiveFieldOfView(
-						e.Camera.FieldOfView * MathF.PI / 180,             // Degrees => Radians
-						(float)viewport.Size.Width / viewport.Size.Height, // Aspect Ratio
-						e.Camera.NearPlane, e.Camera.FarPlane);
-				// Set the uniform to thequery. combined transform and projection.
-				_cameraMatrixUniform.Set(cameraTransform * cameraProjection);
-
-				Game.Queries.Run((ref RenderableQuery e) => {
-					_modelMatrixUniform.Set(e.Transform);
-					// If entity has Texture, bind it now.
-					if (e.Texture.HasValue) e.Texture.Value.Bind();
-
-					// If entity has SpriteIndex, only render two
-					// triangles out of the mesh specified by that index.
-					if (e.SpriteIndex.HasValue)
-						e.Mesh.Draw(e.SpriteIndex.Value * 6, 6);
-					// Otherwise just render the entire mesh like usual.
-					e.Mesh.Draw();
-
-					// If entity has Texture, unbind it after it has been rendered.
-					if (e.Texture.HasValue) e.Texture.Value.Unbind();
-				});
-			});
+			_cameraQuery!.Run();
 
 			VertexArray.Unbind();
+		}
+
+		public void RenderCamera(Camera camera, in Transform transform)
+		{
+			var clearColor = camera.ClearColor ?? Color.Indigo;
+			var viewport   = camera.Viewport ?? new(0, 0, Game.Window.Size.X, Game.Window.Size.Y);
+			GFX.Viewport(viewport);
+			GFX.Clear(clearColor, viewport);
+
+			// Get the camera's transform matrix and invert it.
+			Matrix4x4.Invert(transform, out var cameraTransform);
+			// Create the camera's projection matrix, either ortho or perspective.
+			var cameraProjection = camera.IsOrthographic
+				? Matrix4x4.CreateOrthographic(
+					viewport.Size.Width, -viewport.Size.Height,
+					camera.NearPlane, camera.FarPlane)
+				: Matrix4x4.CreatePerspectiveFieldOfView(
+					camera.FieldOfView * MathF.PI / 180,               // Degrees => Radians
+					(float)viewport.Size.Width / viewport.Size.Height, // Aspect Ratio
+					camera.NearPlane, camera.FarPlane);
+			// Set the uniform to thequery. combined transform and projection.
+			_cameraMatrixUniform.Set(cameraTransform * cameraProjection);
+
+			_renderableQuery!.Run();
+		}
+
+		public void RenderEntity(
+			in Mesh mesh, in Transform transform,
+			Texture? texture, SpriteIndex? spriteIndex)
+		{
+			_modelMatrixUniform.Set(transform);
+			// If entity has Texture, bind it now.
+			if (texture.HasValue) texture.Value.Bind();
+
+			// If entity has SpriteIndex, only render two
+			// triangles out of the mesh specified by that index.
+			if (spriteIndex.HasValue)
+				mesh.Draw(spriteIndex.Value * 6, 6);
+			// Otherwise just render the entire mesh like usual.
+			mesh.Draw();
+
+			// If entity has Texture, unbind it after it has been rendered.
+			if (texture.HasValue) texture.Value.Unbind();
+
+			// FIXME: It appears that a texture was still bound even if none was bound by this method.
 		}
 	}
 }
