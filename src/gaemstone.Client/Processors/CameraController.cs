@@ -91,12 +91,6 @@ namespace gaemstone.Client.Processors
 			}
 		}
 
-		struct CameraQuery
-		{
-			public Camera Camera { get; }
-			public Transform Transform { get; set; }
-		}
-
 		public void OnUpdate(double delta)
 		{
 			var isFirst = true;
