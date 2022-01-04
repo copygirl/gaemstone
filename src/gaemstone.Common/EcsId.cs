@@ -52,14 +52,10 @@ namespace gaemstone.Common
 		public (uint Relation, uint Target) ToPair()
 			=> (High & 0xFFFFFF, Low);
 		public (EcsId Relation, EcsId Target) ToPair(Universe universe)
-		{
-			var (relationId, targetId) = ToPair();
-			var relation = universe.Entities.Lookup(relationId);
-			var target   = universe.Entities.Lookup(targetId);
-			if ((relation == null) || (target == null)) throw new InvalidOperationException(
-				"Relation or Target are not alive (anymore?)");
-			return (relation.Value, target.Value);
-		}
+			=> universe.Entities.TryGet(High & 0xFFFFFF, out var relation) &&
+			   universe.Entities.TryGet(Low, out var target)
+				? (relation, target) : throw new EntityNotFoundException(this,
+					"The Relation or Target of this Pair could not be found");
 
 
 		public bool Equals(EcsId other) => Value == other.Value;

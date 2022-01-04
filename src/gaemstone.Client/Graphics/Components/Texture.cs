@@ -1,10 +1,8 @@
 using System;
-using gaemstone.Common.Stores;
 using Silk.NET.OpenGL;
 
 namespace gaemstone.Client.Graphics
 {
-	[Store]
 	public readonly struct Texture
 	{
 		public static Texture Gen(TextureTarget target)

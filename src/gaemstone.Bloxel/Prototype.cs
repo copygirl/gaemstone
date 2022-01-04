@@ -1,8 +1,7 @@
-using gaemstone.Common.Stores;
+using gaemstone.Common;
 
-namespace gaemstone.Common
+namespace gaemstone.Bloxel
 {
-	[Store]
 	public readonly struct Prototype
 	{
 		public readonly EcsId Value { get; }

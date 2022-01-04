@@ -1,91 +1,125 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using gaemstone.Common.Processors;
 
 namespace gaemstone.Common
 {
 	public class Universe
 	{
+		// Built-in components.
+		public static readonly EcsId Component  = new(0x01);
+		public static readonly EcsId Identifier = new(0x02);
+
+		// Built-in relationships.
 		public static readonly EcsId IsA     = new(0x100);
 		public static readonly EcsId ChildOf = new(0x101);
 
+
 		public EntityManager    Entities   { get; }
-		public ComponentManager Components { get; }
+		public ArchetypeManager Archetypes { get; }
 		public ProcessorManager Processors { get; }
 		public QueryManager     Queries    { get; }
+
 
 		public Universe()
 		{
 			Entities   = new(this);
-			Components = new(this);
+			Archetypes = new(this);
 			Processors = new(this);
 			Queries    = new(this);
+
+
+			// Bootstrap the components necessary to represent components:
+			Entities.NewWithID(Component.ID);
+			Entities.NewWithID(Identifier.ID);
+
+			var type = new EcsType(Component, Identifier);
+			Archetypes.SetEntityType(Component, type);
+			Archetypes.SetEntityType(Identifier, type);
+
+			// Initialize the columns in the Archtype.
+			// They were not initialized as Component[] and Identifier[]
+			// arrays, because these components do not yet fully exist.
+			var arch = Archetypes[type].Archetype;
+			arch.Entities[0] = Component;
+			arch.Entities[1] = Identifier;
+			arch.Columns[0] = new Component[arch.Capacity];
+			arch.Columns[1] = new Identifier[arch.Capacity];
+			((Component[])arch.Columns[0])[0] = new Component(typeof(Component));
+			((Component[])arch.Columns[0])[1] = new Component(typeof(Identifier));
+			((Identifier[])arch.Columns[1])[0] = nameof(Component);
+			((Identifier[])arch.Columns[1])[1] = nameof(Identifier);
+
+
+			// TODO: Implement relationships.
+			// Entities.NewWithID(IsA.ID);
+			// Entities.NewWithID(ChildOf.ID);
+
+			NewComponent<Transform>();
 		}
 
-		public bool TryGetOwn<T>(EcsId entity, [NotNullWhen(true)] out T value)
+
+		public EcsId NewComponent<T>()
 		{
-			EnsureEntityIsAlive(entity);
-			return Components.GetStore<T>().TryGet(entity.ID, out value);
-		}
-		public bool TryGet<T>(EcsId entity, [NotNullWhen(true)] out T value)
-		{
-			EnsureEntityIsAlive(entity);
-			var store = Components.GetStore<T>();
-			foreach (var e in GetPrototypeChain(entity))
-				if (store.TryGet(e.ID, out value)) return true;
-			value = default!;
-			return false;
+			var entity = Entities.New(Component, Identifier);
+			Set<Component>(entity, new(typeof(T)));
+			Set<Identifier>(entity, typeof(T).Name);
+			return entity;
 		}
 
-		public T GetOwn<T>(EcsId entity)
-			=> TryGetOwn<T>(entity, out var value) ? value
-				: throw new ComponentNotFoundException(typeof(T), entity);
-		public T Get<T>(EcsId entity)
-			=> TryGet<T>(entity, out var value) ? value
-				: throw new ComponentNotFoundException(typeof(T), entity);
 
-		public bool HasOwn<T>(EcsId entity)
-			=> TryGetOwn<T>(entity, out _);
 		public bool Has<T>(EcsId entity)
 			=> TryGet<T>(entity, out _);
 
+		public bool TryGet<T>(EcsId entity, [NotNullWhen(true)] out T? value)
+		{
+			var record = Entities.GetRecord(entity);
+			var column = record.Archetype.Columns.OfType<T[]>().FirstOrDefault();
+			if (column == null) { value = default!; return false; }
+			value = column[record.Row]!;
+			return true;
+		}
+		public T Get<T>(EcsId entity)
+			=> TryGet<T>(entity, out var value) ? value
+				: throw new ComponentNotFoundException(entity, typeof(T));
+
+		public ref T GetRef<T>(EcsId entity)
+		{
+			var record = Entities.GetRecord(entity);
+			var column = record.Archetype.Columns.OfType<T[]>().FirstOrDefault();
+			if (column == null) throw new ComponentNotFoundException(entity, typeof(T));
+			return ref column[record.Row];
+		}
+
 		public void Set<T>(EcsId entity, T value)
 		{
-			EnsureEntityIsAlive(entity);
-			Components.GetStore<T>().Set(entity.ID, value, out _);
+			var component  = GetEntityForComponentTypeOrThrow(typeof(T));
+			ref var record = ref Entities.GetRecord(entity);
+			Archetypes.Add(entity, ref record, component);
+			var columnIndex = record.Type.IndexOf(component);
+			((T[])record.Archetype.Columns[columnIndex])[record.Row] = value;
 		}
 
 
-		public IEnumerable<(EcsId, T)> GetAll<T>()
+		public EcsId GetEntityForComponentTypeOrThrow(Type type)
 		{
-			var store = Components.GetStore<T>();
-			if (store == null) yield break;
-
-			var enumerator = store.GetEnumerator();
-			while (enumerator.MoveNext())
-				yield return (
-					Entities.Lookup(enumerator.CurrentEntityID)!.Value,
-					enumerator.CurrentComponent
-				);
+			if (!TryGetEntityForComponentType(type, out var component))
+				throw new ComponentNotFoundException(type, "The component type was not found");
+			return component;
 		}
-
-
-		IEnumerable<EcsId> GetPrototypeChain(EcsId entity)
+		public bool TryGetEntityForComponentType(Type type, out EcsId entity)
 		{
-			var prototypes = Components.GetStore<Prototype>();
-			while (true) {
-				yield return entity;
-				if (!prototypes.TryGet(entity.ID, out var prototype)
-					|| !Entities.IsAlive(prototype.Value)) break;
-				entity = prototype.Value;
+			foreach (var archetype in Archetypes.Root.With(Component)) {
+				var column = archetype.Columns.OfType<Component[]>().First();
+				var index = Array.FindIndex(column, component => component.Type == type);
+				if (index < 0) continue;
+
+				entity = archetype.Entities[index];
+				return true;
 			}
-		}
-
-		void EnsureEntityIsAlive(EcsId entity)
-		{
-			if (!Entities.IsAlive(entity))
-				throw new ArgumentException($"{entity} is not alive");
+			entity = default;
+			return false;
 		}
 	}
 }

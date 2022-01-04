@@ -1,7 +1,6 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 
 namespace gaemstone.Common
 {
@@ -9,60 +8,76 @@ namespace gaemstone.Common
 	{
 		readonly Universe _universe;
 
-		public QueryManager(Universe universe)
+		internal QueryManager(Universe universe)
 			=> _universe = universe;
 
-		public QueryBuilder New(string name)
-			=> new(_universe, name);
-
-		public void Run(Delegate action)
+		public void Run(Delegate action, EcsType? with = null, EcsType? without = null)
 		{
-			var name = ((action.Method?.IsSpecialName == false) ? action.Method?.Name : null)
-				?? "Query" + string.Concat(action.GetMethodInfo().GetParameters().Select(p => p.ParameterType.Name));
-			var builder = New(name);
-			builder.Execute(action);
-			var query = builder.Build();
+			var method    = action.GetType().GetMethod("Invoke")!;
+			var generator = QueryActionGenerator.GetOrBuild(method);
+			var query     = new QueryImpl(_universe, action, generator,
+				with ?? EcsType.Empty, without ?? EcsType.Empty);
+			// TODO: Cache the query somehow.
 			query.Run();
 		}
 	}
 
-	public interface IQuery
+	interface IQuery
 	{
 		void Run();
 	}
 
-	public class QueryBuilder
+	class QueryImpl : IQuery
 	{
-		static readonly ConditionalWeakTable<Delegate, QueryActionGenerator> _cache = new();
-
 		readonly Universe _universe;
-		readonly string _name;
+		readonly Delegate _action;
+		readonly QueryActionGenerator _generator;
 
-		QueryActionGenerator? _generator;
-		bool _wasBuilt = false;
+		readonly EcsType _filterWith;
+		readonly EcsType _filterWithout;
 
-		internal QueryBuilder(Universe universe, string name)
-			{_universe = universe; _name = name; }
+		IEnumerable<(Archetype, Array?[])>? _cachedArchetypes;
 
-		public QueryBuilder Execute(Delegate action)
+		public QueryImpl(Universe universe, Delegate action,
+		                 QueryActionGenerator generator,
+		                 EcsType with, EcsType without)
 		{
-			if (_generator != null) throw new InvalidOperationException(
-				"The method 'Execute' can only be called once on this QueryBuilder");
-			if (!_cache.TryGetValue(action, out _generator))
-				_cache.Add(action, _generator = new(_universe, _name, action));
-			return this;
+			_universe  = universe;
+			_action    = action;
+			_generator = generator;
+
+			_filterWith    = with;
+			_filterWithout = without;
 		}
 
-		public IQuery Build()
+		public void Run()
 		{
-			if (_generator == null) throw new InvalidOperationException(
-				"The method 'Execute' must be called exactly once on this QueryBuilder");
-			if (_wasBuilt) throw new InvalidOperationException(
-				"The method 'Build' can only be called once on this QueryBuilder");
-			_wasBuilt = true;
-			return _generator.Build();
-		}
+			// TODO: Invalidate this when affected archetypes are changed.
+			//       Basically, when new ones are added that match the query.
+			if (_cachedArchetypes == null) {
+				var node = _universe.Archetypes[_filterWith];
+				foreach (var parameter in _generator.Parameters) {
+					if (parameter.Kind == QueryActionGenerator.ParamKind.Entity) continue;
+					var entity = _universe.GetEntityForComponentTypeOrThrow(parameter.UnderlyingType);
+					if (parameter.IsRequired) node = node.With(entity);
+				}
 
-		// TODO: Support filters.
+				_cachedArchetypes = node
+					.Where(archetype => !_filterWithout.Overlaps(archetype.Type))
+					.Select(archetype => (archetype, _generator.Parameters
+						.Select(parameter => archetype.Columns.Prepend(archetype.Entities)
+							.FirstOrDefault(array => array.GetType().GetElementType() == parameter.UnderlyingType))
+							.ToArray()))
+					.ToArray();
+			}
+
+			try {
+				foreach (var (archetype, columns) in _cachedArchetypes)
+					_generator.GeneratedAction(archetype, columns, _action);
+			} catch (InvalidProgramException) {
+				Console.WriteLine(_generator.ReadableString);
+				throw;
+			}
+		}
 	}
 }

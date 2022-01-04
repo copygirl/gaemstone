@@ -1,9 +1,7 @@
 using System.Numerics;
-using gaemstone.Common.Stores;
 
 namespace gaemstone.Common
 {
-	[Store]
 	public struct Transform
 	{
 		public Matrix4x4 Value;

@@ -1,8 +1,5 @@
-using gaemstone.Common.Stores;
-
 namespace gaemstone.Client.Graphics
 {
-	[Store]
 	public readonly struct SpriteIndex
 	{
 		public readonly int Value;

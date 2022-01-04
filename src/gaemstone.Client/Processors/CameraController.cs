@@ -93,29 +93,26 @@ namespace gaemstone.Client.Processors
 
 		public void OnUpdate(double delta)
 		{
-			var isFirst = true;
-			Game.Queries.Run((Camera camera, ref Transform transform) => {
-				// Only first camera found is affected.
-				if (!isFirst) return; isFirst = false;
+			var camera = Game.Get<Camera>(Game.MainCamera);
+			ref var transform = ref Game.GetRef<Transform>(Game.MainCamera);
 
-				var xMovement = _mouseMoved.X * (float)delta * _mouseSpeed;
-				var yMovement = _mouseMoved.Y * (float)delta * _mouseSpeed;
-				_mouseMoved = PointF.Empty;
+			var xMovement = _mouseMoved.X * (float)delta * _mouseSpeed;
+			var yMovement = _mouseMoved.Y * (float)delta * _mouseSpeed;
+			_mouseMoved = PointF.Empty;
 
-				if (camera.IsOrthographic) {
-					transform *= Matrix4x4.CreateTranslation(-xMovement, -yMovement, 0);
-				} else {
-					var speed = (float)delta * (_fastMovement ? 12 : 4);
-					var forwardMovement = ((_moveForward ? -1 : 0) + (_moveBack  ? 1 : 0)) * speed;
-					var sideMovement    = ((_moveLeft    ? -1 : 0) + (_moveRight ? 1 : 0)) * speed;
+			if (camera.IsOrthographic) {
+				transform *= Matrix4x4.CreateTranslation(-xMovement, -yMovement, 0);
+			} else {
+				var speed = (float)delta * (_fastMovement ? 12 : 4);
+				var forwardMovement = ((_moveForward ? -1 : 0) + (_moveBack  ? 1 : 0)) * speed;
+				var sideMovement    = ((_moveLeft    ? -1 : 0) + (_moveRight ? 1 : 0)) * speed;
 
-					var yawRotation   = Matrix4x4.CreateRotationY(-xMovement / 100, transform.Translation);
-					var pitchRotation = Matrix4x4.CreateRotationX(-yMovement / 100);
-					var translation   = Matrix4x4.CreateTranslation(sideMovement, 0, forwardMovement);
+				var yawRotation   = Matrix4x4.CreateRotationY(-xMovement / 100, transform.Translation);
+				var pitchRotation = Matrix4x4.CreateRotationX(-yMovement / 100);
+				var translation   = Matrix4x4.CreateTranslation(sideMovement, 0, forwardMovement);
 
-					transform = translation * pitchRotation * transform * yawRotation;
-				}
-			});
+				transform = translation * pitchRotation * transform * yawRotation;
+			}
 		}
 	}
 }

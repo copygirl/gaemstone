@@ -1,9 +1,7 @@
-using gaemstone.Common.Stores;
 using Silk.NET.OpenGL;
 
 namespace gaemstone.Client.Graphics
 {
-	[Store]
 	public readonly struct Mesh
 	{
 		public VertexArray VAO { get; }

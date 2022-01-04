@@ -1,9 +1,6 @@
 using System.Drawing;
-using gaemstone.Common.Stores;
-
 namespace gaemstone.Client
 {
-	[Store(typeof(DictionaryStore<>))]
 	public class Camera
 	{
 		public static readonly Camera Default2D = Create2D();

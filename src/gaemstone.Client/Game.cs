@@ -18,6 +18,9 @@ namespace gaemstone.Client
 		public IInputContext Input => _input
 			?? throw new InvalidOperationException("Cannot access Input before Run has been called");
 
+		public EcsId MainCamera { get; private set; }
+
+
 		public Game()
 		{
 			var options = WindowOptions.Default;
@@ -56,18 +59,25 @@ namespace gaemstone.Client
 		{
 			_input = Window.CreateInput();
 
+			// TODO: Automatically create components that have a specific attribute?
+			NewComponent<Camera>();
+			NewComponent<Mesh>();
+			NewComponent<SpriteIndex>();
+			NewComponent<Texture>();
+			NewComponent<TextureCoords4>();
+
 			GFX.Initialize(Window);
 			GFX.OnDebugOutput += (source, type, id, severity, message) =>
 				Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");
 
 			Processors.Start<Renderer>();
-			Processors.Start<TextureManager>();
 			Processors.Start<MeshManager>();
+			Processors.Start<TextureManager>();
 			Processors.Start<CameraController>();
 
-			var mainCamera = Entities.New();
-			Set(mainCamera, (Transform)Matrix4x4.Identity);
-			Set(mainCamera, Camera.Default3D);
+			MainCamera = Entities.New();
+			Set<Transform>(MainCamera, Matrix4x4.Identity);
+			Set(MainCamera, Camera.Default3D);
 		}
 
 		protected virtual void OnClosing()

@@ -7,7 +7,8 @@ using Silk.NET.OpenGL;
 
 namespace gaemstone.Client.Graphics
 {
-	public class Renderer : IProcessor
+	public class Renderer
+		: IProcessor
 	{
 		public Game Game { get; } = null!;
 
@@ -63,7 +64,8 @@ namespace gaemstone.Client.Graphics
 				// Set the uniform to thequery. combined transform and projection.
 				_cameraMatrixUniform.Set(cameraTransform * cameraProjection);
 
-				Game.Queries.Run((in Mesh mesh, in Transform transform, Texture? texture, SpriteIndex? spriteIndex) => {
+				Game.Queries.Run((in Mesh mesh, in Transform transform,
+				                  Texture? texture, SpriteIndex? spriteIndex) => {
 					_modelMatrixUniform.Set(transform);
 					// If entity has Texture, bind it now.
 					if (texture.HasValue) texture.Value.Bind();
@@ -77,7 +79,6 @@ namespace gaemstone.Client.Graphics
 
 					// If entity has Texture, unbind it after it has been rendered.
 					if (texture.HasValue) texture.Value.Unbind();
-
 					// FIXME: It appears that a texture was still bound even if none was bound by this method.
 				});
 			});

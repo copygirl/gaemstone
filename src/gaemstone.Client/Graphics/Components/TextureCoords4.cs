@@ -1,10 +1,8 @@
 using System.Drawing;
 using System.Numerics;
-using gaemstone.Common.Stores;
 
 namespace gaemstone.Client.Graphics
 {
-	[Store(default)]
 	public readonly struct TextureCoords4
 	{
 		public Vector2 TopLeft { get; }

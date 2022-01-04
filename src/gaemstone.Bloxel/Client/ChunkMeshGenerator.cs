@@ -1,16 +1,16 @@
-using System.Linq;
 using System;
 using System.Numerics;
 using gaemstone.Bloxel.Chunks;
 using gaemstone.Client;
 using gaemstone.Client.Graphics;
+using gaemstone.Common.Processors;
 using gaemstone.Common;
-using gaemstone.Common.Stores;
+using System.Collections.Generic;
 
 namespace gaemstone.Bloxel.Client
 {
-	// TODO: Turn into an IProcessor.
 	public class ChunkMeshGenerator
+		: IProcessor
 	{
 		const int STARTING_CAPACITY = 1024;
 
@@ -27,32 +27,49 @@ namespace gaemstone.Bloxel.Client
 			= { 0, 1, 3,  1, 2, 3 };
 
 
-		readonly MeshManager _meshManager;
-		readonly LookupDictionaryStore<ChunkPos, Chunk> _chunkStore;
-		readonly IComponentStore<ChunkPaletteStorage<Prototype>> _storageStore;
-		readonly IComponentStore<TextureCoords4> _textureCellStore;
+		public Game Game { get; } = null!;
+
+		// TODO: Automatically populate other processors.
+		MeshManager _meshManager = null!;
 
 		ushort[] _indices   = new ushort[STARTING_CAPACITY];
 		Vector3[] _vertices = new Vector3[STARTING_CAPACITY];
 		Vector3[] _normals  = new Vector3[STARTING_CAPACITY];
 		Vector2[] _uvs      = new Vector2[STARTING_CAPACITY];
 
-		public ChunkMeshGenerator(Game game)
+
+		public void OnLoad()
+			=>  _meshManager = Game.Processors.GetOrThrow<MeshManager>();
+
+		public void OnUnload()
+			=> _meshManager = null!;
+
+		public void OnUpdate(double delta)
 		{
-			_meshManager = game.Processors.GetOrThrow<MeshManager>();
-			_chunkStore       = (LookupDictionaryStore<ChunkPos, Chunk>)game.Components.GetStore<Chunk>();
-			_storageStore     = game.Components.GetStore<ChunkPaletteStorage<Prototype>>();
-			_textureCellStore = game.Components.GetStore<TextureCoords4>();
+			var Mesh = Game.GetEntityForComponentTypeOrThrow(typeof(Mesh));
+			var generated = new List<(EcsId, Mesh?)>();
+			Game.Queries.Run(without: new(Mesh), action:
+				(EcsId entity, Chunk chunk, ChunkPaletteStorage<Prototype> storage) =>
+					generated.Add((entity, Generate(chunk.Position, storage))));
+			foreach (var (entity, mesh) in generated) {
+				if (mesh is Mesh m) Game.Set(entity, m);
+				else Game.Entities.Destroy(entity); // Guess just destroy it for now.
+			}
 		}
 
-		public Mesh? Generate(ChunkPos chunkPos)
+
+		public Mesh? Generate(ChunkPos chunkPos, ChunkPaletteStorage<Prototype> centerStorage)
 		{
+			// TODO: We'll need a way to get neighbors again.
+			// var storages = new ChunkPaletteStorage<Prototype>[3, 3, 3];
+			// foreach (var (x, y, z) in Neighbors.ALL.Prepend(Neighbor.None))
+			// 	if (_chunkStore.TryGetEntityID(chunkPos.Add(x, y, z), out var neighborID))
+			// 		if (_storageStore.TryGet(neighborID, out var storage))
+			// 			storages[x+1, y+1, z+1] = storage;
+			// var centerStorage = storages[1, 1, 1];
+
 			var storages = new ChunkPaletteStorage<Prototype>[3, 3, 3];
-			foreach (var (x, y, z) in Neighbors.ALL.Prepend(Neighbor.None))
-				if (_chunkStore.TryGetEntityID(chunkPos.Add(x, y, z), out var neighborID))
-					if (_storageStore.TryGet(neighborID, out var storage))
-						storages[x+1, y+1, z+1] = storage;
-			var centerStorage = storages[1, 1, 1];
+			storages[1, 1, 1] = centerStorage;
 
 			var indexCount  = 0;
 			var vertexCount = 0;
@@ -63,7 +80,7 @@ namespace gaemstone.Bloxel.Client
 				if (block.IsNone) continue;
 
 				var blockVertex = new Vector3(x, y, z);
-				_textureCellStore.TryGet(block.ID, out var textureCell);
+				var textureCell = Game.Get<TextureCoords4>(block);
 
 				foreach (var facing in BlockFacings.ALL) {
 					if (!IsNeighborEmpty(storages, x, y, z, facing)) continue;
@@ -100,7 +117,7 @@ namespace gaemstone.Bloxel.Client
 				? _meshManager.Create(
 					_indices.AsSpan(0, indexCount), _vertices.AsSpan(0, vertexCount),
 					_normals.AsSpan(0, vertexCount), _uvs.AsSpan(0, vertexCount))
-				: (Mesh?)null;
+				: null;
 		}
 
 		static bool IsNeighborEmpty(

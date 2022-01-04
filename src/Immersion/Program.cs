@@ -1,15 +1,14 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Numerics;
 using System.Threading;
+using gaemstone.Bloxel;
 using gaemstone.Bloxel.Chunks;
 using gaemstone.Bloxel.Client;
 using gaemstone.Client;
 using gaemstone.Client.Graphics;
 using gaemstone.Common;
-using gaemstone.Common.Stores;
 using gaemstone.Common.Utility;
 
 namespace Immersion
@@ -29,14 +28,15 @@ namespace Immersion
 			CultureInfo.DefaultThreadCurrentCulture = culture;
 
 			Window.Title = "gæmstone: Immersion";
-			Components.AddStore(new LookupDictionaryStore<ChunkPos, Chunk>(chunk => chunk.Position));
-			Components.AddStore(new DictionaryStore<ChunkPaletteStorage<Prototype>>());
 		}
 
 
 		protected override void OnLoad()
 		{
 			base.OnLoad();
+
+			NewComponent<Chunk>();
+			NewComponent<ChunkPaletteStorage<Prototype>>();
 
 			var meshManager = Processors.GetOrThrow<MeshManager>();
 			var heartMesh = meshManager.Load(this, "heart.glb");
@@ -51,9 +51,8 @@ namespace Immersion
 				Set(entity, RND.Pick(heartMesh, swordMesh));
 			}
 
-			var (mainCamera, _) = GetAll<Camera>().First();
-			Set(mainCamera, (Transform)Matrix4x4.CreateTranslation(0, 26, 0));
-			Set(mainCamera, heartMesh);
+			Set(MainCamera, (Transform)Matrix4x4.CreateTranslation(0, 26, 0));
+			Set(MainCamera, heartMesh);
 
 			var textureManager = Processors.GetOrThrow<TextureManager>();
 			var texture = textureManager.Load(this, "terrain.png");
@@ -80,36 +79,21 @@ namespace Immersion
 						                                  : stone);
 				}
 
-				Set(chunk, new Chunk(pos));
-				Set(chunk, (Transform)Matrix4x4.CreateTranslation(pos.GetOrigin()));
+				Set<Chunk>(chunk, new(pos));
+				Set<Transform>(chunk, Matrix4x4.CreateTranslation(pos.GetOrigin()));
 				Set(chunk, storage);
-			}
-
-			var chunkMeshGenerator = new ChunkMeshGenerator(this);
-			var chunkStore = (LookupDictionaryStore<ChunkPos, Chunk>)Components.GetStore<Chunk>();
-			void GenerateChunkMesh(ChunkPos pos)
-			{
-				var chunk = Entities.Lookup(chunkStore.GetEntityID(pos))!.Value;
-				var chunkMesh = chunkMeshGenerator.Generate(pos);
-				if (chunkMesh == null) return;
-				Set(chunk, chunkMesh.Value);
 				Set(chunk, texture);
 			}
 
 			var sizeH = 4;
 			var sizeY = 2;
-
 			for (var x = -sizeH; x < sizeH; x++)
 			for (var y = -sizeY; y < sizeY; y++)
 			for (var z = -sizeH; z < sizeH; z++)
 				CreateChunk(new(x, y, z));
 
-			for (var x = -sizeH; x < sizeH; x++)
-			for (var y = -sizeY; y < sizeY; y++)
-			for (var z = -sizeH; z < sizeH; z++)
-				GenerateChunkMesh(new(x, y, z));
-
 			Processors.Start<PictureInPictureFollow>();
+			Processors.Start<ChunkMeshGenerator>();
 		}
 
 

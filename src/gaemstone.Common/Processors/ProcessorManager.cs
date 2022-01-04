@@ -17,7 +17,7 @@ namespace gaemstone.Common.Processors
 		public event Action<IProcessor>? ProcessorUnloadedPre;
 		public event Action<IProcessor>? ProcessorUnloadedPost;
 
-		public ProcessorManager(Universe universe)
+		internal ProcessorManager(Universe universe)
 		{
 			ProcessorLoadedPre += processor => {
 				var property = processor.GetType().GetProperty(nameof(Universe));
