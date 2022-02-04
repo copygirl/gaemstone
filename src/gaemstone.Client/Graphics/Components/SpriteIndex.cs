@@ -5,6 +5,6 @@ namespace gaemstone.Client.Graphics
 		public readonly int Value;
 		SpriteIndex(int value) => Value = value;
 		public static implicit operator SpriteIndex(in int value) => new(value);
-		public static implicit operator int(in SpriteIndex transform) => transform.Value;
+		public static implicit operator int(in SpriteIndex index) => index.Value;
 	}
 }

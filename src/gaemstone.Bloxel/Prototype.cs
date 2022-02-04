@@ -1,4 +1,4 @@
-using gaemstone.Common;
+using gaemstone.ECS;
 
 namespace gaemstone.Bloxel
 {

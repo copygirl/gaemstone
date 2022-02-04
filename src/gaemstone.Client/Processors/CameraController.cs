@@ -1,7 +1,7 @@
 using System.Drawing;
 using System.Numerics;
 using gaemstone.Common;
-using gaemstone.Common.Processors;
+using gaemstone.ECS;
 using Silk.NET.Input;
 
 namespace gaemstone.Client.Processors

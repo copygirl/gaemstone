@@ -2,20 +2,17 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace gaemstone.Common
+namespace gaemstone.ECS
 {
-	// Reserved for Components (?)
-	//   |    Regular Entities
-	//   |       |  Generation        Role
-	//   v       v          v          v
-	// |-8-|-----24-----|---16---|###|-8-|
+	//         ID       Generation    Role
+	// |-------32-------|---16---|###|-8-|
 	// ===================================
-	// |  Low 32 bits   |  High 32 bits  |
+	// |   Low 32 bits  |  High 32 bits  |
 	// ===================================
 
 	// When Role == Pair, this is the layout:
+	//       Target        Relation   Role
 	// |-------32-------|-----24-----|###|
-	//       Target        Relation
 
 	[StructLayout(LayoutKind.Explicit)]
 	public readonly struct EcsId
@@ -47,15 +44,20 @@ namespace gaemstone.Common
 			ID = id; Generation = generation; Role = role;
 		}
 
+		public static EcsId Pair(uint relation, uint target)
+			=> new(target | (relation & 0xFFFFFF) << 32 | (ulong)EcsRole.Pair << 56);
 		public static EcsId Pair(EcsId relation, EcsId target)
-			=> new(target.ID | (relation.Value & 0xFFFFFF) << 32 | (ulong)EcsRole.Pair << 56);
+			=> Pair(target.ID, relation.ID);
 		public (uint Relation, uint Target) ToPair()
 			=> (High & 0xFFFFFF, Low);
-		public (EcsId Relation, EcsId Target) ToPair(Universe universe)
-			=> universe.Entities.TryGet(High & 0xFFFFFF, out var relation) &&
-			   universe.Entities.TryGet(Low, out var target)
-				? (relation, target) : throw new EntityNotFoundException(this,
-					"The Relation or Target of this Pair could not be found");
+		public (EcsId Relation, EcsId Target) ToPair(Universe context)
+		{
+			// FIXME: This doesn't support the special Universe.Wildcard ID.
+			var (relationId, targetId) = ToPair();
+			if (!context.Entities.TryLookup(relationId, out var relation)) throw new EntityNotFoundException(relationId);
+			if (!context.Entities.TryLookup(targetId  , out var target  )) throw new EntityNotFoundException(targetId);
+			return (relation, target);
+		}
 
 
 		public bool Equals(EcsId other) => Value == other.Value;
@@ -70,35 +72,43 @@ namespace gaemstone.Common
 
 		public override string ToString()
 		{
+			var builder = new StringBuilder();
+			AppendString(builder);
+			return builder.ToString();
+		}
+		public void AppendString(StringBuilder builder)
+		{
 			if (Role == EcsRole.Pair) {
-				return $"EcsId.Pair(relation: 0x{High & 0xFFFFFF:X}, target: 0x{Low:X})";
+				builder.Append($"EcsId.Pair(relation: 0x{High & 0xFFFFFF:X}, target: 0x{Low:X})");
 			} else {
-				var sb = new StringBuilder("EcsId(id: 0x").AppendFormat("{0:X}", ID);
-				if (Generation != 0) sb.Append(", generation: ").Append(Generation);
-				if (Role != EcsRole.None) sb.Append(", role: ").Append(Role);
-				return sb.Append(')').ToString();
+				builder.Append($"EcsId(id: 0x{ID:X}");
+				if (Generation != 0) builder.Append($", generation: {Generation}");
+				if (Role != EcsRole.None) builder.Append($", role: {Role}");
+				builder.Append(')');
 			}
 		}
-
-		// TODO: Move this out of this type.
-		public string ToPrettyString(Universe universe)
+		public void AppendString(StringBuilder builder, Universe context)
 		{
-			var sb = new StringBuilder();
-			void AppendIdentifier(EcsId id)
-			{
-				if (universe.TryGet<Identifier>(id, out var i)) sb.Append(i);
-				else sb.Append("0x").AppendFormat("{0:X}", id.ID);
-			}
 			if (Role == EcsRole.Pair) {
-				var (relation, target) = ToPair(universe);
-				AppendIdentifier(relation);
-				sb.Append(" + ");
-				AppendIdentifier(target);
-			} else {
-				if (Role != EcsRole.None) sb.Append(Role).Append(" | ");
-				AppendIdentifier(this);
-			}
-			return sb.ToString();
+				void AppendId(uint id)
+				{
+					if (id == Universe.Wildcard.ID)
+						builder.Append('*');
+					else if (context.Entities.TryLookup(id, out var entity))
+						entity.AppendString(builder, context);
+					else builder.Append($"0x{id:X}");
+				}
+
+				var (relationId, targetId) = ToPair();
+				builder.Append('(');
+				AppendId(relationId);
+				builder.Append(",");
+				AppendId(targetId);
+				builder.Append(')');
+			} else if (context.TryGet<Identifier>(this, out var identifier))
+				builder.Append(identifier);
+			else
+				AppendString(builder);
 		}
 	}
 

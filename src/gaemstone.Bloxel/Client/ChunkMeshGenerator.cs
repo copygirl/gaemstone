@@ -3,9 +3,8 @@ using System.Numerics;
 using gaemstone.Bloxel.Chunks;
 using gaemstone.Client;
 using gaemstone.Client.Graphics;
-using gaemstone.Common.Processors;
-using gaemstone.Common;
 using System.Collections.Generic;
+using gaemstone.ECS;
 
 namespace gaemstone.Bloxel.Client
 {
@@ -46,9 +45,9 @@ namespace gaemstone.Bloxel.Client
 
 		public void OnUpdate(double delta)
 		{
-			var Mesh = Game.GetEntityForComponentTypeOrThrow(typeof(Mesh));
-			var generated = new List<(EcsId, Mesh?)>();
-			Game.Queries.Run(without: new(Mesh), action:
+			var meshEntity = Game.GetEntityWithTypeOrThrow<Mesh>();
+			var generated  = new List<(EcsId, Mesh?)>();
+			Game.Queries.Run(without: new(Game, meshEntity), action:
 				(EcsId entity, Chunk chunk, ChunkPaletteStorage<Prototype> storage) =>
 					generated.Add((entity, Generate(chunk.Position, storage))));
 			foreach (var (entity, mesh) in generated) {

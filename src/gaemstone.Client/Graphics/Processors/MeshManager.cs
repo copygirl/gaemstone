@@ -1,6 +1,6 @@
 using System;
 using System.Numerics;
-using gaemstone.Common.Processors;
+using gaemstone.ECS;
 using Silk.NET.OpenGL;
 using ModelRoot = SharpGLTF.Schema2.ModelRoot;
 

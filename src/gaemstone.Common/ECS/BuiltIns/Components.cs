@@ -1,5 +1,6 @@
-namespace gaemstone.Common
+namespace gaemstone.ECS
 {
+	[Component]
 	public readonly struct Identifier
 	{
 		public string Value { get; }

@@ -2,11 +2,12 @@ using System.Drawing;
 using System.Numerics;
 using gaemstone.Client;
 using gaemstone.Common;
-using gaemstone.Common.Processors;
+using gaemstone.ECS;
 
 namespace Immersion
 {
-	public class PictureInPictureFollow : IProcessor
+	public class PictureInPictureFollow
+		: IProcessor
 	{
 		public Game Game { get; } = null!;
 

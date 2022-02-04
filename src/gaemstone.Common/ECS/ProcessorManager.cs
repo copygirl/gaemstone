@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using gaemstone.Common.Utility;
 
-namespace gaemstone.Common.Processors
+namespace gaemstone.ECS
 {
 	public class ProcessorManager
 		: IReadOnlyCollection<IProcessor>

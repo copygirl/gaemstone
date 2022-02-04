@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 
-namespace gaemstone.Common
+namespace gaemstone.ECS
 {
 	internal struct Record
 	{
 		public ushort Generation;
-		public Archetype Archetype;
+		public Table Table;
 		public int Row;
 
-		public bool Occupied => (Archetype != null);
-		public EcsType Type => Archetype.Type;
+		public bool Occupied => (Table != null);
+		public EcsType Type => Table.Type;
 	}
 
 	public class EntityManager
@@ -19,6 +20,7 @@ namespace gaemstone.Common
 		const int INITIAL_CAPACITY = 1024;
 
 		readonly Universe _universe;
+		readonly EcsType _emptyType;
 		readonly Queue<uint> _unusedEntityIDs = new();
 		Record[] _entities = new Record[INITIAL_CAPACITY];
 		// TODO: Attempt to keep Generation low by prioritizing smallest Generation?
@@ -29,7 +31,10 @@ namespace gaemstone.Common
 
 
 		internal EntityManager(Universe universe)
-			=> _universe = universe;
+		{
+			_universe  = universe;
+			_emptyType = new(_universe);
+		}
 
 		void Resize(int newCapacity)
 		{
@@ -41,15 +46,21 @@ namespace gaemstone.Common
 		void EnsureCapacity(uint minCapacity)
 		{
 			if (minCapacity < Capacity) return; // Already have the necessary capacity.
-			var nextPowerOfTwo = 1 << (31 - BitOperations.LeadingZeroCount((uint)minCapacity));
+			var nextPowerOfTwo = 1 << (31 - BitOperations.LeadingZeroCount(minCapacity));
 			Resize(nextPowerOfTwo);
 		}
 
 
 		/// <summary> Creates a new entity with an empty type and returns it. </summary>
-		public EcsId New() => New(EcsType.Empty);
+		public EcsId New() => New(_emptyType);
 		/// <summary> Creates a new entity with the specified type and returns it. </summary>
-		public EcsId New(params EcsId[] type) => New(new EcsType(type));
+		public EcsId New(params object[] ids)
+			=> New(new EcsType(_universe, ids.Select(id => id switch {
+				EcsId i => i, Type t => _universe.GetEntityWithTypeOrThrow(t),
+				_ => throw new ArgumentException("id must be EcsId or Type", nameof(ids)),
+			})));
+		/// <summary> Creates a new entity with the specified type and returns it. </summary>
+		public EcsId New(params EcsId[] ids) => New(new EcsType(_universe, ids));
 		/// <summary> Creates a new entity with the specified type and returns it. </summary>
 		public EcsId New(EcsType type)
 		{
@@ -59,10 +70,17 @@ namespace gaemstone.Common
 
 		/// <summary> Creates a new entity with the specified ID and an empty type and returns it. </summary>
 		/// <exception cref="EntityExistsException"> Thrown if the specified ID is already in use. </exception>
-		public EcsId NewWithID(uint entityID) => NewWithID(entityID, EcsType.Empty);
+		public EcsId NewWithID(uint entityID) => NewWithID(entityID, _emptyType);
 		/// <summary> Creates a new entity with the specified ID and type and returns it. </summary>
 		/// <exception cref="EntityExistsException"> Thrown if the specified ID is already in use. </exception>
-		public EcsId NewWithID(uint entityID, params EcsId[] type) => NewWithID(entityID, new EcsType(type));
+		public EcsId NewWithID(uint entityID, params object[] ids)
+			=> NewWithID(entityID, new EcsType(_universe, ids.Select(id => id switch {
+				EcsId i => i, Type t => _universe.GetEntityWithTypeOrThrow(t),
+				_ => throw new ArgumentException("id must be EcsId or Type", nameof(ids)),
+			})));
+		/// <summary> Creates a new entity with the specified ID and type and returns it. </summary>
+		/// <exception cref="EntityExistsException"> Thrown if the specified ID is already in use. </exception>
+		public EcsId NewWithID(uint entityID, params EcsId[] ids) => NewWithID(entityID, new EcsType(_universe, ids));
 		/// <summary> Creates a new entity with the specified ID and type and returns it. </summary>
 		/// <exception cref="EntityExistsException"> Thrown if the specified ID is already in use. </exception>
 		public EcsId NewWithID(uint entityID, EcsType type)
@@ -95,8 +113,8 @@ namespace gaemstone.Common
 			if (record.Occupied) throw new EntityExistsException(entityID,
 				$"Entity already exists as {new EcsId(entityID, record.Generation)}");
 
-			record.Archetype = _universe.Archetypes[type].Archetype;
-			record.Row = record.Archetype.Add(new(entityID, record.Generation));
+			record.Table = _universe.Tables.GetOrCreate(type);
+			record.Row   = record.Table.Add(new(entityID, record.Generation));
 
 			Count++;
 			return ref record;
@@ -108,10 +126,10 @@ namespace gaemstone.Common
 			ref var record = ref GetRecord(entity);
 
 			_unusedEntityIDs.Enqueue(entity.ID);
-			record.Archetype.Remove(record.Row);
+			record.Table.Remove(record.Row);
 
 			record.Generation++;
-			record.Archetype = null!;
+			record.Table = null!;
 
 			Count--;
 		}
@@ -137,7 +155,7 @@ namespace gaemstone.Common
 		}
 
 
-		public bool TryGet(uint entityID, out EcsId entity)
+		public bool TryLookup(uint entityID, out EcsId entity)
 		{
 			entity = default;
 			if ((entityID == 0) || (entityID >= _nextUnusedID)) return false;
@@ -147,6 +165,11 @@ namespace gaemstone.Common
 			entity = new(entityID, entry.Generation);
 			return true;
 		}
+
+		public EcsId Lookup(uint entityID)
+			=> TryLookup(entityID, out var entity) ? entity
+				: throw new EntityNotFoundException(entityID);
+
 
 		public bool IsAlive(EcsId entity)
 		{

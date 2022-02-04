@@ -5,9 +5,9 @@ using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using gaemstone.Common.Utility;
 
-namespace gaemstone.Common
+namespace gaemstone.ECS
 {
-	internal delegate void QueryAction(Archetype archtype, Array?[] columns, Delegate action);
+	internal delegate void QueryAction(Table table, Array?[] columns, Delegate action);
 
 	internal class QueryActionGenerator
 	{
@@ -73,12 +73,12 @@ namespace gaemstone.Common
 		(QueryAction, string) Build()
 		{
 			var name   = "<>Query_" + string.Join("_", Parameters.Select(c => c.UnderlyingType.Name));
-			var method = new DynamicMethod(name, null, new[]{ typeof(Archetype), typeof(Array?[]), typeof(Delegate) });
+			var method = new DynamicMethod(name, null, new[]{ typeof(Table), typeof(Array?[]), typeof(Delegate) });
 			var emit   = new ILGeneratorWrapper(method);
 
-			var archetypeArg = emit.Argument<Archetype>(0);
-			var columnsArg   = emit.Argument<Array?[]>(1);
-			var actionArg    = emit.Argument<Delegate>(2);
+			var tableArg   = emit.Argument<Table>(0);
+			var columnsArg = emit.Argument<Array?[]>(1);
+			var actionArg  = emit.Argument<Delegate>(2);
 
 			var columnLocals = Parameters.Select((c, i) => {
 				var local = emit.LocalArray(c.UnderlyingType, $"column_{i}");
@@ -99,8 +99,8 @@ namespace gaemstone.Common
 				return local;
 			}).ToArray();
 
-			var countProp = typeof(Archetype).GetProperty(nameof(Archetype.Count))!;
-			using (emit.For(() => emit.Load(archetypeArg, countProp), out var currentLocal)) {
+			var countProp = typeof(Table).GetProperty(nameof(Table.Count))!;
+			using (emit.For(() => emit.Load(tableArg, countProp), out var currentLocal)) {
 				// Run the action specified in Execute().
 				emit.Load(actionArg);
 				for (var i = 0; i < Parameters.Length; i++) {

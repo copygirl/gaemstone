@@ -1,8 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
-namespace gaemstone.Common
+namespace gaemstone.ECS
 {
 	public class QueryManager
 	{
@@ -16,7 +15,7 @@ namespace gaemstone.Common
 			var method    = action.GetType().GetMethod("Invoke")!;
 			var generator = QueryActionGenerator.GetOrBuild(method);
 			var query     = new QueryImpl(_universe, action, generator,
-				with ?? EcsType.Empty, without ?? EcsType.Empty);
+				with ?? new(_universe), without ?? new(_universe));
 			// TODO: Cache the query somehow.
 			query.Run();
 		}
@@ -36,8 +35,6 @@ namespace gaemstone.Common
 		readonly EcsType _filterWith;
 		readonly EcsType _filterWithout;
 
-		IEnumerable<(Archetype, Array?[])>? _cachedArchetypes;
-
 		public QueryImpl(Universe universe, Delegate action,
 		                 QueryActionGenerator generator,
 		                 EcsType with, EcsType without)
@@ -52,28 +49,22 @@ namespace gaemstone.Common
 
 		public void Run()
 		{
-			// TODO: Invalidate this when affected archetypes are changed.
-			//       Basically, when new ones are added that match the query.
-			if (_cachedArchetypes == null) {
-				var node = _universe.Archetypes[_filterWith];
-				foreach (var parameter in _generator.Parameters) {
-					if (parameter.Kind == QueryActionGenerator.ParamKind.Entity) continue;
-					var entity = _universe.GetEntityForComponentTypeOrThrow(parameter.UnderlyingType);
-					if (parameter.IsRequired) node = node.With(entity);
-				}
+			// TODO: This could be optimized by picking the least common ID first.
 
-				_cachedArchetypes = node
-					.Where(archetype => !_filterWithout.Overlaps(archetype.Type))
-					.Select(archetype => (archetype, _generator.Parameters
-						.Select(parameter => archetype.Columns.Prepend(archetype.Entities)
-							.FirstOrDefault(array => array.GetType().GetElementType() == parameter.UnderlyingType))
-							.ToArray()))
-					.ToArray();
-			}
+			var with = new EcsType(_universe, _generator.Parameters
+				.Where(p => (p.Kind != QueryActionGenerator.ParamKind.Entity) && p.IsRequired)
+				.Select(p => _universe.GetEntityWithTypeOrThrow(p.UnderlyingType))
+				.Concat(_filterWith));
+
+			var tablesAndColumns = _universe.Tables.GetAll(with.First())
+				.Where(t => t.Type.Includes(with) && !t.Type.Overlaps(_filterWithout))
+				.Select(t => (t, _generator.Parameters.Select(p => t.Columns.Prepend(t.Entities)
+					.FirstOrDefault(a => a.GetType().GetElementType() == p.UnderlyingType)).ToArray()))
+				.ToArray();
 
 			try {
-				foreach (var (archetype, columns) in _cachedArchetypes)
-					_generator.GeneratedAction(archetype, columns, _action);
+				foreach (var (table, columns) in tablesAndColumns)
+					_generator.GeneratedAction(table, columns, _action);
 			} catch (InvalidProgramException) {
 				Console.WriteLine(_generator.ReadableString);
 				throw;

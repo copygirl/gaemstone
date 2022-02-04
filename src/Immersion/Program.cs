@@ -92,8 +92,9 @@ namespace Immersion
 			for (var z = -sizeH; z < sizeH; z++)
 				CreateChunk(new(x, y, z));
 
-			Processors.Start<PictureInPictureFollow>();
 			Processors.Start<ChunkMeshGenerator>();
+			// FIXME: PIP camera requires sorting.
+			// Processors.Start<PictureInPictureFollow>();
 		}
 
 

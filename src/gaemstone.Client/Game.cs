@@ -5,6 +5,7 @@ using gaemstone.Client.Graphics;
 using gaemstone.Client.Processors;
 using gaemstone.Common;
 using gaemstone.Common.Utility;
+using gaemstone.ECS;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
 
@@ -59,16 +60,16 @@ namespace gaemstone.Client
 		{
 			_input = Window.CreateInput();
 
-			// TODO: Automatically create components that have a specific attribute?
-			NewComponent<Camera>();
-			NewComponent<Mesh>();
-			NewComponent<SpriteIndex>();
-			NewComponent<Texture>();
-			NewComponent<TextureCoords4>();
-
 			GFX.Initialize(Window);
 			GFX.OnDebugOutput += (source, type, id, severity, message) =>
 				Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");
+
+			// TODO: Automatically create components that have a specific attribute?
+			NewComponent<Camera>();
+			NewComponent<Mesh>();
+			NewComponent<Texture>();
+			NewComponent<TextureCoords4>();
+			NewComponent<SpriteIndex>();
 
 			Processors.Start<Renderer>();
 			Processors.Start<MeshManager>();

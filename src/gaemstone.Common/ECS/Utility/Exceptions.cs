@@ -1,6 +1,6 @@
 using System;
 
-namespace gaemstone.Common
+namespace gaemstone.ECS
 {
 	/// <summary> Thrown when an existing entity could not be found. </summary>
 	public class EntityNotFoundException : Exception

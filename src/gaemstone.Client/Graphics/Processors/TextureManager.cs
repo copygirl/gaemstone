@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using gaemstone.Common.Processors;
+using gaemstone.ECS;
 using Silk.NET.OpenGL;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -27,14 +27,12 @@ namespace gaemstone.Client.Graphics
 			texture.Bind();
 
 			var image = Image.Load<Rgba32>(stream);
-			unsafe { {
-				image.Frames[0].TryGetSinglePixelSpan(out Span<Rgba32> result);
-				var pixels = new ReadOnlySpan<Rgba32>(result.ToArray());
-				GFX.GL.TexImage2D(texture.Target, 0, (int)PixelFormat.Rgba,
-				                  (uint)image.Width, (uint)image.Height, 0,
-				                  PixelFormat.Rgba, PixelType.UnsignedByte, pixels);
-			} }
+			if (!image.Frames[0].TryGetSinglePixelSpan(out var pixels)) throw new InvalidOperationException(
+				"TryGetSinglePixelSpan failed" + ((sourceFile != null) ? "\nSource File: " + sourceFile : ""));
 
+			GFX.GL.TexImage2D(texture.Target, 0, (int)PixelFormat.Rgba,
+			                  (uint)image.Width, (uint)image.Height, 0,
+			                  PixelFormat.Rgba, PixelType.UnsignedByte, pixels[0]);
 			texture.MagFilter = TextureMagFilter.Nearest;
 			texture.MinFilter = TextureMinFilter.Nearest;
 
@@ -48,6 +46,7 @@ namespace gaemstone.Client.Graphics
 
 		public TextureInfo? Lookup(Texture texture)
 			=> _byTexture.TryGetValue(texture, out var value) ? value : null;
+
 		public TextureInfo? Lookup(string sourceFile)
 			=> _bySourceFile.TryGetValue(sourceFile, out var value) ? value : null;
 
