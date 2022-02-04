@@ -71,10 +71,11 @@ namespace gaemstone.ECS
 
 		public bool TryGet<T>(EcsId entity, [NotNullWhen(true)] out T? value)
 		{
-			var record = Entities.GetRecord(entity);
-			var column = record.Table.Columns.OfType<T[]>().FirstOrDefault();
-			if (column == null) { value = default!; return false; }
-			value = column[record.Row]!;
+			var id = GetEntityWithTypeOrThrow<T>();
+			ref var record = ref Entities.GetRecord(entity);
+			var columnIndex = record.Table.StorageType.IndexOf(id);
+			if (columnIndex < 0) { value = default!; return false; }
+			value = ((T[])record.Table.Columns[columnIndex])[record.Row]!;
 			return true;
 		}
 		public T Get<T>(EcsId entity)
@@ -83,21 +84,24 @@ namespace gaemstone.ECS
 
 		public ref T GetRef<T>(EcsId entity)
 		{
-			var record = Entities.GetRecord(entity);
-			var column = record.Table.Columns.OfType<T[]>().FirstOrDefault();
-			if (column == null) throw new ComponentNotFoundException(entity, typeof(T));
-			return ref column[record.Row];
+			var id = GetEntityWithTypeOrThrow<T>();
+			ref var record = ref Entities.GetRecord(entity);
+			var columnIndex = record.Table.StorageType.IndexOf(id);
+			if (columnIndex < 0) throw new ComponentNotFoundException(entity, typeof(T));
+			return ref ((T[])record.Table.Columns[columnIndex])[record.Row];
 		}
 
 		public void Set<T>(EcsId entity, T value)
 		{
-			var component  = GetEntityWithTypeOrThrow<T>();
-			ref var record = ref Entities.GetRecord(entity);
-			Tables.Add(entity, ref record, component);
+			if (value == null) throw new ArgumentNullException(nameof(value));
 
-			var column = record.Table.Columns.OfType<T[]>().FirstOrDefault();
-			if (column == null) throw new ComponentNotFoundException(entity, typeof(T));
-			column[record.Row] = value;
+			var id = GetEntityWithTypeOrThrow<T>();
+			ref var record = ref Entities.GetRecord(entity);
+			Tables.Add(entity, ref record, id);
+
+			var columnIndex = record.Table.StorageType.IndexOf(id);
+			if (columnIndex < 0) throw new ComponentNotFoundException(entity, typeof(T));
+			((T[])record.Table.Columns[columnIndex])[record.Row] = value;
 		}
 
 
