@@ -257,7 +257,7 @@ namespace gaemstone.Common.Utility
 		public static Comparison GreaterThan { get; } = new(OpCodes.Bgt);
 
 		public OpCode Code { get; }
-		private Comparison(OpCode code) => Code = code;
+		Comparison(OpCode code) => Code = code;
 	}
 
 	public interface IArgument

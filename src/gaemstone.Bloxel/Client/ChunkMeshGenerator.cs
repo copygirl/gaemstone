@@ -31,7 +31,7 @@ namespace gaemstone.Bloxel.Client
 		// TODO: Automatically populate other processors.
 		MeshManager _meshManager = null!;
 
-		ushort[] _indices   = new ushort[STARTING_CAPACITY];
+		ushort[]  _indices  = new ushort[STARTING_CAPACITY];
 		Vector3[] _vertices = new Vector3[STARTING_CAPACITY];
 		Vector3[] _normals  = new Vector3[STARTING_CAPACITY];
 		Vector2[] _uvs      = new Vector2[STARTING_CAPACITY];
@@ -45,14 +45,13 @@ namespace gaemstone.Bloxel.Client
 
 		public void OnUpdate(double delta)
 		{
-			var meshEntity = Game.GetEntityWithTypeOrThrow<Mesh>();
-			var generated  = new List<(EcsId, Mesh?)>();
-			Game.Queries.Run(without: new(Game, meshEntity), action:
+			var generated = new List<(EcsId, Mesh?)>();
+			Game.Queries.Run(without: Game.Type(typeof(Mesh)), action:
 				(EcsId entity, Chunk chunk, ChunkPaletteStorage<Prototype> storage) =>
 					generated.Add((entity, Generate(chunk.Position, storage))));
 			foreach (var (entity, mesh) in generated) {
 				if (mesh is Mesh m) Game.Set(entity, m);
-				else Game.Entities.Destroy(entity); // Guess just destroy it for now.
+				else Game.Entities.Delete(entity); // Guess just destroy it for now.
 			}
 		}
 

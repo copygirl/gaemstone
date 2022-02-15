@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using gaemstone.Common.Utility;
 
 namespace gaemstone.ECS
 {
@@ -11,58 +13,40 @@ namespace gaemstone.ECS
 		readonly Dictionary<EcsType, Table> _tables = new();
 		readonly Dictionary<EcsId, List<Table>> _index = new();
 
-		// public event Action<Table>? TableAdded;
+		public event Action<Table>? TableAdded;
 		// public event Action<Table>? TableRemoved;
 
 		internal TableManager(Universe universe)
-			=>  _universe = universe;
-
-
-		public bool TryGet(EcsType type, [MaybeNullWhen(false)] out Table table)
-			=> _tables.TryGetValue(type, out table);
-
-		public Table GetOrCreate(EcsType type)
 		{
-			if (!_tables.TryGetValue(type, out var table)) {
-				var storageType = new EcsType(_universe);
-				var columnTypes = new List<Type>();
-				foreach (var id in type) {
-					var storage = GetStorageType(id);
-					if (storage == null) continue;
-					storageType = storageType.Add(id);
-					columnTypes.Add(storage);
-				}
-				table = new Table(_universe, type, storageType, columnTypes);
-				_tables.Add(type, table);
-
-				foreach (var id in type) {
-					if (id.Role == EcsRole.Pair) {
-						var (relationId, targetId) = id.ToPair();
-						AddToIndex(EcsId.Pair(Universe.Wildcard.ID, targetId), table);
-						AddToIndex(EcsId.Pair(relationId, Universe.Wildcard.ID), table);
-					}
-					AddToIndex(id, table);
-				}
-			}
-			return table;
+			_universe = universe;
+			TableAdded += AddTableToIndex;
 		}
 
-		void AddToIndex(EcsId id, Table table)
+		internal void Bootstrap()
 		{
-			if (!_index.TryGetValue(id, out var list))
-				_index.Add(id, list = new());
-			list.Add(table);
+			var componentTable = BootstrapTable(
+				type:        _universe.Type(Universe.TypeID, Universe.IdentifierID, Universe.ComponentID),
+				storageType: _universe.Type(Universe.TypeID, Universe.IdentifierID),
+				columnTypes: new[]{ typeof(Type), typeof(Identifier) },
+				(Universe.TypeID       , typeof(Type)),
+				(Universe.IdentifierID , typeof(Identifier)));
+			var tagTable = BootstrapTable(
+				type:        _universe.Type(Universe.TypeID, Universe.IdentifierID, Universe.TagID),
+				storageType: _universe.Type(Universe.TypeID, Universe.IdentifierID),
+				columnTypes: new[]{ typeof(Type), typeof(Identifier) },
+				(Universe.ComponentID , typeof(Component)),
+				(Universe.TagID       , typeof(Tag)),
+				(Universe.RelationID  , typeof(Relation)));
+
+			TableAdded?.Invoke(componentTable);
+			TableAdded?.Invoke(tagTable);
 		}
 
-		public IEnumerable<Table> GetAll(EcsId id)
-			=> _index.TryGetValue(id, out var list) ? list : Enumerable.Empty<Table>();
-
-		internal void Bootstrap(EcsType type, EcsType storageType, Type[] columnTypes,
-		                        params (EcsId ID, Type Type)[] entities)
+		Table BootstrapTable(EcsType type, EcsType storageType, Type[] columnTypes,
+		                params (EcsId ID, Type Type)[] entities)
 		{
 			var table = new Table(_universe, type, storageType, columnTypes);
 			_tables.Add(type, table);
-			foreach (var id in type) AddToIndex(id, table);
 
 			// FIXME: Only works as long as long as entities.Count <= Table.STARTING_CAPACITY.
 			table.EnsureCapacity(entities.Length);
@@ -71,10 +55,53 @@ namespace gaemstone.ECS
 
 			foreach (var (id, entityType) in entities) {
 				ref var record = ref _universe.Entities.GetRecord(id);
-				SetEntityType(id, ref record, type);
+				Move(id, ref record, type);
 				typeColumn[record.Row]       = entityType;
 				identifierColumn[record.Row] = entityType.Name;
 			}
+
+			return table;
+		}
+
+		void AddTableToIndex(Table table)
+		{
+			foreach (var id in table.Type) {
+				if (id.Role == EcsRole.Pair) {
+					var (relationId, targetId) = id.ToPair();
+					_index.GetOrAddNew(EcsId.Pair(Universe.Wildcard.ID, targetId)).Add(table);
+					_index.GetOrAddNew(EcsId.Pair(relationId, Universe.Wildcard.ID)).Add(table);
+				}
+				_index.GetOrAddNew(id).Add(table);
+			}
+		}
+
+
+		public bool TryGet(EcsType type, [MaybeNullWhen(false)] out Table table)
+			=> _tables.TryGetValue(type, out table);
+
+		public IEnumerable<Table> GetAll(EcsId id)
+			=> _index.TryGetValue(id, out var list)
+				? new ReadOnlyCollection<Table>(list)
+				: Enumerable.Empty<Table>();
+
+
+		public Table GetOrCreate(EcsType type)
+		{
+			if (!_tables.TryGetValue(type, out var table)) {
+				var storageType = _universe.EmptyType;
+				var columnTypes = new List<Type>();
+				foreach (var id in type) {
+					var storage = GetStorageType(id);
+					if (storage == null) continue;
+					storageType = storageType.Union(id);
+					columnTypes.Add(storage);
+				}
+				table = new Table(_universe, type, storageType, columnTypes);
+				_tables.Add(type, table);
+				TableAdded?.Invoke(table);
+
+			}
+			return table;
 		}
 
 		Type? GetStorageType(EcsId id)
@@ -89,19 +116,8 @@ namespace gaemstone.ECS
 		}
 
 
-		internal void Add(EcsId entity, EcsId value) => ModifyEntityType(entity, type => type.Add(value));
-		internal void Remove(EcsId entity, EcsId value) => ModifyEntityType(entity, type => type.Remove(value));
-		internal void SetEntityType(EcsId entity, EcsType type) => ModifyEntityType(entity, _ => type);
-
-		internal void Add(EcsId entity, ref Record record, EcsId value) => ModifyEntityType(entity, ref record, type => type.Add(value));
-		internal void Remove(EcsId entity, ref Record record, EcsId value) => ModifyEntityType(entity, ref record, type => type.Remove(value));
-		internal void SetEntityType(EcsId entity, ref Record record, EcsType type) => ModifyEntityType(entity, ref record, _ => type);
-
-		internal void ModifyEntityType(EcsId entity, Func<EcsType, EcsType> func)
-			=> ModifyEntityType(entity, ref _universe.Entities.GetRecord(entity), func);
-		internal void ModifyEntityType(EcsId entity, ref Record record, Func<EcsType, EcsType> func)
+		internal void Move(EcsId entity, ref Record record, EcsType toType)
 		{
-			var toType = func(record.Type);
 			if (record.Type == toType) return;
 
 			var oldTable = record.Table;

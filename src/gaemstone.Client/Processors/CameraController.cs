@@ -93,8 +93,8 @@ namespace gaemstone.Client.Processors
 
 		public void OnUpdate(double delta)
 		{
-			var camera = Game.Get<Camera>(Game.MainCamera);
-			ref var transform = ref Game.GetRef<Transform>(Game.MainCamera);
+			var camera = Game.MainCamera.Get<Camera>();
+			ref var transform = ref Game.MainCamera.GetRef<Transform>();
 
 			var xMovement = _mouseMoved.X * (float)delta * _mouseSpeed;
 			var yMovement = _mouseMoved.Y * (float)delta * _mouseSpeed;

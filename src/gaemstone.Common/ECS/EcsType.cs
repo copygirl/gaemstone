@@ -7,6 +7,11 @@ using System.Text;
 
 namespace gaemstone.ECS
 {
+	/// <summary>
+	/// An entity type, sometimes referred to as "archetype", represents the
+	/// concrete type of an entity (or table). More specifically, it is the
+	/// list of <see cref="EcsId"/>s it has (components, tags, and so on).
+	/// </summary>
 	public class EcsType
 		: IEquatable<EcsType>
 		, IReadOnlyList<EcsId>
@@ -18,37 +23,43 @@ namespace gaemstone.ECS
 		public int Count => _entries.Count;
 		public EcsId this[int index] => _entries[index];
 
-		public EcsType(Universe universe, params EcsId[] entries)
-			: this(universe, (IEnumerable<EcsId>)entries) {  }
-		public EcsType(Universe universe, IEnumerable<EcsId> entries)
+		internal static EcsType Empty(Universe universe)
+			=> new(universe, ImmutableSortedSet<EcsId>.Empty);
+		EcsType(Universe universe, ImmutableSortedSet<EcsId> entries)
 		{
 			Universe = universe;
-			_entries = entries.ToImmutableSortedSet();
+			_entries = entries;
 
 			var hashCode = new HashCode();
+			hashCode.Add(Count);
 			foreach (var id in _entries) hashCode.Add(id);
 			_hashCode = hashCode.ToHashCode();
 		}
 
-		public int IndexOf(EcsId value)
-			=> _entries.IndexOf(value);
-		public bool Contains(EcsId value)
-			=> _entries.Contains(value);
-		public bool Includes(EcsType other)
-			=> _entries.IsSupersetOf(other._entries);
-		public bool Overlaps(EcsType other)
-			=> _entries.Overlaps(other._entries);
+		public int IndexOf(EcsId id)   => _entries.IndexOf(id);
+		public bool Contains(EcsId id) => _entries.Contains(id);
+
+		public bool Includes(EcsType other) => _entries.IsSupersetOf(other._entries);
+		public bool Overlaps(EcsType other) => _entries.Overlaps(other._entries);
 
 
-		public EcsType Add(params EcsId[] values)
-			=> Add((IEnumerable<EcsId>)values);
-		public EcsType Add(IEnumerable<EcsId> values)
-			=> new(Universe, _entries.Concat(values));
+		public EcsType Union(params object[] ids) => Union(ids.Select(o => Universe.Lookup(o).ID));
+		public EcsType Union(params EcsId[] ids)  => Union((IEnumerable<EcsId>)ids);
+		public EcsType Union(IEnumerable<EcsId> ids)
+		{
+			var newEntries = _entries.Union(ids);
+			if (ReferenceEquals(newEntries, _entries)) return this;
+			else return new(Universe, newEntries);
+		}
 
-		public EcsType Remove(params EcsId[] values)
-			=> Remove((IEnumerable<EcsId>)values);
-		public EcsType Remove(IEnumerable<EcsId> values)
-			=> new(Universe, _entries.Except(values));
+		public EcsType Except(params object[] ids) => Except(ids.Select(o => Universe.Lookup(o).ID));
+		public EcsType Except(params EcsId[] ids)  => Except((IEnumerable<EcsId>)ids);
+		public EcsType Except(IEnumerable<EcsId> ids)
+		{
+			var newEntries = _entries.Except(ids);
+			if (ReferenceEquals(newEntries, _entries)) return this;
+			else return new(Universe, newEntries);
+		}
 
 
 		public IEnumerator<EcsId> GetEnumerator()
@@ -57,7 +68,7 @@ namespace gaemstone.ECS
 			=> GetEnumerator();
 
 		public bool Equals(EcsType? other)
-			=> (other is not null) && Enumerable.SequenceEqual(_entries, other._entries);
+			=> (other is not null) && _entries.SetEquals(other._entries);
 		public override bool Equals(object? obj) => Equals(obj as EcsType);
 		public override int GetHashCode() => _hashCode;
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Numerics;
 
@@ -86,6 +87,18 @@ namespace gaemstone.ECS
 			Entities[Count] = default;
 			foreach (var column in Columns)
 				Array.Clear(column, Count, 1);
+		}
+
+
+		public T[] GetStorageColumn<T>(EcsId id, EcsId? entity = null)
+			=> TryGetStorageColumn<T>(id, out var column) ? column
+				: throw new ComponentNotFoundException(entity, typeof(T));
+
+		public bool TryGetStorageColumn<T>(EcsId id, [NotNullWhen(true)] out T[]? value)
+		{
+			var index = StorageType.IndexOf(id);
+			if (index >= 0) { value = (T[])Columns[index]; return true; }
+			else { value = null; return false; }
 		}
 	}
 }

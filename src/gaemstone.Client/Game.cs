@@ -19,7 +19,7 @@ namespace gaemstone.Client
 		public IInputContext Input => _input
 			?? throw new InvalidOperationException("Cannot access Input before Run has been called");
 
-		public EcsId MainCamera { get; private set; }
+		public Entity MainCamera { get; private set; }
 
 
 		public Game()
@@ -77,8 +77,8 @@ namespace gaemstone.Client
 			Processors.Start<CameraController>();
 
 			MainCamera = Entities.New();
-			Set<Transform>(MainCamera, Matrix4x4.Identity);
-			Set(MainCamera, Camera.Default3D);
+			MainCamera.Set((Transform)Matrix4x4.Identity);
+			MainCamera.Set(Camera.Default3D);
 		}
 
 		protected virtual void OnClosing()

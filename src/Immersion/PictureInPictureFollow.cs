@@ -11,7 +11,7 @@ namespace Immersion
 	{
 		public Game Game { get; } = null!;
 
-		public EcsId PIPCamera { get; private set; }
+		public Universe.Entity PIPCamera { get; private set; }
 
 		public void OnLoad()
 		{
@@ -22,7 +22,7 @@ namespace Immersion
 			// Game.Set(Game.MainCamera, mesh);
 
 			PIPCamera = Game.Entities.New();
-			Game.Set(PIPCamera, Camera.Create3D(
+			PIPCamera.Set(Camera.Create3D(
 				fieldOfView: 90.0F,
 				clearColor: Color.Black,
 				viewport: new(8, 8, 320, 180)
@@ -31,16 +31,16 @@ namespace Immersion
 
 		public void OnUnload()
 		{
-			Game.Entities.Destroy(PIPCamera);
-			PIPCamera = EcsId.None;
+			PIPCamera.Delete();
+			PIPCamera = default;
 		}
 
 		public void OnUpdate(double delta)
 		{
-			var cameraPos = Game.Get<Transform>(Game.MainCamera).Translation;
+			var cameraPos = Game.MainCamera.Get<Transform>().Translation;
 			var lookAt = Matrix4x4.CreateLookAt(new(8, 28, 8), cameraPos, Vector3.UnitY);
 			Matrix4x4.Invert(lookAt, out lookAt);
-			Game.Set(PIPCamera, (Transform)lookAt);
+			PIPCamera.Set((Transform)lookAt);
 		}
 	}
 }

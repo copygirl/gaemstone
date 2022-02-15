@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
 namespace gaemstone.ECS
@@ -20,7 +19,6 @@ namespace gaemstone.ECS
 		const int INITIAL_CAPACITY = 1024;
 
 		readonly Universe _universe;
-		readonly EcsType _emptyType;
 		readonly Queue<uint> _unusedEntityIDs = new();
 		Record[] _entities = new Record[INITIAL_CAPACITY];
 		// TODO: Attempt to keep Generation low by prioritizing smallest Generation?
@@ -31,10 +29,7 @@ namespace gaemstone.ECS
 
 
 		internal EntityManager(Universe universe)
-		{
-			_universe  = universe;
-			_emptyType = new(_universe);
-		}
+			=> _universe  = universe;
 
 		void Resize(int newCapacity)
 		{
@@ -46,47 +41,38 @@ namespace gaemstone.ECS
 		void EnsureCapacity(uint minCapacity)
 		{
 			if (minCapacity < Capacity) return; // Already have the necessary capacity.
-			var nextPowerOfTwo = 1 << (31 - BitOperations.LeadingZeroCount(minCapacity));
-			Resize(nextPowerOfTwo);
+			Resize((int)BitOperations.RoundUpToPowerOf2(minCapacity));
 		}
 
 
 		/// <summary> Creates a new entity with an empty type and returns it. </summary>
-		public EcsId New() => New(_emptyType);
+		public Universe.Entity New() => New(_universe.EmptyType);
 		/// <summary> Creates a new entity with the specified type and returns it. </summary>
-		public EcsId New(params object[] ids)
-			=> New(new EcsType(_universe, ids.Select(id => id switch {
-				EcsId i => i, Type t => _universe.GetEntityWithTypeOrThrow(t),
-				_ => throw new ArgumentException("id must be EcsId or Type", nameof(ids)),
-			})));
+		public Universe.Entity New(params object[] ids) => New(_universe.Type(ids));
 		/// <summary> Creates a new entity with the specified type and returns it. </summary>
-		public EcsId New(params EcsId[] ids) => New(new EcsType(_universe, ids));
+		public Universe.Entity New(params EcsId[] ids) => New(_universe.Type(ids));
 		/// <summary> Creates a new entity with the specified type and returns it. </summary>
-		public EcsId New(EcsType type)
+		public Universe.Entity New(EcsType type)
 		{
-			var record = NewRecord(type, out var entityID);
-			return new EcsId(entityID, record.Generation);
+			ref var record = ref NewRecord(type, out var entityID);
+			return new(_universe, new(entityID, record.Generation));
 		}
 
 		/// <summary> Creates a new entity with the specified ID and an empty type and returns it. </summary>
 		/// <exception cref="EntityExistsException"> Thrown if the specified ID is already in use. </exception>
-		public EcsId NewWithID(uint entityID) => NewWithID(entityID, _emptyType);
+		public Universe.Entity NewWithID(uint entityID) => NewWithID(entityID, _universe.EmptyType);
 		/// <summary> Creates a new entity with the specified ID and type and returns it. </summary>
 		/// <exception cref="EntityExistsException"> Thrown if the specified ID is already in use. </exception>
-		public EcsId NewWithID(uint entityID, params object[] ids)
-			=> NewWithID(entityID, new EcsType(_universe, ids.Select(id => id switch {
-				EcsId i => i, Type t => _universe.GetEntityWithTypeOrThrow(t),
-				_ => throw new ArgumentException("id must be EcsId or Type", nameof(ids)),
-			})));
+		public Universe.Entity NewWithID(uint entityID, params object[] ids) => NewWithID(entityID, _universe.Type(ids));
 		/// <summary> Creates a new entity with the specified ID and type and returns it. </summary>
 		/// <exception cref="EntityExistsException"> Thrown if the specified ID is already in use. </exception>
-		public EcsId NewWithID(uint entityID, params EcsId[] ids) => NewWithID(entityID, new EcsType(_universe, ids));
+		public Universe.Entity NewWithID(uint entityID, params EcsId[] ids) => NewWithID(entityID, _universe.Type(ids));
 		/// <summary> Creates a new entity with the specified ID and type and returns it. </summary>
 		/// <exception cref="EntityExistsException"> Thrown if the specified ID is already in use. </exception>
-		public EcsId NewWithID(uint entityID, EcsType type)
+		public Universe.Entity NewWithID(uint entityID, EcsType type)
 		{
-			var record = NewRecord(entityID, type);
-			return new EcsId(entityID, record.Generation);
+			ref var record = ref NewRecordWithID(type, entityID);
+			return new(_universe, new(entityID, record.Generation));
 		}
 
 		/// <summary> Creates a new entity with and returns a reference to the record. </summary>
@@ -101,11 +87,12 @@ namespace gaemstone.ECS
 					entityID = _nextUnusedID++;
 				} while (GetRecord(entityID).Occupied);
 			}
-			return ref NewRecord(entityID, type);
+			return ref NewRecordWithID(type, entityID);
 		}
+
 		/// <summary> Creates a new entity with the specified ID and returns a reference to the record. </summary>
 		/// <exception cref="EntityExistsException"> Thrown if the specified ID is already in use. </exception>
-		internal ref Record NewRecord(uint entityID, EcsType type)
+		internal ref Record NewRecordWithID(EcsType type, uint entityID)
 		{
 			EnsureCapacity(entityID + 1);
 
@@ -121,7 +108,7 @@ namespace gaemstone.ECS
 		}
 
 
-		public void Destroy(EcsId entity)
+		public void Delete(EcsId entity)
 		{
 			ref var record = ref GetRecord(entity);
 
@@ -155,20 +142,19 @@ namespace gaemstone.ECS
 		}
 
 
-		public bool TryLookup(uint entityID, out EcsId entity)
+		public Universe.Entity Lookup(uint entityID)
+			=> TryLookup(entityID, out var entity) ? entity
+				: throw new EntityNotFoundException(entityID);
+		public bool TryLookup(uint entityID, out Universe.Entity entity)
 		{
 			entity = default;
 			if ((entityID == 0) || (entityID >= _nextUnusedID)) return false;
 			ref var entry = ref _entities[entityID];
 			if (!entry.Occupied) return false;
 
-			entity = new(entityID, entry.Generation);
+			entity = new(_universe, new(entityID, entry.Generation));
 			return true;
 		}
-
-		public EcsId Lookup(uint entityID)
-			=> TryLookup(entityID, out var entity) ? entity
-				: throw new EntityNotFoundException(entityID);
 
 
 		public bool IsAlive(EcsId entity)

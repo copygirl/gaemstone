@@ -52,7 +52,6 @@ namespace gaemstone.ECS
 			=> (High & 0xFFFFFF, Low);
 		public (EcsId Relation, EcsId Target) ToPair(Universe context)
 		{
-			// FIXME: This doesn't support the special Universe.Wildcard ID.
 			var (relationId, targetId) = ToPair();
 			if (!context.Entities.TryLookup(relationId, out var relation)) throw new EntityNotFoundException(relationId);
 			if (!context.Entities.TryLookup(targetId  , out var target  )) throw new EntityNotFoundException(targetId);
@@ -87,23 +86,23 @@ namespace gaemstone.ECS
 				builder.Append(')');
 			}
 		}
+
+		public string ToString(Universe context)
+		{
+			var builder = new StringBuilder();
+			AppendString(builder, context);
+			return builder.ToString();
+		}
 		public void AppendString(StringBuilder builder, Universe context)
 		{
 			if (Role == EcsRole.Pair) {
-				void AppendId(uint id)
-				{
-					if (id == Universe.Wildcard.ID)
-						builder.Append('*');
-					else if (context.Entities.TryLookup(id, out var entity))
-						entity.AppendString(builder, context);
-					else builder.Append($"0x{id:X}");
-				}
-
 				var (relationId, targetId) = ToPair();
 				builder.Append('(');
-				AppendId(relationId);
+				if (context.Entities.TryLookup(relationId, out var relation)) relation.AppendString(builder);
+				else builder.Append($"0x{relationId:X}");
 				builder.Append(",");
-				AppendId(targetId);
+				if (context.Entities.TryLookup(targetId, out var target)) target.AppendString(builder);
+				else builder.Append($"0x{targetId:X}");
 				builder.Append(')');
 			} else if (context.TryGet<Identifier>(this, out var identifier))
 				builder.Append(identifier);

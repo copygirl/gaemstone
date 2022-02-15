@@ -15,7 +15,7 @@ namespace gaemstone.ECS
 			var method    = action.GetType().GetMethod("Invoke")!;
 			var generator = QueryActionGenerator.GetOrBuild(method);
 			var query     = new QueryImpl(_universe, action, generator,
-				with ?? new(_universe), without ?? new(_universe));
+				with ?? _universe.EmptyType, without ?? _universe.EmptyType);
 			// TODO: Cache the query somehow.
 			query.Run();
 		}
@@ -49,11 +49,12 @@ namespace gaemstone.ECS
 
 		public void Run()
 		{
+			// TODO: Support using Universe.Entity as parameter type.
 			// TODO: This could be optimized by picking the least common ID first.
 
-			var with = new EcsType(_universe, _generator.Parameters
+			var with = _universe.Type(_generator.Parameters
 				.Where(p => (p.Kind != QueryActionGenerator.ParamKind.Entity) && p.IsRequired)
-				.Select(p => _universe.GetEntityWithTypeOrThrow(p.UnderlyingType))
+				.Select(p => _universe.Lookup(p.UnderlyingType).ID)
 				.Concat(_filterWith));
 
 			var tablesAndColumns = _universe.Tables.GetAll(with.First())
