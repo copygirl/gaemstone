@@ -76,9 +76,9 @@ namespace gaemstone.Client
 			Processors.Start<TextureManager>();
 			Processors.Start<CameraController>();
 
-			MainCamera = Entities.New();
-			MainCamera.Set((Transform)Matrix4x4.Identity);
-			MainCamera.Set(Camera.Default3D);
+			MainCamera = Entities.New()
+				.Set((Transform)Matrix4x4.Identity)
+				.Set(Camera.Default3D);
 		}
 
 		protected virtual void OnClosing()

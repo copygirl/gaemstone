@@ -35,8 +35,7 @@ namespace gaemstone.ECS
 				storageType: _universe.Type(Universe.TypeID, Universe.IdentifierID),
 				columnTypes: new[]{ typeof(Type), typeof(Identifier) },
 				(Universe.ComponentID , typeof(Component)),
-				(Universe.TagID       , typeof(Tag)),
-				(Universe.RelationID  , typeof(Relation)));
+				(Universe.TagID       , typeof(Tag)));
 
 			TableAdded?.Invoke(componentTable);
 			TableAdded?.Invoke(tagTable);

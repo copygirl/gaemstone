@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 
 namespace gaemstone.ECS
@@ -15,8 +14,8 @@ namespace gaemstone.ECS
 		static internal readonly EcsId RelationID  = new(0x12);
 
 		// TODO: Built-in Relationships
-		// static internal readonly EcsId ChildOf = new(0x20);
-		// static internal readonly EcsId IsA     = new(0x21);
+		static internal readonly EcsId ChildOf = new(0x20);
+		static internal readonly EcsId IsA     = new(0x21);
 
 		// Built-in Special Entities
 		static internal readonly EcsId Wildcard = new(0x30);
@@ -40,31 +39,35 @@ namespace gaemstone.ECS
 
 			EmptyType = EcsType.Empty(this);
 
-			// Built-in Components
+
+			// Built-in Components required to bootstrap
 			Entities.NewWithID(TypeID.ID);
 			Entities.NewWithID(IdentifierID.ID);
-
-			// Built-in Tags
+			// Built-in Tags required to bootstrap.
 			Entities.NewWithID(ComponentID.ID);
 			Entities.NewWithID(TagID.ID);
-			Entities.NewWithID(RelationID.ID);
-
 			// Bootstrap table structures so other methods can work.
 			Tables.Bootstrap();
 
-			// Create the special "Wildcard" (*) entity that can be used when looking up relationships.
-			var wildcard = Entities.NewWithID(Wildcard.ID, typeof(Identifier));
-			wildcard.Set((Identifier)"*");
+
+			// Build-in Tags
+			Entities.NewWithID(RelationID.ID).Add(typeof(Tag)).Set(typeof(Relation));
+
+			// Build-in Relations
+			Entities.NewWithID(ChildOf.ID).Add(typeof(Tag), typeof(Relation)).Set(typeof(ChildOf));
+			Entities.NewWithID(IsA.ID    ).Add(typeof(Tag), typeof(Relation)).Set(typeof(IsA));
+
+			// Special "Wildcard" (*), used when looking up relationships
+			Entities.NewWithID(Wildcard.ID).Set((Identifier)"*");
+
 
 			NewComponent<Common.Transform>();
 		}
 
 		public EcsId NewComponent<T>()
-		{
-			var entity = Entities.New(typeof(Type), typeof(Identifier), typeof(Component));
-			entity.Set(typeof(T));
-			entity.Set((Identifier)typeof(T).Name);
-			return entity;
-		}
+			=> Entities.New()
+				.Add(typeof(Component))
+				.Set(typeof(T))
+				.Set((Identifier)typeof(T).Name);
 	}
 }

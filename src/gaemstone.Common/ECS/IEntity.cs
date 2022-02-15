@@ -18,6 +18,19 @@ namespace gaemstone.ECS
 		bool TrySet<T>(T value);
 
 		T Get<T>();
-		void Set<T>(T value);
+		IEntity Set<T>(T value);
+	}
+
+	public static class EntityExtensions
+	{
+		public static TEntity Add<TEntity>(this TEntity entity, params object[] ids)
+			where TEntity : IEntity { entity.Type = entity.Type.Union(ids); return entity; }
+		public static TEntity Add<TEntity>(this TEntity entity, params EcsId[] ids)
+			where TEntity : IEntity { entity.Type = entity.Type.Union(ids); return entity; }
+
+		public static TEntity Remove<TEntity>(this TEntity entity, params object[] ids)
+			where TEntity : IEntity { entity.Type = entity.Type.Except(ids); return entity; }
+		public static TEntity Remove<TEntity>(this TEntity entity, params EcsId[] ids)
+			where TEntity : IEntity { entity.Type = entity.Type.Except(ids); return entity; }
 	}
 }

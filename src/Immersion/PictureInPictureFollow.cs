@@ -21,12 +21,12 @@ namespace Immersion
 			// var (_, mesh) = Game.GetAll<Mesh>().First();
 			// Game.Set(Game.MainCamera, mesh);
 
-			PIPCamera = Game.Entities.New();
-			PIPCamera.Set(Camera.Create3D(
-				fieldOfView: 90.0F,
-				clearColor: Color.Black,
-				viewport: new(8, 8, 320, 180)
-			));
+			PIPCamera = Game.Entities.New()
+				.Set(Camera.Create3D(
+					fieldOfView: 90.0F,
+					clearColor: Color.Black,
+					viewport: new(8, 8, 320, 180)
+				));
 		}
 
 		public void OnUnload()

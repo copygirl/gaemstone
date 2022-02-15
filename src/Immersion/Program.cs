@@ -44,11 +44,11 @@ namespace Immersion
 
 			for (var x = -12; x <= 12; x++)
 			for (var z = -12; z <= 12; z++) {
-				var entity   = Entities.New();
 				var position = Matrix4x4.CreateTranslation(x * 2, 25, z * 2);
 				var rotation = Matrix4x4.CreateRotationY(RND.NextFloat(MathF.PI * 2));
-				entity.Set((Transform)(rotation * position));
-				entity.Set(RND.Pick(heartMesh, swordMesh));
+				Entities.New()
+					.Set((Transform)(rotation * position))
+					.Set(RND.Pick(heartMesh, swordMesh));
 			}
 
 			MainCamera.Set((Transform)Matrix4x4.CreateTranslation(0, 26, 0));
@@ -57,17 +57,12 @@ namespace Immersion
 			var textureManager = Processors.GetOrThrow<TextureManager>();
 			var texture = textureManager.Load(this, "terrain.png");
 
-			var stone = Entities.New();
-			var dirt  = Entities.New();
-			var grass = Entities.New();
-			stone.Set(TextureCoords4.FromGrid(4, 4, 1, 0));
-			dirt .Set(TextureCoords4.FromGrid(4, 4, 2, 0));
-			grass.Set(TextureCoords4.FromGrid(4, 4, 3, 0));
-
+			var stone = Entities.New().Set(TextureCoords4.FromGrid(4, 4, 1, 0));
+			var dirt  = Entities.New().Set(TextureCoords4.FromGrid(4, 4, 2, 0));
+			var grass = Entities.New().Set(TextureCoords4.FromGrid(4, 4, 3, 0));
 
 			void CreateChunk(ChunkPos pos)
 			{
-				var chunk = Entities.New();
 				var storage = new ChunkPaletteStorage<Prototype>(default);
 				for (var x = 0; x < 16; x++)
 				for (var y = 0; y < 16; y++)
@@ -79,10 +74,11 @@ namespace Immersion
 						                                  : stone);
 				}
 
-				chunk.Set(new Chunk(pos));
-				chunk.Set((Transform)Matrix4x4.CreateTranslation(pos.GetOrigin()));
-				chunk.Set(storage);
-				chunk.Set(texture);
+				Entities.New()
+					.Set(new Chunk(pos))
+					.Set((Transform)Matrix4x4.CreateTranslation(pos.GetOrigin()))
+					.Set(storage)
+					.Set(texture);
 			}
 
 			var sizeH = 4;

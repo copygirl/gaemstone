@@ -31,8 +31,8 @@ namespace gaemstone.ECS
 
 			public T Get<T>() => Universe.Get<T>(this);
 			public ref T GetRef<T>() => ref Universe.GetRef<T>(this);
-			public void Set<T>(T value) => Universe.Set<T>(this, value);
-
+			public Entity Set<T>(T value) { Universe.Set(this, value); return this; }
+			IEntity IEntity.Set<T>(T value) => Set(value);
 
 			public override bool Equals(object? obj) => (obj is Entity entity) && Equals(entity);
 			public bool Equals(Entity other) => (Universe == other.Universe) && (ID == other.ID);
