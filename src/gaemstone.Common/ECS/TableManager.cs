@@ -10,7 +10,7 @@ namespace gaemstone.ECS
 	public class TableManager
 	{
 		readonly Universe _universe;
-		readonly Dictionary<EcsType, Table> _tables = new();
+		readonly Dictionary<EntityType, Table> _tables = new();
 		readonly Dictionary<EcsId, List<Table>> _index = new();
 
 		public event Action<Table>? TableAdded;
@@ -41,8 +41,8 @@ namespace gaemstone.ECS
 			TableAdded?.Invoke(tagTable);
 		}
 
-		Table BootstrapTable(EcsType type, EcsType storageType, Type[] columnTypes,
-		                params (EcsId ID, Type Type)[] entities)
+		Table BootstrapTable(EntityType type, EntityType storageType, Type[] columnTypes,
+		                     params (EcsId.Entity ID, Type Type)[] entities)
 		{
 			var table = new Table(_universe, type, storageType, columnTypes);
 			_tables.Add(type, table);
@@ -65,17 +65,16 @@ namespace gaemstone.ECS
 		void AddTableToIndex(Table table)
 		{
 			foreach (var id in table.Type) {
-				if (id.Role == EcsRole.Pair) {
-					var (relationId, targetId) = id.ToPair();
-					_index.GetOrAddNew(EcsId.Pair(Universe.Wildcard.ID, targetId)).Add(table);
-					_index.GetOrAddNew(EcsId.Pair(relationId, Universe.Wildcard.ID)).Add(table);
+				if (id.AsPair() is EcsId.Pair pair) {
+					_index.GetOrAddNew(new EcsId.Pair(Universe.Wildcard.ID, pair.Target)).Add(table);
+					_index.GetOrAddNew(new EcsId.Pair(pair.Relation, Universe.Wildcard.ID)).Add(table);
 				}
 				_index.GetOrAddNew(id).Add(table);
 			}
 		}
 
 
-		public bool TryGet(EcsType type, [MaybeNullWhen(false)] out Table table)
+		public bool TryGet(EntityType type, [MaybeNullWhen(false)] out Table table)
 			=> _tables.TryGetValue(type, out table);
 
 		public IEnumerable<Table> GetAll(EcsId id)
@@ -84,7 +83,7 @@ namespace gaemstone.ECS
 				: Enumerable.Empty<Table>();
 
 
-		public Table GetOrCreate(EcsType type)
+		public Table GetOrCreate(EntityType type)
 		{
 			if (!_tables.TryGetValue(type, out var table)) {
 				var storageType = _universe.EmptyType;
@@ -105,17 +104,19 @@ namespace gaemstone.ECS
 
 		Type? GetStorageType(EcsId id)
 		{
-			if (id.Role == EcsRole.Pair) {
-				var (relation, target) = id.ToPair(_universe);
+			if (id.AsEntity() is EcsId.Entity entity) {
+				if (_universe.Has<Component>(entity)) return _universe.Get<Type>(entity);
+			} else if (id.AsPair() is EcsId.Pair pair) {
+				var relation = _universe.Lookup(pair.Relation);
+				var target   = _universe.Lookup(pair.Target);
 				if (_universe.Has<Component>(relation)) return _universe.Get<Type>(relation);
 				if (_universe.Has<Component>(target))   return _universe.Get<Type>(target);
 			}
-			if (_universe.Has<Component>(id)) return _universe.Get<Type>(id);
 			return null;
 		}
 
 
-		internal void Move(EcsId entity, ref Record record, EcsType toType)
+		internal void Move(EcsId.Entity entity, ref Record record, EntityType toType)
 		{
 			if (record.Type == toType) return;
 

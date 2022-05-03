@@ -11,7 +11,7 @@ namespace gaemstone.ECS
 		public int Row;
 
 		public bool Occupied => (Table != null);
-		public EcsType Type => Table.Type;
+		public EntityType Type => Table.Type;
 	}
 
 	public class EntityManager
@@ -52,7 +52,7 @@ namespace gaemstone.ECS
 		/// <summary> Creates a new entity with the specified type and returns it. </summary>
 		public Universe.Entity New(params EcsId[] ids) => New(_universe.Type(ids));
 		/// <summary> Creates a new entity with the specified type and returns it. </summary>
-		public Universe.Entity New(EcsType type)
+		public Universe.Entity New(EntityType type)
 		{
 			ref var record = ref NewRecord(type, out var entityID);
 			return new(_universe, new(entityID, record.Generation));
@@ -69,14 +69,14 @@ namespace gaemstone.ECS
 		public Universe.Entity NewWithID(uint entityID, params EcsId[] ids) => NewWithID(entityID, _universe.Type(ids));
 		/// <summary> Creates a new entity with the specified ID and type and returns it. </summary>
 		/// <exception cref="EntityExistsException"> Thrown if the specified ID is already in use. </exception>
-		public Universe.Entity NewWithID(uint entityID, EcsType type)
+		public Universe.Entity NewWithID(uint entityID, EntityType type)
 		{
 			ref var record = ref NewRecordWithID(type, entityID);
 			return new(_universe, new(entityID, record.Generation));
 		}
 
 		/// <summary> Creates a new entity with and returns a reference to the record. </summary>
-		internal ref Record NewRecord(EcsType type, out uint entityID)
+		internal ref Record NewRecord(EntityType type, out uint entityID)
 		{
 			// Try to reuse a previously used entity ID.
 			if (!_unusedEntityIDs.TryDequeue(out entityID)) {
@@ -92,13 +92,13 @@ namespace gaemstone.ECS
 
 		/// <summary> Creates a new entity with the specified ID and returns a reference to the record. </summary>
 		/// <exception cref="EntityExistsException"> Thrown if the specified ID is already in use. </exception>
-		internal ref Record NewRecordWithID(EcsType type, uint entityID)
+		internal ref Record NewRecordWithID(EntityType type, uint entityID)
 		{
 			EnsureCapacity(entityID + 1);
 
 			ref var record = ref GetRecord(entityID);
 			if (record.Occupied) throw new EntityExistsException(entityID,
-				$"Entity already exists as {new EcsId(entityID, record.Generation)}");
+				$"Entity already exists as {new EcsId.Entity(entityID, record.Generation)}");
 
 			record.Table = _universe.Tables.GetOrCreate(type);
 			record.Row   = record.Table.Add(new(entityID, record.Generation));
@@ -108,7 +108,7 @@ namespace gaemstone.ECS
 		}
 
 
-		public void Delete(EcsId entity)
+		public void Delete(EcsId.Entity entity)
 		{
 			ref var record = ref GetRecord(entity);
 
@@ -132,8 +132,8 @@ namespace gaemstone.ECS
 		}
 
 		/// <summary> Returns the record for the specified entity, which must be alive. </summary>
-		/// <exception cref="EntityNotFoundException"> Thrown if the specified ID is out of range, or the entity is not alive. </exception>
-		internal ref Record GetRecord(EcsId entity)
+		/// <exception cref="EntityNotFoundException"> Thrown if the specified entity's ID is out of range, or the entity is not alive. </exception>
+		internal ref Record GetRecord(EcsId.Entity entity)
 		{
 			ref var record = ref GetRecord(entity.ID);
 			if (!record.Occupied || (record.Generation != entity.Generation))
@@ -157,7 +157,7 @@ namespace gaemstone.ECS
 		}
 
 
-		public bool IsAlive(EcsId entity)
+		public bool IsAlive(EcsId.Entity entity)
 		{
 			if (entity.ID >= _nextUnusedID) return false;
 			ref var entry = ref _entities[entity.ID];

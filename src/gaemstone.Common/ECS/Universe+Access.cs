@@ -5,7 +5,7 @@ namespace gaemstone.ECS
 {
 	public partial class Universe
 	{
-		public bool Has<T>(EcsId entity)
+		public bool Has<T>(EcsId.Entity entity)
 		{
 			var id   = Lookup<T>();
 			var type = Entities.GetRecord(entity).Type;
@@ -13,7 +13,7 @@ namespace gaemstone.ECS
 		}
 
 
-		public bool TryGet<T>(EcsId entity, [NotNullWhen(true)] out T? value)
+		public bool TryGet<T>(EcsId.Entity entity, [NotNullWhen(true)] out T? value)
 		{
 			var id = Lookup<T>();
 			ref var record = ref Entities.GetRecord(entity);
@@ -22,11 +22,11 @@ namespace gaemstone.ECS
 			else { value = default!; return false; }
 		}
 
-		public T Get<T>(EcsId entity)
+		public T Get<T>(EcsId.Entity entity)
 			=> TryGet<T>(entity, out var value) ? value
 				: throw new ComponentNotFoundException(entity, typeof(T));
 
-		public ref T GetRef<T>(EcsId entity)
+		public ref T GetRef<T>(EcsId.Entity entity)
 		{
 			var id = Lookup<T>();
 			ref var record = ref Entities.GetRecord(entity);
@@ -35,7 +35,7 @@ namespace gaemstone.ECS
 		}
 
 
-		public bool TrySet<T>(EcsId entity, T value)
+		public bool TrySet<T>(EcsId.Entity entity, T value)
 		{
 			if (value == null) throw new ArgumentNullException(nameof(value));
 
@@ -50,7 +50,7 @@ namespace gaemstone.ECS
 			return true;
 		}
 
-		public void Set<T>(EcsId entity, T value)
+		public void Set<T>(EcsId.Entity entity, T value)
 		{
 			if (TrySet(entity, value)) return; // Successful.
 			throw new ComponentNotFoundException(entity, typeof(T), "Not a Component");

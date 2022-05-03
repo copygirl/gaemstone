@@ -39,9 +39,9 @@ namespace gaemstone.ECS
 				if (p.ParameterType.IsArray)   throw new ArgumentException("Arrays are not supported\nParameter: " + p);
 				if (p.ParameterType.IsPointer) throw new ArgumentException("Pointers are not supported\nParameter: " + p);
 
-				if (p.ParameterType == typeof(EcsId)) {
-					if (index != 0) throw new ArgumentException("EcsId must be the first parameter");
-					return new ParamInfo(0, ParamKind.Entity, typeof(EcsId), typeof(EcsId));
+				if (p.ParameterType == typeof(EcsId.Entity)) {
+					if (index != 0) throw new ArgumentException("EcsId.Entity must be the first parameter");
+					return new ParamInfo(0, ParamKind.Entity, typeof(EcsId.Entity), typeof(EcsId.Entity));
 				}
 
 				if (p.IsOptional) kind = ParamKind.Optional;

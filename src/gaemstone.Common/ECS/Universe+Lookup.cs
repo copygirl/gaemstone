@@ -13,14 +13,15 @@ namespace gaemstone.ECS
 		public bool TryLookup(object obj, out Entity entity)
 		{
 			switch (obj) {
-				case Entity     e: entity = e;            return true;
-				case EcsId      i: entity = new(this, i); return true;
-				case uint       i: return Entities.TryLookup(i, out entity);
-				case Type       t: return TryLookup(t, out entity);
-				case Identifier i: return TryLookup(i, out entity);
-				case string     n: return TryLookup(n, out entity);
-				default: throw new ArgumentException($"Elements must be UniverseEntity, EcsId, uint, Type, Identifier or string", nameof(obj));
+				case Entity       e: entity = e;            return true;
+				case EcsId.Entity e: entity = new(this, e); return true;
+				case EcsId        i: if (i.AsEntity() is EcsId.Entity e2) { entity = new(this, e2); return true; } else break;
+				case uint         i: return Entities.TryLookup(i, out entity);
+				case Type         t: return TryLookup(t, out entity);
+				case Identifier   i: return TryLookup(i, out entity);
+				case string       n: return TryLookup(n, out entity);
 			}
+			throw new ArgumentException($"Must be Universe.Entity, EcsId.Entity, uint, Type, Identifier or string", nameof(obj));
 		}
 
 

@@ -5,30 +5,30 @@ namespace gaemstone.ECS
 	public partial class Universe
 	{
 		// Built-in Components
-		static internal readonly EcsId TypeID       = new(0x01);
-		static internal readonly EcsId IdentifierID = new(0x02);
+		static internal readonly EcsId.Entity TypeID       = new(0x01);
+		static internal readonly EcsId.Entity IdentifierID = new(0x02);
 
 		// Built-in Tags
-		static internal readonly EcsId ComponentID = new(0x10);
-		static internal readonly EcsId TagID       = new(0x11);
-		static internal readonly EcsId RelationID  = new(0x12);
+		static internal readonly EcsId.Entity ComponentID = new(0x10);
+		static internal readonly EcsId.Entity TagID       = new(0x11);
+		static internal readonly EcsId.Entity RelationID  = new(0x12);
 
 		// TODO: Built-in Relationships
-		static internal readonly EcsId ChildOf = new(0x20);
-		static internal readonly EcsId IsA     = new(0x21);
+		static internal readonly EcsId.Entity ChildOf = new(0x20);
+		static internal readonly EcsId.Entity IsA     = new(0x21);
 
 		// Built-in Special Entities
-		static internal readonly EcsId Wildcard = new(0x30);
+		static internal readonly EcsId.Entity Wildcard = new(0x30);
 
 		public EntityManager    Entities   { get; }
 		public TableManager     Tables     { get; }
 		public QueryManager     Queries    { get; }
 		public ProcessorManager Processors { get; }
 
-		public EcsType EmptyType { get; }
-		public EcsType Type(params object[] ids)    => EmptyType.Union(ids);
-		public EcsType Type(params EcsId[] ids)     => EmptyType.Union(ids);
-		public EcsType Type(IEnumerable<EcsId> ids) => EmptyType.Union(ids);
+		public EntityType EmptyType { get; }
+		public EntityType Type(params object[] ids)    => EmptyType.Union(ids);
+		public EntityType Type(params EcsId[] ids)     => EmptyType.Union(ids);
+		public EntityType Type(IEnumerable<EcsId> ids) => EmptyType.Union(ids);
 
 		public Universe()
 		{
@@ -37,7 +37,7 @@ namespace gaemstone.ECS
 			Queries    = new(this);
 			Processors = new(this);
 
-			EmptyType = EcsType.Empty(this);
+			EmptyType = EntityType.Empty(this);
 
 
 			// Built-in Components required to bootstrap

@@ -5,10 +5,8 @@ namespace gaemstone.ECS
 	public interface IEntity
 	{
 		Universe Universe { get; }
-		EcsId? ID { get; }
-
+		EntityType Type { get; set; }
 		bool IsAlive { get; }
-		EcsType Type { get; set; }
 
 		void Delete();
 

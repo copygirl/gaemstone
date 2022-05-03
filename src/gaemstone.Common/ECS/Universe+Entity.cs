@@ -1,6 +1,5 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Text;
 
 namespace gaemstone.ECS
 {
@@ -10,16 +9,15 @@ namespace gaemstone.ECS
 			: IEntity, IEquatable<Entity>
 		{
 			public Universe Universe { get; }
-			public EcsId ID { get; }
-			EcsId? IEntity.ID => ID;
+			public EcsId.Entity ID { get; }
 
 			public bool IsAlive => Universe.Entities.IsAlive(this);
-			public EcsType Type {
+			public EntityType Type {
 				get => Universe.Entities.GetRecord(this).Type;
 				set => Universe.Tables.Move(this, ref Universe.Entities.GetRecord(this), value);
 			}
 
-			public Entity(Universe universe, EcsId id)
+			public Entity(Universe universe, EcsId.Entity id)
 				{ Universe = universe; ID = id; }
 
 			public void Delete() => Universe.Entities.Delete(this);
@@ -38,10 +36,12 @@ namespace gaemstone.ECS
 			public bool Equals(Entity other) => (Universe == other.Universe) && (ID == other.ID);
 			public override int GetHashCode() => HashCode.Combine(Universe, ID);
 
-			public override string? ToString() => ID.ToString(Universe);
-			public void AppendString(StringBuilder builder) => ID.AppendString(builder);
+			// TODO: Do the ToString stuff.
+			// public override string? ToString() => ID.ToString(Universe);
+			// public void AppendString(StringBuilder builder) => ID.AppendString(builder);
 
-			public static implicit operator EcsId(Entity entity) => entity.ID;
+			public static implicit operator EcsId       (Entity entity) => entity.ID;
+			public static implicit operator EcsId.Entity(Entity entity) => entity.ID;
 		}
 	}
 }

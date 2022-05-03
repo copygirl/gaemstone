@@ -12,10 +12,10 @@ namespace gaemstone.ECS
 
 
 		public Universe Universe { get; }
-		public EcsType Type { get; }
+		public EntityType Type { get; }
 
-		public EcsType StorageType { get; }
-		internal EcsId[] Entities { get; private set; }
+		public EntityType StorageType { get; }
+		internal EcsId.Entity[] Entities { get; private set; }
 		internal Array[] Columns { get; }
 
 		public bool IsEmpty => Count == 0;
@@ -23,14 +23,14 @@ namespace gaemstone.ECS
 		public int Capacity => Entities.Length;
 
 
-		internal Table(Universe universe, EcsType type, EcsType storageType,
+		internal Table(Universe universe, EntityType type, EntityType storageType,
 		               IEnumerable<Type> columnTypes)
 		{
 			Universe = universe;
 			Type     = type;
 
 			StorageType = storageType;
-			Entities    = new EcsId[0];
+			Entities    = new EcsId.Entity[0];
 			Columns     = columnTypes.Select(type => Array.CreateInstance(type, 0)).ToArray();
 		}
 
@@ -40,7 +40,7 @@ namespace gaemstone.ECS
 			if (length < 0) throw new ArgumentOutOfRangeException(nameof(length), "length cannot be negative");
 			if (length < Count) throw new ArgumentOutOfRangeException(nameof(length), "length cannot be smaller than Count");
 
-			var newEntities = new EcsId[length];
+			var newEntities = new EcsId.Entity[length];
 			Array.Copy(Entities, newEntities, Math.Min(Entities.Length, length));
 			Entities = newEntities;
 			for (var i = 0; i < Columns.Length; i++) {
@@ -60,7 +60,7 @@ namespace gaemstone.ECS
 		}
 
 
-		internal int Add(EcsId entity)
+		internal int Add(EcsId.Entity entity)
 		{
 			EnsureCapacity(Count + 1);
 			Entities[Count] = entity;

@@ -10,7 +10,7 @@ namespace gaemstone.ECS
 		internal QueryManager(Universe universe)
 			=> _universe = universe;
 
-		public void Run(Delegate action, EcsType? with = null, EcsType? without = null)
+		public void Run(Delegate action, EntityType? with = null, EntityType? without = null)
 		{
 			var method    = action.GetType().GetMethod("Invoke")!;
 			var generator = QueryActionGenerator.GetOrBuild(method);
@@ -32,12 +32,12 @@ namespace gaemstone.ECS
 		readonly Delegate _action;
 		readonly QueryActionGenerator _generator;
 
-		readonly EcsType _filterWith;
-		readonly EcsType _filterWithout;
+		readonly EntityType _filterWith;
+		readonly EntityType _filterWithout;
 
 		public QueryImpl(Universe universe, Delegate action,
 		                 QueryActionGenerator generator,
-		                 EcsType with, EcsType without)
+		                 EntityType with, EntityType without)
 		{
 			_universe  = universe;
 			_action    = action;
@@ -54,7 +54,7 @@ namespace gaemstone.ECS
 
 			var with = _universe.Type(_generator.Parameters
 				.Where(p => (p.Kind != QueryActionGenerator.ParamKind.Entity) && p.IsRequired)
-				.Select(p => _universe.Lookup(p.UnderlyingType).ID)
+				.Select(p => (EcsId)_universe.Lookup(p.UnderlyingType).ID)
 				.Concat(_filterWith));
 
 			var tablesAndColumns = _universe.Tables.GetAll(with.First())

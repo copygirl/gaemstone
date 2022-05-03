@@ -45,9 +45,9 @@ namespace gaemstone.Bloxel.Client
 
 		public void OnUpdate(double delta)
 		{
-			var generated = new List<(EcsId, Mesh?)>();
+			var generated = new List<(EcsId.Entity, Mesh?)>();
 			Game.Queries.Run(without: Game.Type(typeof(Mesh)), action:
-				(EcsId entity, Chunk chunk, ChunkPaletteStorage<Prototype> storage) =>
+				(EcsId.Entity entity, Chunk chunk, ChunkPaletteStorage<Prototype> storage) =>
 					generated.Add((entity, Generate(chunk.Position, storage))));
 			foreach (var (entity, mesh) in generated) {
 				if (mesh is Mesh m) Game.Set(entity, m);
