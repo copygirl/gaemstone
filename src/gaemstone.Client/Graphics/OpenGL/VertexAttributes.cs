@@ -17,15 +17,15 @@ namespace gaemstone.Client.Graphics
 
 		internal VertexAttributes(Program program)
 		{
-			GFX.GL.GetProgram(program.Handle, ProgramPropertyARB.ActiveAttributeMaxLength, out var attribMaxLength);
+			Gfx.Gl.GetProgram(program.Handle, ProgramPropertyARB.ActiveAttributeMaxLength, out var attribMaxLength);
 			var nameBuffer = new string(' ', attribMaxLength);
-			GFX.GL.GetProgram(program.Handle, ProgramPropertyARB.ActiveAttributes, out var attribCount);
+			Gfx.Gl.GetProgram(program.Handle, ProgramPropertyARB.ActiveAttributes, out var attribCount);
 			_activeAttribs = new VertexAttributeInfo[attribCount];
 			for (uint attribIndex = 0; attribIndex < attribCount; attribIndex++) {
-				GFX.GL.GetActiveAttrib(program.Handle, attribIndex, (uint)attribMaxLength,
+				Gfx.Gl.GetActiveAttrib(program.Handle, attribIndex, (uint)attribMaxLength,
 				                       out var length, out var size, out AttributeType type, out nameBuffer);
 				var name     = nameBuffer[..(int)length];
-				var location = GFX.GL.GetAttribLocation(program.Handle, name);
+				var location = Gfx.Gl.GetAttribLocation(program.Handle, name);
 				var attrib   = new VertexAttributeInfo(attribIndex, location, size, type, name);
 				_activeAttribs[attribIndex] = attrib;
 				_attribsByName[nameBuffer]  = attrib;
@@ -53,8 +53,8 @@ namespace gaemstone.Client.Graphics
 		public void Pointer(int size, VertexAttribPointerType type,
 		                    bool normalized = false, uint stride = 0, int offset = 0)
 		{
-			GFX.GL.EnableVertexAttribArray((uint)Location);
-			unsafe { GFX.GL.VertexAttribPointer((uint)Location, size, type, normalized, stride, (void*)offset); }
+			Gfx.Gl.EnableVertexAttribArray((uint)Location);
+			unsafe { Gfx.Gl.VertexAttribPointer((uint)Location, size, type, normalized, stride, (void*)offset); }
 		}
 
 		public override string ToString()

@@ -11,9 +11,9 @@ namespace gaemstone.Bloxel.Client
 	public class ChunkMeshGenerator
 		: IProcessor
 	{
-		const int STARTING_CAPACITY = 1024;
+		const int StartingCapacity = 1024;
 
-		static readonly Vector3[][] OFFSET_PER_FACING = {
+		static readonly Vector3[][] OffsetPerFacing = {
 			new Vector3[]{ new(1,1,1), new(1,0,1), new(1,0,0), new(1,1,0) }, // East  (+X)
 			new Vector3[]{ new(0,1,0), new(0,0,0), new(0,0,1), new(0,1,1) }, // West  (-X)
 			new Vector3[]{ new(1,1,0), new(0,1,0), new(0,1,1), new(1,1,1) }, // Up    (+Y)
@@ -22,7 +22,7 @@ namespace gaemstone.Bloxel.Client
 			new Vector3[]{ new(1,1,0), new(1,0,0), new(0,0,0), new(0,1,0) }  // North (-Z)
 		};
 
-		static readonly int[] TRIANGLE_INDICES
+		static readonly int[] TriangleIndices
 			= { 0, 1, 3,  1, 2, 3 };
 
 
@@ -31,10 +31,10 @@ namespace gaemstone.Bloxel.Client
 		// TODO: Automatically populate other processors.
 		MeshManager _meshManager = null!;
 
-		ushort[]  _indices  = new ushort[STARTING_CAPACITY];
-		Vector3[] _vertices = new Vector3[STARTING_CAPACITY];
-		Vector3[] _normals  = new Vector3[STARTING_CAPACITY];
-		Vector2[] _uvs      = new Vector2[STARTING_CAPACITY];
+		ushort[]  _indices  = new ushort[StartingCapacity];
+		Vector3[] _vertices = new Vector3[StartingCapacity];
+		Vector3[] _normals  = new Vector3[StartingCapacity];
+		Vector2[] _uvs      = new Vector2[StartingCapacity];
 
 
 		public void OnLoad()
@@ -80,7 +80,7 @@ namespace gaemstone.Bloxel.Client
 				var blockVertex = new Vector3(x, y, z);
 				var textureCell = Game.Get<TextureCoords4>(block);
 
-				foreach (var facing in BlockFacings.ALL) {
+				foreach (var facing in BlockFacings.All) {
 					if (!IsNeighborEmpty(storages, x, y, z, facing)) continue;
 
 					if (_indices.Length <= indexCount + 6)
@@ -91,12 +91,12 @@ namespace gaemstone.Bloxel.Client
 						Array.Resize(ref _uvs     , _vertices.Length << 1);
 					}
 
-					for (var i = 0; i < TRIANGLE_INDICES.Length; i++)
-						_indices[indexCount++] = (ushort)(vertexCount + TRIANGLE_INDICES[i]);
+					for (var i = 0; i < TriangleIndices.Length; i++)
+						_indices[indexCount++] = (ushort)(vertexCount + TriangleIndices[i]);
 
 					var normal = facing.ToVector3();
 					for (var i = 0; i < 4; i++) {
-						var offset = OFFSET_PER_FACING[(int)facing][i];
+						var offset = OffsetPerFacing[(int)facing][i];
 						_vertices[vertexCount] = blockVertex + offset;
 						_normals[vertexCount]  = normal;
 						_uvs[vertexCount]      = i switch {

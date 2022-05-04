@@ -27,7 +27,7 @@ namespace gaemstone.Common.Utility
 		public static T Pick<T>(this Random rnd, Span<T> elements)
 			=> elements[rnd.Next(elements.Length)];
 
-#pragma warning disable CS8509
+#pragma warning disable CS8509 // Switch expression is not exhaustive.
 		public static T Pick<T>(this Random rnd, T elem1, T elem2)
 			=> rnd.Next(2) switch { 0 => elem1, 1 => elem2 };
 		public static T Pick<T>(this Random rnd, T elem1, T elem2, T elem3)

@@ -50,11 +50,11 @@ namespace gaemstone.ECS
 		public void Run()
 		{
 			// TODO: Support using Universe.Entity as parameter type.
-			// TODO: This could be optimized by picking the least common ID first.
+			// TODO: This could be optimized by picking the least common id first.
 
 			var with = _universe.Type(_generator.Parameters
 				.Where(p => (p.Kind != QueryActionGenerator.ParamKind.Entity) && p.IsRequired)
-				.Select(p => (EcsId)_universe.Lookup(p.UnderlyingType).ID)
+				.Select(p => (EcsId)_universe.Lookup(p.UnderlyingType).Id)
 				.Concat(_filterWith));
 
 			var tablesAndColumns = _universe.Tables.GetAll(with.First())

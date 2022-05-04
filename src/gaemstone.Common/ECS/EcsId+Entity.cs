@@ -27,7 +27,7 @@ namespace gaemstone.ECS
 			/// The unique 32-bit integer identifier for this entity.
 			/// Only one (alive) entity may have this identifier at a time.
 			/// </summary>
-			[FieldOffset(0)] public readonly uint ID;
+			[FieldOffset(0)] public readonly uint Id;
 
 			/// <summary>
 			/// The generation of this entitiy.
@@ -36,22 +36,22 @@ namespace gaemstone.ECS
 			[FieldOffset(4)] public readonly ushort Generation;
 
 
-			public bool IsNone => ID == 0;
+			public bool IsNone => Id == 0;
 
 
 			public Entity(ulong value) : this()
 			{
-				const ulong UNUSED_MASK = 0x00FF_0000_0000_0000;
-				const ulong ROLE_MASK   = 0xFF00_0000_0000_0000;
-				if ((value & UNUSED_MASK) != 0L) throw new ArgumentException("Value has unused bits set", nameof(value));
-				if ((value &   ROLE_MASK) != 0L) throw new ArgumentException("Value has role bits set", nameof(value));
+				const ulong UnusedMask = 0x00FF_0000_0000_0000;
+				const ulong RoleMask   = 0xFF00_0000_0000_0000;
+				if ((value & UnusedMask) != 0L) throw new ArgumentException("Value has unused bits set", nameof(value));
+				if ((value &   RoleMask) != 0L) throw new ArgumentException("Value has role bits set", nameof(value));
 				Value = value;
 			}
 
 			public Entity(uint id, ushort generation) : this()
 			{
-				if (id == 0) throw new ArgumentException("ID must be greater than 0", nameof(id));
-				ID = id; Generation = generation;
+				if (id == 0) throw new ArgumentException("Id must be greater than 0", nameof(id));
+				Id = id; Generation = generation;
 			}
 
 
@@ -64,7 +64,7 @@ namespace gaemstone.ECS
 
 			public int CompareTo(Entity other) => Value.CompareTo(other.Value);
 
-			public override string ToString() => $"Entity(Id=0x{ID:X},Generation=0x{Generation:X})";
+			public override string ToString() => $"Entity(Id=0x{Id:X},Generation=0x{Generation:X})";
 		}
 	}
 }

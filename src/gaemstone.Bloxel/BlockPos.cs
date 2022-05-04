@@ -6,7 +6,7 @@ namespace gaemstone.Bloxel
 	public readonly struct BlockPos
 		: IEquatable<BlockPos>
 	{
-		public static readonly BlockPos ORIGIN = new(0, 0, 0);
+		public static readonly BlockPos Origin = new(0, 0, 0);
 
 		public int X { get; }
 		public int Y { get; }

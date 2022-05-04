@@ -49,23 +49,23 @@ namespace gaemstone.Bloxel
 
 	public static class Neighbors
 	{
-		public static readonly ImmutableHashSet<Neighbor> HORIZONTALS
+		public static readonly ImmutableHashSet<Neighbor> Horizontals
 			= ImmutableHashSet.Create(Neighbor.East , Neighbor.West ,
 			                          Neighbor.South, Neighbor.North);
 
-		public static readonly ImmutableHashSet<Neighbor> VERTICALS
+		public static readonly ImmutableHashSet<Neighbor> Verticals
 			= ImmutableHashSet.Create(Neighbor.Up, Neighbor.Down);
 
-		public static readonly ImmutableHashSet<Neighbor> FACINGS
-			= HORIZONTALS.Union(VERTICALS);
+		public static readonly ImmutableHashSet<Neighbor> Facings
+			= Horizontals.Union(Verticals);
 
-		public static readonly ImmutableHashSet<Neighbor> CARDINALS
-			= HORIZONTALS.Union(new []{
+		public static readonly ImmutableHashSet<Neighbor> Cardinals
+			= Horizontals.Union(new []{
 				Neighbor.SouthEast, Neighbor.SouthWest,
 				Neighbor.NorthEast, Neighbor.NorthWest });
 
-		public static readonly ImmutableHashSet<Neighbor> ALL_AXIS_PLANES
-			= FACINGS.Union(new []{
+		public static readonly ImmutableHashSet<Neighbor> AllAxisPlanes
+			= Facings.Union(new []{
 				Neighbor.SouthEast, Neighbor.SouthWest,
 				Neighbor.NorthEast, Neighbor.NorthWest,
 				Neighbor.UpEast   , Neighbor.UpWest   ,
@@ -73,8 +73,8 @@ namespace gaemstone.Bloxel
 				Neighbor.DownEast , Neighbor.DownWest ,
 				Neighbor.DownSouth, Neighbor.DownNorth });
 
-		public static readonly ImmutableHashSet<Neighbor> ALL
-			= ALL_AXIS_PLANES.Union(new []{
+		public static readonly ImmutableHashSet<Neighbor> All
+			= AllAxisPlanes.Union(new []{
 				Neighbor.UpSouthEast, Neighbor.UpSouthWest,
 				Neighbor.UpNorthEast, Neighbor.UpNorthWest,
 				Neighbor.DownSouthEast, Neighbor.DownSouthWest,
@@ -83,14 +83,14 @@ namespace gaemstone.Bloxel
 
 	public static class NeighborExtensions
 	{
-		const int X_SET_BIT = 0b000010, X_VALUE_BIT = 0b000001;
-		const int Y_SET_BIT = 0b001000, Y_VALUE_BIT = 0b000100;
-		const int Z_SET_BIT = 0b100000, Z_VALUE_BIT = 0b010000;
+		const int SetBitX = 0b000010, ValueBitX = 0b000001;
+		const int SetBitY = 0b001000, ValueBitY = 0b000100;
+		const int SetBitZ = 0b100000, ValueBitZ = 0b010000;
 		public static void Deconstruct(this Neighbor self, out int x, out int y, out int z)
 		{
-			x = (((int)self & X_SET_BIT) != 0) ? ((((int)self & X_VALUE_BIT) != 0) ? 1 : -1) : 0;
-			y = (((int)self & Y_SET_BIT) != 0) ? ((((int)self & Y_VALUE_BIT) != 0) ? 1 : -1) : 0;
-			z = (((int)self & Z_SET_BIT) != 0) ? ((((int)self & Z_VALUE_BIT) != 0) ? 1 : -1) : 0;
+			x = (((int)self & SetBitX) != 0) ? ((((int)self & ValueBitX) != 0) ? 1 : -1) : 0;
+			y = (((int)self & SetBitY) != 0) ? ((((int)self & ValueBitY) != 0) ? 1 : -1) : 0;
+			z = (((int)self & SetBitZ) != 0) ? ((((int)self & ValueBitZ) != 0) ? 1 : -1) : 0;
 		}
 
 
@@ -182,15 +182,15 @@ namespace gaemstone.Bloxel
 			=> (self == Neighbor.None);
 
 		public static bool IsHorizontal(this Neighbor self)
-			=> Neighbors.HORIZONTALS.Contains(self);
+			=> Neighbors.Horizontals.Contains(self);
 		public static bool IsVertical(this Neighbor self)
-			=> Neighbors.VERTICALS.Contains(self);
+			=> Neighbors.Verticals.Contains(self);
 		public static bool IsCardinal(this Neighbor self)
-			=> Neighbors.CARDINALS.Contains(self);
+			=> Neighbors.Cardinals.Contains(self);
 		public static bool IsFacing(this Neighbor self)
-			=> Neighbors.FACINGS.Contains(self);
+			=> Neighbors.Facings.Contains(self);
 		public static bool IsValid(this Neighbor self)
-			=> Neighbors.ALL.Contains(self);
+			=> Neighbors.All.Contains(self);
 
 
 		public static string ToShortString(this Neighbor self)

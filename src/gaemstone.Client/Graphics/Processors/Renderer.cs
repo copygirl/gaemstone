@@ -41,14 +41,14 @@ namespace gaemstone.Client.Graphics
 
 		public void OnWindowRender(double delta)
 		{
-			GFX.Clear(Color.Indigo);
+			Gfx.Clear(Color.Indigo);
 			_program.Use();
 
 			Game.Queries.Run((Camera camera, in Transform transform) => {
 				var clearColor = camera.ClearColor ?? Color.Indigo;
 				var viewport   = camera.Viewport ?? new(0, 0, Game.Window.Size.X, Game.Window.Size.Y);
-				GFX.Viewport(viewport);
-				GFX.Clear(clearColor, viewport);
+				Gfx.Viewport(viewport);
+				Gfx.Clear(clearColor, viewport);
 
 				// Get the camera's transform matrix and invert it.
 				Matrix4x4.Invert(transform, out var cameraTransform);

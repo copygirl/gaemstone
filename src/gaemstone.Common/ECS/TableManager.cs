@@ -25,24 +25,24 @@ namespace gaemstone.ECS
 		internal void Bootstrap()
 		{
 			var componentTable = BootstrapTable(
-				type:        _universe.Type(Universe.TypeID, Universe.IdentifierID, Universe.ComponentID),
-				storageType: _universe.Type(Universe.TypeID, Universe.IdentifierID),
+				type:        _universe.Type(Universe.TypeId, Universe.IdentifierId, Universe.ComponentId),
+				storageType: _universe.Type(Universe.TypeId, Universe.IdentifierId),
 				columnTypes: new[]{ typeof(Type), typeof(Identifier) },
-				(Universe.TypeID       , typeof(Type)),
-				(Universe.IdentifierID , typeof(Identifier)));
+				(Universe.TypeId       , typeof(Type)),
+				(Universe.IdentifierId , typeof(Identifier)));
 			var tagTable = BootstrapTable(
-				type:        _universe.Type(Universe.TypeID, Universe.IdentifierID, Universe.TagID),
-				storageType: _universe.Type(Universe.TypeID, Universe.IdentifierID),
+				type:        _universe.Type(Universe.TypeId, Universe.IdentifierId, Universe.TagId),
+				storageType: _universe.Type(Universe.TypeId, Universe.IdentifierId),
 				columnTypes: new[]{ typeof(Type), typeof(Identifier) },
-				(Universe.ComponentID , typeof(Component)),
-				(Universe.TagID       , typeof(Tag)));
+				(Universe.ComponentId , typeof(Component)),
+				(Universe.TagId       , typeof(Tag)));
 
 			TableAdded?.Invoke(componentTable);
 			TableAdded?.Invoke(tagTable);
 		}
 
 		Table BootstrapTable(EntityType type, EntityType storageType, Type[] columnTypes,
-		                     params (EcsId.Entity ID, Type Type)[] entities)
+		                     params (EcsId.Entity Id, Type Type)[] entities)
 		{
 			var table = new Table(_universe, type, storageType, columnTypes);
 			_tables.Add(type, table);
@@ -66,8 +66,8 @@ namespace gaemstone.ECS
 		{
 			foreach (var id in table.Type) {
 				if (id.AsPair() is EcsId.Pair pair) {
-					_index.GetOrAddNew(new EcsId.Pair(Universe.Wildcard.ID, pair.Target)).Add(table);
-					_index.GetOrAddNew(new EcsId.Pair(pair.Relation, Universe.Wildcard.ID)).Add(table);
+					_index.GetOrAddNew(new EcsId.Pair(Universe.Wildcard.Id, pair.Target)).Add(table);
+					_index.GetOrAddNew(new EcsId.Pair(pair.Relation, Universe.Wildcard.Id)).Add(table);
 				}
 				_index.GetOrAddNew(id).Add(table);
 			}

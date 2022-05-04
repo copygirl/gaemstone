@@ -30,7 +30,7 @@ namespace gaemstone.Client.Graphics
 			if (!image.Frames[0].TryGetSinglePixelSpan(out var pixels)) throw new InvalidOperationException(
 				"TryGetSinglePixelSpan failed" + ((sourceFile != null) ? "\nSource File: " + sourceFile : ""));
 
-			GFX.GL.TexImage2D(texture.Target, 0, (int)PixelFormat.Rgba,
+			Gfx.Gl.TexImage2D(texture.Target, 0, (int)PixelFormat.Rgba,
 			                  (uint)image.Width, (uint)image.Height, 0,
 			                  PixelFormat.Rgba, PixelType.UnsignedByte, pixels[0]);
 			texture.MagFilter = TextureMagFilter.Nearest;
@@ -61,7 +61,7 @@ namespace gaemstone.Client.Graphics
 			texture.Bind();
 			Span<byte> pixel = stackalloc byte[4];
 			pixel.Fill(255);
-			GFX.GL.TexImage2D(TextureTarget.Texture2D, 0, (int)PixelFormat.Rgba,
+			Gfx.Gl.TexImage2D(TextureTarget.Texture2D, 0, (int)PixelFormat.Rgba,
 			                  1, 1, 0, PixelFormat.Rgba, PixelType.UnsignedByte, pixel[0]);
 			texture.MagFilter = TextureMagFilter.Nearest;
 			texture.MinFilter = TextureMinFilter.Nearest;

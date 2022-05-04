@@ -8,10 +8,10 @@ using Silk.NET.OpenGL;
 
 namespace gaemstone.Client.Graphics
 {
-	public static class GFX
+	public static class Gfx
 	{
 		static GL? _gl;
-		public static GL GL => _gl
+		public static GL Gl => _gl
 			?? throw new InvalidOperationException("OpenGL has not been initialized");
 		public static bool IsInitialized => (_gl != null);
 
@@ -23,8 +23,8 @@ namespace gaemstone.Client.Graphics
 
 			// FIXME: Debugger currently doesn't like us specifying a callback.
 			if (!Debugger.IsAttached) {
-				GL.Enable(GLEnum.DebugOutput);
-				GL.DebugMessageCallback(
+				Gl.Enable(GLEnum.DebugOutput);
+				Gl.DebugMessageCallback(
 					(source, type, id, severity, length, message, userParam) =>
 						OnDebugOutput?.Invoke(
 							(DebugSource)source, (DebugType)type, id,
@@ -32,47 +32,47 @@ namespace gaemstone.Client.Graphics
 					false);
 			}
 
-			GL.Enable(EnableCap.CullFace);
-			GL.CullFace(CullFaceMode.Back);
+			Gl.Enable(EnableCap.CullFace);
+			Gl.CullFace(CullFaceMode.Back);
 
-			GL.Enable(EnableCap.DepthTest);
-			GL.DepthFunc(DepthFunction.Less);
+			Gl.Enable(EnableCap.DepthTest);
+			Gl.DepthFunc(DepthFunction.Less);
 
-			GL.Enable(EnableCap.Blend);
-			GL.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
+			Gl.Enable(EnableCap.Blend);
+			Gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 		}
 
 		public static void Clear(Color color)
 		{
-			GL.ClearColor(color);
-			GL.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
+			Gl.ClearColor(color);
+			Gl.Clear((uint)(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit));
 		}
 		public static void Clear(Vector4 color)
 		{
-			GL.ClearColor(color.X, color.Y, color.Z, color.W);
-			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+			Gl.ClearColor(color.X, color.Y, color.Z, color.W);
+			Gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 		}
 		public static void Clear(Color color, Rectangle area)
 		{
-			GL.Enable(EnableCap.ScissorTest);
-			GL.Scissor(area.X, area.Y, (uint)area.Width, (uint)area.Height);
-			GL.ClearColor(color);
-			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-			GL.Disable(EnableCap.ScissorTest);
+			Gl.Enable(EnableCap.ScissorTest);
+			Gl.Scissor(area.X, area.Y, (uint)area.Width, (uint)area.Height);
+			Gl.ClearColor(color);
+			Gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+			Gl.Disable(EnableCap.ScissorTest);
 		}
 		public static void Clear(Vector4 color, Rectangle area)
 		{
-			GL.Enable(EnableCap.ScissorTest);
-			GL.Scissor(area.X, area.Y, (uint)area.Width, (uint)area.Height);
-			GL.ClearColor(color.X, color.Y, color.Z, color.W);
-			GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-			GL.Disable(EnableCap.ScissorTest);
+			Gl.Enable(EnableCap.ScissorTest);
+			Gl.Scissor(area.X, area.Y, (uint)area.Width, (uint)area.Height);
+			Gl.ClearColor(color.X, color.Y, color.Z, color.W);
+			Gl.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+			Gl.Disable(EnableCap.ScissorTest);
 		}
 
 		public static void Viewport(Size size)
-			=> GL.Viewport(size);
+			=> Gl.Viewport(size);
 		public static void Viewport(Rectangle rectangle)
-			=> GL.Viewport(rectangle);
+			=> Gl.Viewport(rectangle);
 
 		static int MAX_LABEL_LENGTH;
 		static string? LABEL_BUFFER;
@@ -80,13 +80,13 @@ namespace gaemstone.Client.Graphics
 		{
 			if (MAX_LABEL_LENGTH == 0) {
 				// One-time initialization.
-				MAX_LABEL_LENGTH = GL.GetInteger(GLEnum.MaxLabelLength);
+				MAX_LABEL_LENGTH = Gl.GetInteger(GLEnum.MaxLabelLength);
 				LABEL_BUFFER     = new(' ', MAX_LABEL_LENGTH);
 			}
-			GL.GetObjectLabel(identifier, handle, (uint)MAX_LABEL_LENGTH, out var length, out LABEL_BUFFER);
+			Gl.GetObjectLabel(identifier, handle, (uint)MAX_LABEL_LENGTH, out var length, out LABEL_BUFFER);
 			return LABEL_BUFFER[..(int)length];
 		}
 		public static void SetObjectLabel(ObjectIdentifier identifier, uint handle, string label)
-			=> GL.ObjectLabel(identifier, handle, (uint)label.Length, label);
+			=> Gl.ObjectLabel(identifier, handle, (uint)label.Length, label);
 	}
 }

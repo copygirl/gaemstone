@@ -347,9 +347,8 @@ namespace gaemstone.Common.Utility
 		// https://github.com/dotnet/coreclr/blob/master/src/System.Private.CoreLib/shared/System/Collections/HashHelpers.cs
 		static class PrimeHelper
 		{
-			public const int MAX_PRIME_ARRAY_LENGTH = 0x7FEFFFFD;
-
-			public const int HASH_PRIME = 101;
+			public const int MaxPrimeArrayLength = 0x7FEFFFFD;
+			public const int HashPrime = 101;
 
 			static readonly int[] _primes = {
 				3, 7, 11, 17, 23, 29, 37, 47, 59, 71, 89, 107, 131, 163, 197, 239, 293, 353, 431, 521, 631, 761, 919,
@@ -380,7 +379,7 @@ namespace gaemstone.Common.Utility
 						return prime;
 				}
 				for (int i = (min | 1); i < int.MaxValue; i += 2)
-					if (IsPrime(i) && ((i - 1) % HASH_PRIME != 0))
+					if (IsPrime(i) && ((i - 1) % HashPrime != 0))
 						return i;
 				return min;
 			}
@@ -388,9 +387,9 @@ namespace gaemstone.Common.Utility
 			public static int ExpandPrime(int oldSize)
 			{
 				int newSize = 2 * oldSize;
-				if (((uint)newSize > MAX_PRIME_ARRAY_LENGTH) && (MAX_PRIME_ARRAY_LENGTH > oldSize)) {
-					Debug.Assert(MAX_PRIME_ARRAY_LENGTH == GetPrime(MAX_PRIME_ARRAY_LENGTH), "Invalid MaxPrimeArrayLength");
-					return MAX_PRIME_ARRAY_LENGTH;
+				if (((uint)newSize > MaxPrimeArrayLength) && (MaxPrimeArrayLength > oldSize)) {
+					Debug.Assert(MaxPrimeArrayLength == GetPrime(MaxPrimeArrayLength), "Invalid MaxPrimeArrayLength");
+					return MaxPrimeArrayLength;
 				}
 				return GetPrime(newSize);
 			}

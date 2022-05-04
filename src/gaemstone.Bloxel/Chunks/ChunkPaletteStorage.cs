@@ -9,7 +9,7 @@ namespace gaemstone.Bloxel.Chunks
 	// https://www.reddit.com/r/VoxelGameDev/comments/9yu8qy/palettebased_compression_for_chunked_discrete/
 	public class ChunkPaletteStorage<T>
 	{
-		const int SIZE = 16 * 16 * 16;
+		const int Size = 16 * 16 * 16;
 		static readonly EqualityComparer<T> COMPARER
 			= EqualityComparer<T>.Default;
 
@@ -90,19 +90,19 @@ namespace gaemstone.Bloxel.Chunks
 
 		void GrowPalette() {
 			if (_palette == null) {
-				_data    = new(SIZE);
+				_data    = new(Size);
 				_palette = new PaletteEntry[2];
 				_usedPalettes  = 1;
 				_indicesLength = 1;
-				_palette[0] = new PaletteEntry { Value = Default, RefCount = SIZE };
+				_palette[0] = new PaletteEntry { Value = Default, RefCount = Size };
 				return;
 			}
 
 			_indicesLength <<= 1;
 
 			var oldIndicesLength = _indicesLength >> 1;
-			var newData = new BitArray(SIZE * _indicesLength);
-			for (var i = 0; i < SIZE; i++)
+			var newData = new BitArray(Size * _indicesLength);
+			for (var i = 0; i < Size; i++)
 			for (var j = 0; j < oldIndicesLength; j++)
 				newData.Set(i * _indicesLength + j, _data!.Get(i * oldIndicesLength + j));
 			_data = newData;

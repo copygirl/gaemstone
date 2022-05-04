@@ -9,7 +9,7 @@ namespace gaemstone.ECS
 			: IEntity, IEquatable<Entity>
 		{
 			public Universe Universe { get; }
-			public EcsId.Entity ID { get; }
+			public EcsId.Entity Id { get; }
 
 			public bool IsAlive => Universe.Entities.IsAlive(this);
 			public EntityType Type {
@@ -18,7 +18,7 @@ namespace gaemstone.ECS
 			}
 
 			public Entity(Universe universe, EcsId.Entity id)
-				{ Universe = universe; ID = id; }
+				{ Universe = universe; Id = id; }
 
 			public void Delete() => Universe.Entities.Delete(this);
 
@@ -33,15 +33,15 @@ namespace gaemstone.ECS
 			IEntity IEntity.Set<T>(T value) => Set(value);
 
 			public override bool Equals(object? obj) => (obj is Entity entity) && Equals(entity);
-			public bool Equals(Entity other) => (Universe == other.Universe) && (ID == other.ID);
-			public override int GetHashCode() => HashCode.Combine(Universe, ID);
+			public bool Equals(Entity other) => (Universe == other.Universe) && (Id == other.Id);
+			public override int GetHashCode() => HashCode.Combine(Universe, Id);
 
 			// TODO: Do the ToString stuff.
-			// public override string? ToString() => ID.ToString(Universe);
-			// public void AppendString(StringBuilder builder) => ID.AppendString(builder);
+			// public override string? ToString() => Id.ToString(Universe);
+			// public void AppendString(StringBuilder builder) => Id.AppendString(builder);
 
-			public static implicit operator EcsId       (Entity entity) => entity.ID;
-			public static implicit operator EcsId.Entity(Entity entity) => entity.ID;
+			public static implicit operator EcsId       (Entity entity) => entity.Id;
+			public static implicit operator EcsId.Entity(Entity entity) => entity.Id;
 		}
 	}
 }

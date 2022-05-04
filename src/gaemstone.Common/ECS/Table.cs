@@ -8,7 +8,7 @@ namespace gaemstone.ECS
 {
 	public class Table
 	{
-		const int STARTING_CAPACITY = 16;
+		const int InitialCapacity = 16;
 
 
 		public Universe Universe { get; }
@@ -55,7 +55,7 @@ namespace gaemstone.ECS
 		{
 			if (minCapacity <= 0) throw new ArgumentOutOfRangeException(nameof(minCapacity), "minCapacity must be positive");
 			if (minCapacity <= Capacity) return; // Already have the necessary capacity.
-			if (minCapacity < STARTING_CAPACITY) minCapacity = STARTING_CAPACITY;
+			if (minCapacity < InitialCapacity) minCapacity = InitialCapacity;
 			Resize((int)BitOperations.RoundUpToPowerOf2((uint)minCapacity));
 		}
 
@@ -78,7 +78,7 @@ namespace gaemstone.ECS
 				foreach (var column in Columns)
 					Array.Copy(column, Count, column, row, 1);
 				// Update the moved element's Record to point to its new row.
-				ref var record = ref Universe.Entities.GetRecord(Entities[row].ID);
+				ref var record = ref Universe.Entities.GetRecord(Entities[row].Id);
 				record.Table = this;
 				record.Row   = row;
 			}

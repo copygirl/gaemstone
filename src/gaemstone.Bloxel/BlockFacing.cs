@@ -16,15 +16,15 @@ namespace gaemstone.Bloxel
 
 	public static class BlockFacings
 	{
-		public static readonly ImmutableHashSet<BlockFacing> HORIZONTALS
+		public static readonly ImmutableHashSet<BlockFacing> Horizontals
 			= ImmutableHashSet.Create(BlockFacing.East , BlockFacing.West ,
 			                          BlockFacing.South, BlockFacing.North);
 
-		public static readonly ImmutableHashSet<BlockFacing> VERTICALS
+		public static readonly ImmutableHashSet<BlockFacing> Verticals
 			= ImmutableHashSet.Create(BlockFacing.Up, BlockFacing.Down);
 
-		public static readonly ImmutableHashSet<BlockFacing> ALL
-			= HORIZONTALS.Union(VERTICALS);
+		public static readonly ImmutableHashSet<BlockFacing> All
+			= Horizontals.Union(Verticals);
 	}
 
 	public static class BlockFacingExtensions

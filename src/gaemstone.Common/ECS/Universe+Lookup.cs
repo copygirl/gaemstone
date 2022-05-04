@@ -32,8 +32,8 @@ namespace gaemstone.ECS
 		public bool TryLookup<T>(out Entity entity) => TryLookup(typeof(T), out entity);
 		public bool TryLookup(Type type, out Entity entity)
 		{
-			foreach (var table in Tables.GetAll(TypeID)) {
-				var column = table.GetStorageColumn<Type>(TypeID);
+			foreach (var table in Tables.GetAll(TypeId)) {
+				var column = table.GetStorageColumn<Type>(TypeId);
 				for (var i = 0; i < table.Count; i++) if (column[i] == type)
 					{ entity = new(this, table.Entities[i]); return true; }
 			}
@@ -47,8 +47,8 @@ namespace gaemstone.ECS
 
 		public bool TryLookup(string name, out Entity entity)
 		{
-			foreach (var table in Tables.GetAll(IdentifierID)) {
-				var column = table.GetStorageColumn<Identifier>(IdentifierID);
+			foreach (var table in Tables.GetAll(IdentifierId)) {
+				var column = table.GetStorageColumn<Identifier>(IdentifierId);
 				for (var i = 0; i < table.Count; i++) if (column[i] == name)
 					{ entity = new(this, table.Entities[i]); return true; }
 			}

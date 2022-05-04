@@ -3,10 +3,10 @@ namespace gaemstone.Client
 {
 	public class Camera
 	{
-		public static readonly Camera Default2D = Create2D();
-		public static readonly Camera Default3D = Create3D(80.0F);
+		public static readonly Camera Default2d = Create2d();
+		public static readonly Camera Default3d = Create3d(80.0F);
 
-		public static Camera Create2D(
+		public static Camera Create2d(
 			float nearPlane = -100.0F, float farPlane = 100.0F,
 			Color? clearColor = null, Rectangle? viewport = null
 		) => new(){
@@ -14,7 +14,7 @@ namespace gaemstone.Client
 			ClearColor = clearColor, Viewport = viewport,
 		};
 
-		public static Camera Create3D(
+		public static Camera Create3d(
 			float fieldOfView, float nearPlane = 0.1F, float farPlane = 200.0F,
 			Color? clearColor = null, Rectangle? viewport = null
 		) => new(){
@@ -31,7 +31,7 @@ namespace gaemstone.Client
 
 		public bool IsOrthographic {
 			get => (FieldOfView == 0.0F);
-			set => FieldOfView = (value ? 0.0F : Default3D.FieldOfView);
+			set => FieldOfView = (value ? 0.0F : Default3d.FieldOfView);
 		}
 
 		public override string ToString()

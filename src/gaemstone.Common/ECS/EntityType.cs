@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Text;
 
 namespace gaemstone.ECS
 {
@@ -48,7 +47,7 @@ namespace gaemstone.ECS
 
 
 		public EntityType Union(params object[] ids)
-			=> Union(ids.Select(o => (EcsId)Universe.Lookup(o).ID));
+			=> Union(ids.Select(o => (EcsId)Universe.Lookup(o).Id));
 		public EntityType Union(params EcsId[] ids)
 			=> Union((IEnumerable<EcsId>)ids);
 		public EntityType Union(IEnumerable<EcsId> ids)
@@ -59,7 +58,7 @@ namespace gaemstone.ECS
 		}
 
 		public EntityType Except(params object[] ids)
-			=> Except(ids.Select(o => Universe.Lookup(o).ID));
+			=> Except(ids.Select(o => Universe.Lookup(o).Id));
 		public EntityType Except(params EcsId[] ids)
 			=> Except((IEnumerable<EcsId>)ids);
 		public EntityType Except(IEnumerable<EcsId> ids)

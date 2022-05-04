@@ -5,13 +5,13 @@ namespace gaemstone.ECS
 	public partial class Universe
 	{
 		// Built-in Components
-		static internal readonly EcsId.Entity TypeID       = new(0x01);
-		static internal readonly EcsId.Entity IdentifierID = new(0x02);
+		static internal readonly EcsId.Entity TypeId       = new(0x01);
+		static internal readonly EcsId.Entity IdentifierId = new(0x02);
 
 		// Built-in Tags
-		static internal readonly EcsId.Entity ComponentID = new(0x10);
-		static internal readonly EcsId.Entity TagID       = new(0x11);
-		static internal readonly EcsId.Entity RelationID  = new(0x12);
+		static internal readonly EcsId.Entity ComponentId = new(0x10);
+		static internal readonly EcsId.Entity TagId       = new(0x11);
+		static internal readonly EcsId.Entity RelationId  = new(0x12);
 
 		// TODO: Built-in Relationships
 		static internal readonly EcsId.Entity ChildOf = new(0x20);
@@ -41,24 +41,24 @@ namespace gaemstone.ECS
 
 
 			// Built-in Components required to bootstrap
-			Entities.NewWithID(TypeID.ID);
-			Entities.NewWithID(IdentifierID.ID);
+			Entities.NewWithId(TypeId.Id);
+			Entities.NewWithId(IdentifierId.Id);
 			// Built-in Tags required to bootstrap.
-			Entities.NewWithID(ComponentID.ID);
-			Entities.NewWithID(TagID.ID);
+			Entities.NewWithId(ComponentId.Id);
+			Entities.NewWithId(TagId.Id);
 			// Bootstrap table structures so other methods can work.
 			Tables.Bootstrap();
 
 
 			// Build-in Tags
-			Entities.NewWithID(RelationID.ID).Add(typeof(Tag)).Set(typeof(Relation));
+			Entities.NewWithId(RelationId.Id).Add(typeof(Tag)).Set(typeof(Relation));
 
 			// Build-in Relations
-			Entities.NewWithID(ChildOf.ID).Add(typeof(Tag), typeof(Relation)).Set(typeof(ChildOf));
-			Entities.NewWithID(IsA.ID    ).Add(typeof(Tag), typeof(Relation)).Set(typeof(IsA));
+			Entities.NewWithId(ChildOf.Id).Add(typeof(Tag), typeof(Relation)).Set(typeof(ChildOf));
+			Entities.NewWithId(IsA.Id    ).Add(typeof(Tag), typeof(Relation)).Set(typeof(IsA));
 
 			// Special "Wildcard" (*), used when looking up relationships
-			Entities.NewWithID(Wildcard.ID).Set((Identifier)"*");
+			Entities.NewWithId(Wildcard.Id).Set((Identifier)"*");
 
 
 			NewComponent<Common.Transform>();

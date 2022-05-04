@@ -8,7 +8,7 @@ namespace gaemstone.Client.Graphics
 	public readonly struct Program
 	{
 		public static Program Create()
-			=> new(GFX.GL.CreateProgram());
+			=> new(Gfx.Gl.CreateProgram());
 
 		public static Program LinkFromShaders(string label, params Shader[] shaders)
 		{
@@ -26,31 +26,31 @@ namespace gaemstone.Client.Graphics
 		Program(uint handle) => Handle = handle;
 
 		public string Label {
-			get => GFX.GetObjectLabel(ObjectIdentifier.Program, Handle);
-			set => GFX.SetObjectLabel(ObjectIdentifier.Program, Handle, value);
+			get => Gfx.GetObjectLabel(ObjectIdentifier.Program, Handle);
+			set => Gfx.SetObjectLabel(ObjectIdentifier.Program, Handle, value);
 		}
 
 
 		public void Attach(Shader shader)
-			=> GFX.GL.AttachShader(Handle, shader.Handle);
+			=> Gfx.Gl.AttachShader(Handle, shader.Handle);
 
 		public void Link()
 		{
-			GFX.GL.LinkProgram(Handle);
-			GFX.GL.GetProgram(Handle, ProgramPropertyARB.LinkStatus, out var result);
+			Gfx.Gl.LinkProgram(Handle);
+			Gfx.Gl.GetProgram(Handle, ProgramPropertyARB.LinkStatus, out var result);
 			if (result != (int)GLEnum.True) throw new Exception(
-				$"Failed linking Program \"{Label}\" ({Handle}):\n{GFX.GL.GetProgramInfoLog(Handle)}");
+				$"Failed linking Program \"{Label}\" ({Handle}):\n{Gfx.Gl.GetProgramInfoLog(Handle)}");
 		}
 
 		public void Detach(Shader shader)
-			=> GFX.GL.DetachShader(Handle, shader.Handle);
+			=> Gfx.Gl.DetachShader(Handle, shader.Handle);
 
 
 		public ICollection<Shader> GetAttachedShaders()
 		{
-			GFX.GL.GetProgram(Handle, ProgramPropertyARB.AttachedShaders, out var count);
+			Gfx.Gl.GetProgram(Handle, ProgramPropertyARB.AttachedShaders, out var count);
 			var shaders = new uint[count];
-			GFX.GL.GetAttachedShaders(Handle, (uint)count, out var _, out shaders[0]);
+			Gfx.Gl.GetAttachedShaders(Handle, (uint)count, out var _, out shaders[0]);
 			return shaders.Select(handle => new Shader(handle)).ToArray();
 		}
 
@@ -65,7 +65,7 @@ namespace gaemstone.Client.Graphics
 		public Uniforms GetActiveUniforms() => new(this);
 		public VertexAttributes GetActiveAttributes() => new(this);
 
-		public void Use() => GFX.GL.UseProgram(Handle);
-		public void Delete() => GFX.GL.DeleteProgram(Handle);
+		public void Use() => Gfx.Gl.UseProgram(Handle);
+		public void Delete() => Gfx.Gl.DeleteProgram(Handle);
 	}
 }

@@ -6,7 +6,7 @@ namespace gaemstone.Client.Graphics
 	public readonly struct Texture
 	{
 		public static Texture Gen(TextureTarget target)
-			=> new(target, GFX.GL.GenTexture());
+			=> new(target, Gfx.Gl.GenTexture());
 
 
 		public TextureTarget Target { get; }
@@ -18,37 +18,37 @@ namespace gaemstone.Client.Graphics
 
 		public UnbindOnDispose Bind()
 		{
-			GFX.GL.BindTexture(Target, Handle);
+			Gfx.Gl.BindTexture(Target, Handle);
 			return new(Target);
 		}
 
 		public void Unbind()
-			=> GFX.GL.BindTexture(Target, 0);
+			=> Gfx.Gl.BindTexture(Target, 0);
 		public static void Unbind(TextureTarget target)
-			=> GFX.GL.BindTexture(target, 0);
+			=> Gfx.Gl.BindTexture(target, 0);
 
 		public readonly struct UnbindOnDispose
 			: IDisposable
 		{
 			public TextureTarget Target { get; }
 			public UnbindOnDispose(TextureTarget target) => Target = target;
-			public void Dispose() => GFX.GL.BindTexture(Target, 0);
+			public void Dispose() => Gfx.Gl.BindTexture(Target, 0);
 		}
 
 
 		public TextureMagFilter MagFilter {
 			get {
-				GFX.GL.GetTexParameterI(Target, GetTextureParameter.TextureMagFilter, out int value);
+				Gfx.Gl.GetTexParameterI(Target, GetTextureParameter.TextureMagFilter, out int value);
 				return (TextureMagFilter)value;
 			}
-			set => GFX.GL.TexParameterI(Target, TextureParameterName.TextureMagFilter, (int)value);
+			set => Gfx.Gl.TexParameterI(Target, TextureParameterName.TextureMagFilter, (int)value);
 		}
 		public TextureMinFilter MinFilter {
 			get {
-				GFX.GL.GetTexParameterI(Target, GetTextureParameter.TextureMinFilter, out int value);
+				Gfx.Gl.GetTexParameterI(Target, GetTextureParameter.TextureMinFilter, out int value);
 				return (TextureMinFilter)value;
 			}
-			set => GFX.GL.TexParameterI(Target, TextureParameterName.TextureMinFilter, (int)value);
+			set => Gfx.Gl.TexParameterI(Target, TextureParameterName.TextureMinFilter, (int)value);
 		}
 	}
 }

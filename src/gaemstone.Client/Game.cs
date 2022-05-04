@@ -60,8 +60,8 @@ namespace gaemstone.Client
 		{
 			_input = Window.CreateInput();
 
-			GFX.Initialize(Window);
-			GFX.OnDebugOutput += (source, type, id, severity, message) =>
+			Gfx.Initialize(Window);
+			Gfx.OnDebugOutput += (source, type, id, severity, message) =>
 				Console.WriteLine($"[GLDebug] [{severity}] {type}/{id}: {message}");
 
 			// TODO: Automatically create components that have a specific attribute?
@@ -78,7 +78,7 @@ namespace gaemstone.Client
 
 			MainCamera = Entities.New()
 				.Set((Transform)Matrix4x4.Identity)
-				.Set(Camera.Default3D);
+				.Set(Camera.Default3d);
 		}
 
 		protected virtual void OnClosing()

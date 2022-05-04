@@ -5,7 +5,7 @@ namespace gaemstone.Client.Graphics
 	public readonly struct VertexArray
 	{
 		public static VertexArray Gen()
-			=> new(GFX.GL.GenVertexArray());
+			=> new(Gfx.Gl.GenVertexArray());
 
 
 		public uint Handle { get; }
@@ -14,12 +14,12 @@ namespace gaemstone.Client.Graphics
 
 		public UnbindOnDispose Bind()
 		{
-			GFX.GL.BindVertexArray(Handle);
+			Gfx.Gl.BindVertexArray(Handle);
 			return new();
 		}
 
 		public static void Unbind()
-			=> GFX.GL.BindVertexArray(0);
+			=> Gfx.Gl.BindVertexArray(0);
 
 
 		public readonly struct UnbindOnDispose : IDisposable

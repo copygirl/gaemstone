@@ -7,7 +7,7 @@ namespace gaemstone.Client.Graphics
 	public readonly struct Buffer
 	{
 		public static Buffer Gen(BufferTargetARB target)
-			=> new(GFX.GL.GenBuffer(), target);
+			=> new(Gfx.Gl.GenBuffer(), target);
 
 		// These overloads are available because without them, the implicit casting
 		// (say from T[] to ReadOnlySpan<T>) causes the generic type resolving to break.
@@ -45,7 +45,7 @@ namespace gaemstone.Client.Graphics
 			=> (Handle, Target) = (handle, target);
 
 		public void Bind()
-			=> GFX.GL.BindBuffer(Target, Handle);
+			=> Gfx.Gl.BindBuffer(Target, Handle);
 
 		public void Data<T>(T[] data, BufferUsageARB usage)
 			where T : unmanaged
@@ -58,6 +58,6 @@ namespace gaemstone.Client.Graphics
 			=> Data<T>((ReadOnlySpan<T>)data, usage);
 		public void Data<T>(ReadOnlySpan<T> data, BufferUsageARB usage)
 			where T : unmanaged
-			=> GFX.GL.BufferData<T>(Target, (UIntPtr)(data.Length * Unsafe.SizeOf<T>()), data, usage);
+			=> Gfx.Gl.BufferData<T>(Target, (UIntPtr)(data.Length * Unsafe.SizeOf<T>()), data, usage);
 	}
 }

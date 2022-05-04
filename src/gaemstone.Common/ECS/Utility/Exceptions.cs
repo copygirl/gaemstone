@@ -25,7 +25,7 @@ namespace gaemstone.ECS
 				=> Entity = entity;
 	}
 
-	/// <summary> Thrown when an entity with a certain ID already exists. </summary>
+	/// <summary> Thrown when an entity with a certain id already exists. </summary>
 	public class EntityExistsException : Exception
 	{
 		public object Entity { get; }

@@ -18,7 +18,7 @@ namespace Immersion
 		static void Main() => new Program().Run();
 
 
-		public Random RND { get; } = new();
+		public Random Rnd { get; } = new();
 
 		public Program()
 		{
@@ -45,10 +45,10 @@ namespace Immersion
 			for (var x = -12; x <= 12; x++)
 			for (var z = -12; z <= 12; z++) {
 				var position = Matrix4x4.CreateTranslation(x * 2, 25, z * 2);
-				var rotation = Matrix4x4.CreateRotationY(RND.NextFloat(MathF.PI * 2));
+				var rotation = Matrix4x4.CreateRotationY(Rnd.NextFloat(MathF.PI * 2));
 				Entities.New()
 					.Set((Transform)(rotation * position))
-					.Set(RND.Pick(heartMesh, swordMesh));
+					.Set(Rnd.Pick(heartMesh, swordMesh));
 			}
 
 			MainCamera.Set((Transform)Matrix4x4.CreateTranslation(0, 26, 0));
@@ -68,7 +68,7 @@ namespace Immersion
 				for (var y = 0; y < 16; y++)
 				for (var z = 0; z < 16; z++) {
 					var yy = (pos.Y << 4) | y;
-					if (RND.NextBool(0.5 - yy / 48.0))
+					if (Rnd.NextBool(0.5 - yy / 48.0))
 						storage[x, y, z] = new((yy >  16) ? grass
 						                     : (yy > -16) ? dirt
 						                                  : stone);
