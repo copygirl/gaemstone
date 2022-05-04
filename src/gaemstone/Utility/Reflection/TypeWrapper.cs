@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace gaemstone.Common.Utility
+namespace gaemstone.Utility.Reflection
 {
 	public interface ITypeWrapper
 	{

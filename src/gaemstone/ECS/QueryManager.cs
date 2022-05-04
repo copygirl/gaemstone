@@ -5,17 +5,17 @@ namespace gaemstone.ECS
 {
 	public class QueryManager
 	{
-		readonly Universe _universe;
+		public Universe Universe { get; }
 
 		internal QueryManager(Universe universe)
-			=> _universe = universe;
+			=> Universe = universe;
 
 		public void Run(Delegate action, EntityType? with = null, EntityType? without = null)
 		{
 			var method    = action.GetType().GetMethod("Invoke")!;
 			var generator = QueryActionGenerator.GetOrBuild(method);
-			var query     = new QueryImpl(_universe, action, generator,
-				with ?? _universe.EmptyType, without ?? _universe.EmptyType);
+			var query     = new QueryImpl(Universe, action, generator,
+				with ?? Universe.EmptyType, without ?? Universe.EmptyType);
 			// TODO: Cache the query somehow.
 			query.Run();
 		}

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using gaemstone.ECS;
 
-namespace gaemstone.ECS
+namespace gaemstone
 {
 	public partial class Universe
 	{
@@ -20,15 +21,18 @@ namespace gaemstone.ECS
 		// Built-in Special Entities
 		static internal readonly EcsId.Entity Wildcard = new(0x30);
 
+
 		public EntityManager    Entities   { get; }
 		public TableManager     Tables     { get; }
 		public QueryManager     Queries    { get; }
 		public ProcessorManager Processors { get; }
 
+
 		public EntityType EmptyType { get; }
 		public EntityType Type(params object[] ids)    => EmptyType.Union(ids);
 		public EntityType Type(params EcsId[] ids)     => EmptyType.Union(ids);
 		public EntityType Type(IEnumerable<EcsId> ids) => EmptyType.Union(ids);
+
 
 		public Universe()
 		{
@@ -50,10 +54,10 @@ namespace gaemstone.ECS
 			Tables.Bootstrap();
 
 
-			// Build-in Tags
+			// Built-in Tags
 			Entities.NewWithId(RelationId.Id).Add(typeof(Tag)).Set(typeof(Relation));
 
-			// Build-in Relations
+			// Built-in Relations
 			Entities.NewWithId(ChildOf.Id).Add(typeof(Tag), typeof(Relation)).Set(typeof(ChildOf));
 			Entities.NewWithId(IsA.Id    ).Add(typeof(Tag), typeof(Relation)).Set(typeof(IsA));
 
@@ -61,7 +65,8 @@ namespace gaemstone.ECS
 			Entities.NewWithId(Wildcard.Id).Set((Identifier)"*");
 
 
-			NewComponent<Common.Transform>();
+			// Built-in Components
+			NewComponent<Transform>();
 		}
 
 		public EcsId NewComponent<T>()

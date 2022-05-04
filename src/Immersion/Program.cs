@@ -3,13 +3,13 @@ using System.Globalization;
 using System.IO;
 using System.Numerics;
 using System.Threading;
+using gaemstone;
 using gaemstone.Bloxel;
 using gaemstone.Bloxel.Chunks;
 using gaemstone.Bloxel.Client;
 using gaemstone.Client;
 using gaemstone.Client.Graphics;
-using gaemstone.Common;
-using gaemstone.Common.Utility;
+using gaemstone.Utility;
 
 namespace Immersion
 {

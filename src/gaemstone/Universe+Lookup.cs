@@ -1,6 +1,7 @@
 using System;
+using gaemstone.ECS;
 
-namespace gaemstone.ECS
+namespace gaemstone
 {
 	public partial class Universe
 	{

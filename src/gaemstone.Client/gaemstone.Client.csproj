@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../gaemstone.Common/gaemstone.Common.csproj" />
+    <ProjectReference Include="../gaemstone/gaemstone.csproj" />
   </ItemGroup>
 
   <ItemGroup>

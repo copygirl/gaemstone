@@ -1,8 +1,6 @@
 using System;
 using System.Drawing;
 using System.Numerics;
-using gaemstone.Common;
-using gaemstone.ECS;
 using Silk.NET.OpenGL;
 
 namespace gaemstone.Client.Graphics

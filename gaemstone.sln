@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gaemstone", "src\gaemstone\gaemstone.csproj", "{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gaemstone.Bloxel", "src\gaemstone.Bloxel\gaemstone.Bloxel.csproj", "{4BFAFC52-978D-40B4-831A-0B866211C865}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gaemstone.Client", "src\gaemstone.Client\gaemstone.Client.csproj", "{5D5466A7-1995-4FF1-97BD-257FB64B1671}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gaemstone.Common", "src\gaemstone.Common\gaemstone.Common.csproj", "{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Immersion", "src\Immersion\Immersion.csproj", "{1CA054B8-E8DB-4A2D-AD01-C902B22348BA}"
 EndProject
@@ -21,6 +21,18 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Debug|x64.Build.0 = Debug|Any CPU
+		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Debug|x86.Build.0 = Debug|Any CPU
+		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Release|x64.ActiveCfg = Release|Any CPU
+		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Release|x64.Build.0 = Release|Any CPU
+		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Release|x86.ActiveCfg = Release|Any CPU
+		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Release|x86.Build.0 = Release|Any CPU
 		{4BFAFC52-978D-40B4-831A-0B866211C865}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4BFAFC52-978D-40B4-831A-0B866211C865}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4BFAFC52-978D-40B4-831A-0B866211C865}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -45,18 +57,6 @@ Global
 		{5D5466A7-1995-4FF1-97BD-257FB64B1671}.Release|x64.Build.0 = Release|Any CPU
 		{5D5466A7-1995-4FF1-97BD-257FB64B1671}.Release|x86.ActiveCfg = Release|Any CPU
 		{5D5466A7-1995-4FF1-97BD-257FB64B1671}.Release|x86.Build.0 = Release|Any CPU
-		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Debug|x64.Build.0 = Debug|Any CPU
-		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Debug|x86.Build.0 = Debug|Any CPU
-		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Release|x64.ActiveCfg = Release|Any CPU
-		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Release|x64.Build.0 = Release|Any CPU
-		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Release|x86.ActiveCfg = Release|Any CPU
-		{FEEEFA80-1D76-4604-99B9-F81B5A8C59F8}.Release|x86.Build.0 = Release|Any CPU
 		{1CA054B8-E8DB-4A2D-AD01-C902B22348BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1CA054B8-E8DB-4A2D-AD01-C902B22348BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1CA054B8-E8DB-4A2D-AD01-C902B22348BA}.Debug|x64.ActiveCfg = Debug|Any CPU

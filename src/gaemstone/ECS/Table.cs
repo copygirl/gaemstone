@@ -11,27 +11,30 @@ namespace gaemstone.ECS
 		const int InitialCapacity = 16;
 
 
-		public Universe Universe { get; }
-		public EntityType Type { get; }
+		public EntityManager EntityManager { get; }
 
+		public EntityType Type { get; }
 		public EntityType StorageType { get; }
-		internal EcsId.Entity[] Entities { get; private set; }
-		internal Array[] Columns { get; }
+
+		public EcsId.Entity[] Entities { get; private set; }
+		public Array[] Columns { get; }
 
 		public bool IsEmpty => Count == 0;
 		public int Count { get; private set; }
 		public int Capacity => Entities.Length;
 
 
-		internal Table(Universe universe, EntityType type, EntityType storageType,
-		               IEnumerable<Type> columnTypes)
+		public Table(EntityManager entityManager,
+		             EntityType type, EntityType storageType,
+		             IEnumerable<Type> columnTypes)
 		{
-			Universe = universe;
-			Type     = type;
+			EntityManager = entityManager;
 
+			Type        = type;
 			StorageType = storageType;
-			Entities    = new EcsId.Entity[0];
-			Columns     = columnTypes.Select(type => Array.CreateInstance(type, 0)).ToArray();
+
+			Entities = new EcsId.Entity[0];
+			Columns  = columnTypes.Select(type => Array.CreateInstance(type, 0)).ToArray();
 		}
 
 
@@ -78,7 +81,7 @@ namespace gaemstone.ECS
 				foreach (var column in Columns)
 					Array.Copy(column, Count, column, row, 1);
 				// Update the moved element's Record to point to its new row.
-				ref var record = ref Universe.Entities.GetRecord(Entities[row].Id);
+				ref var record = ref EntityManager.GetRecord(Entities[row].Id);
 				record.Table = this;
 				record.Row   = row;
 			}

@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 
-namespace gaemstone.Common.Utility
+namespace gaemstone.Utility.Reflection
 {
 	public static class ReflectionHelper
 	{

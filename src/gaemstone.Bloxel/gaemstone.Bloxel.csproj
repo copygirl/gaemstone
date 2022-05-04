@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../gaemstone/gaemstone.csproj" />
     <ProjectReference Include="../gaemstone.Client/gaemstone.Client.csproj" />
-    <ProjectReference Include="../gaemstone.Common/gaemstone.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>

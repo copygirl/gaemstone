@@ -1,4 +1,4 @@
-namespace gaemstone.ECS
+namespace gaemstone
 {
 	public interface IProcessor
 	{

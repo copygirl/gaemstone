@@ -1,7 +1,8 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using gaemstone.ECS;
 
-namespace gaemstone.ECS
+namespace gaemstone
 {
 	public partial class Universe
 	{

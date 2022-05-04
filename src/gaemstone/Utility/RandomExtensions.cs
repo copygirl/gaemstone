@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace gaemstone.Common.Utility
+namespace gaemstone.Utility
 {
 	public static class RandomExtensions
 	{

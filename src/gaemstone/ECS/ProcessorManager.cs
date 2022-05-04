@@ -1,7 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using gaemstone.Common.Utility;
+using gaemstone.Utility.Reflection;
 
 namespace gaemstone.ECS
 {

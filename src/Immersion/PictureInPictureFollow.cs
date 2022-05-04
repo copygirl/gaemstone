@@ -1,8 +1,7 @@
 using System.Drawing;
 using System.Numerics;
+using gaemstone;
 using gaemstone.Client;
-using gaemstone.Common;
-using gaemstone.ECS;
 
 namespace Immersion
 {

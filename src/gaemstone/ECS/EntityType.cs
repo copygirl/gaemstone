@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Text;
 
 namespace gaemstone.ECS
 {
@@ -15,12 +16,12 @@ namespace gaemstone.ECS
 		: IEquatable<EntityType>
 		, IReadOnlyList<EcsId>
 	{
-		public Universe Universe { get; }
 		readonly ImmutableSortedSet<EcsId> _entries;
 		readonly int _hashCode;
 
-		public int Count => _entries.Count;
+		public Universe Universe { get; }
 		public EcsId this[int index] => _entries[index];
+		public int Count => _entries.Count;
 
 		internal static EntityType Empty(Universe universe)
 			=> new(universe, ImmutableSortedSet<EcsId>.Empty);
@@ -28,9 +29,7 @@ namespace gaemstone.ECS
 		{
 			Universe = universe;
 			_entries = entries;
-
 			var hashCode = new HashCode();
-			hashCode.Add(Count);
 			foreach (var id in _entries) hashCode.Add(id);
 			_hashCode = hashCode.ToHashCode();
 		}
@@ -40,10 +39,10 @@ namespace gaemstone.ECS
 		public bool Contains(EcsId id)
 			=> _entries.Contains(id);
 
-		public bool Includes(EntityType other)
-			=> _entries.IsSupersetOf(other._entries);
-		public bool Overlaps(EntityType other)
-			=> _entries.Overlaps(other._entries);
+		public bool Includes(IEnumerable<EcsId> other)
+			=> _entries.IsSupersetOf(other);
+		public bool Overlaps(IEnumerable<EcsId> other)
+			=> _entries.Overlaps(other);
 
 
 		public EntityType Union(params object[] ids)
@@ -58,7 +57,7 @@ namespace gaemstone.ECS
 		}
 
 		public EntityType Except(params object[] ids)
-			=> Except(ids.Select(o => Universe.Lookup(o).Id));
+			=> Except(ids.Select(o => (EcsId)Universe.Lookup(o).Id));
 		public EntityType Except(params EcsId[] ids)
 			=> Except((IEnumerable<EcsId>)ids);
 		public EntityType Except(IEnumerable<EcsId> ids)
@@ -84,21 +83,16 @@ namespace gaemstone.ECS
 		public static bool operator !=(EntityType left, EntityType right)
 			=> !(left == right);
 
-		// TODO: ToString
-		// public override string ToString()
-		// {
-		// 	var builder = new StringBuilder();
-		// 	AppendString(builder);
-		// 	return builder.ToString();
-		// }
-		// public void AppendString(StringBuilder builder)
-		// {
-		// 	builder.Append('[');
-		// 	for (var i = 0; i < Count; i++) {
-		// 		if (i > 0) builder.Append(", ");
-		// 		this[i].AppendString(builder, Universe);
-		// 	}
-		// 	builder.Append(']');
-		// }
+		public override string ToString()
+		{
+			var builder = new StringBuilder();
+			builder.Append('[');
+			for (var i = 0; i < Count; i++) {
+				if (i > 0) builder.Append(",");
+				builder.Append(this[i]);
+			}
+			builder.Append(']');
+			return builder.ToString();
+		}
 	}
 }

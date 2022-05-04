@@ -1,12 +1,13 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using gaemstone.ECS;
 
-namespace gaemstone.ECS
+namespace gaemstone
 {
 	public partial class Universe
 	{
 		public readonly struct Entity
-			: IEntity, IEquatable<Entity>
+			: IEntityRef, IEquatable<Entity>
 		{
 			public Universe Universe { get; }
 			public EcsId.Entity Id { get; }
@@ -30,7 +31,7 @@ namespace gaemstone.ECS
 			public T Get<T>() => Universe.Get<T>(this);
 			public ref T GetRef<T>() => ref Universe.GetRef<T>(this);
 			public Entity Set<T>(T value) { Universe.Set(this, value); return this; }
-			IEntity IEntity.Set<T>(T value) => Set(value);
+			IEntityRef IEntityRef.Set<T>(T value) => Set(value);
 
 			public override bool Equals(object? obj) => (obj is Entity entity) && Equals(entity);
 			public bool Equals(Entity other) => (Universe == other.Universe) && (Id == other.Id);

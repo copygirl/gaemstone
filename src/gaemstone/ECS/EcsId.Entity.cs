@@ -5,6 +5,15 @@ namespace gaemstone.ECS
 {
 	public readonly partial struct EcsId
 	{
+		/// <summary>
+		/// An entity is a unique object created within the scope of a
+		/// <see cref="Universe"/>, from which it can also be deleted.
+		///
+		/// Besides traditional game objects, entities can also represent tags,
+		/// components and relations, which themselves can be added to entities.
+		///
+		/// An <see cref="Entity"/> implicitly converts to an <see cref="EcsId"/>.
+		/// </summary>
 		[StructLayout(LayoutKind.Explicit)]
 		public readonly struct Entity
 			: IEquatable<Entity>

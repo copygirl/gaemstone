@@ -3,9 +3,7 @@ using System.IO;
 using System.Numerics;
 using gaemstone.Client.Graphics;
 using gaemstone.Client.Processors;
-using gaemstone.Common;
-using gaemstone.Common.Utility;
-using gaemstone.ECS;
+using gaemstone.Utility.Reflection;
 using Silk.NET.Input;
 using Silk.NET.Windowing;
 

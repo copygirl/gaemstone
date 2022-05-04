@@ -3,36 +3,37 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using gaemstone.Common.Utility;
+using gaemstone.Utility;
 
 namespace gaemstone.ECS
 {
 	public class TableManager
 	{
-		readonly Universe _universe;
 		readonly Dictionary<EntityType, Table> _tables = new();
 		readonly Dictionary<EcsId, List<Table>> _index = new();
+
+		public Universe Universe { get; }
 
 		public event Action<Table>? TableAdded;
 		// public event Action<Table>? TableRemoved;
 
 		internal TableManager(Universe universe)
 		{
-			_universe = universe;
+			Universe = universe;
 			TableAdded += AddTableToIndex;
 		}
 
 		internal void Bootstrap()
 		{
 			var componentTable = BootstrapTable(
-				type:        _universe.Type(Universe.TypeId, Universe.IdentifierId, Universe.ComponentId),
-				storageType: _universe.Type(Universe.TypeId, Universe.IdentifierId),
+				type:        Universe.Type(Universe.TypeId, Universe.IdentifierId, Universe.ComponentId),
+				storageType: Universe.Type(Universe.TypeId, Universe.IdentifierId),
 				columnTypes: new[]{ typeof(Type), typeof(Identifier) },
 				(Universe.TypeId       , typeof(Type)),
 				(Universe.IdentifierId , typeof(Identifier)));
 			var tagTable = BootstrapTable(
-				type:        _universe.Type(Universe.TypeId, Universe.IdentifierId, Universe.TagId),
-				storageType: _universe.Type(Universe.TypeId, Universe.IdentifierId),
+				type:        Universe.Type(Universe.TypeId, Universe.IdentifierId, Universe.TagId),
+				storageType: Universe.Type(Universe.TypeId, Universe.IdentifierId),
 				columnTypes: new[]{ typeof(Type), typeof(Identifier) },
 				(Universe.ComponentId , typeof(Component)),
 				(Universe.TagId       , typeof(Tag)));
@@ -44,7 +45,7 @@ namespace gaemstone.ECS
 		Table BootstrapTable(EntityType type, EntityType storageType, Type[] columnTypes,
 		                     params (EcsId.Entity Id, Type Type)[] entities)
 		{
-			var table = new Table(_universe, type, storageType, columnTypes);
+			var table = new Table(Universe.Entities, type, storageType, columnTypes);
 			_tables.Add(type, table);
 
 			// FIXME: Only works as long as long as entities.Count <= Table.STARTING_CAPACITY.
@@ -53,7 +54,7 @@ namespace gaemstone.ECS
 			var identifierColumn = table.Columns.OfType<Identifier[]>().Single();
 
 			foreach (var (id, entityType) in entities) {
-				ref var record = ref _universe.Entities.GetRecord(id);
+				ref var record = ref Universe.Entities.GetRecord(id);
 				Move(id, ref record, type);
 				typeColumn[record.Row]       = entityType;
 				identifierColumn[record.Row] = entityType.Name;
@@ -86,7 +87,7 @@ namespace gaemstone.ECS
 		public Table GetOrCreate(EntityType type)
 		{
 			if (!_tables.TryGetValue(type, out var table)) {
-				var storageType = _universe.EmptyType;
+				var storageType = Universe.EmptyType;
 				var columnTypes = new List<Type>();
 				foreach (var id in type) {
 					var storage = GetStorageType(id);
@@ -94,7 +95,7 @@ namespace gaemstone.ECS
 					storageType = storageType.Union(id);
 					columnTypes.Add(storage);
 				}
-				table = new Table(_universe, type, storageType, columnTypes);
+				table = new Table(Universe.Entities, type, storageType, columnTypes);
 				_tables.Add(type, table);
 				TableAdded?.Invoke(table);
 
@@ -105,12 +106,12 @@ namespace gaemstone.ECS
 		Type? GetStorageType(EcsId id)
 		{
 			if (id.AsEntity() is EcsId.Entity entity) {
-				if (_universe.Has<Component>(entity)) return _universe.Get<Type>(entity);
+				if (Universe.Has<Component>(entity)) return Universe.Get<Type>(entity);
 			} else if (id.AsPair() is EcsId.Pair pair) {
-				var relation = _universe.Lookup(pair.Relation);
-				var target   = _universe.Lookup(pair.Target);
-				if (_universe.Has<Component>(relation)) return _universe.Get<Type>(relation);
-				if (_universe.Has<Component>(target))   return _universe.Get<Type>(target);
+				var relation = Universe.Lookup(pair.Relation);
+				var target   = Universe.Lookup(pair.Target);
+				if (Universe.Has<Component>(relation)) return Universe.Get<Type>(relation);
+				if (Universe.Has<Component>(target))   return Universe.Get<Type>(target);
 			}
 			return null;
 		}

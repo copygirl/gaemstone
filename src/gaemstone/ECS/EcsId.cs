@@ -3,6 +3,12 @@ using System.Runtime.InteropServices;
 
 namespace gaemstone.ECS
 {
+	/// <summary>
+	/// An id is a 64-bit integer which encodes and represents anything
+	/// that can be added to an entity. An <see cref="EcsId.Entity"/> is one
+	/// possible way to encode this id, representing an entity. Another is a
+	/// <see cref="EcsId.Pair"/>, which represents an entity relationship.
+	/// </summary>
 	[StructLayout(LayoutKind.Explicit)]
 	public readonly partial struct EcsId
 		: IEquatable<EcsId>
